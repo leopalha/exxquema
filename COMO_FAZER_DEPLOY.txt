@@ -1,0 +1,172 @@
+═══════════════════════════════════════════════════════════════
+  GUIA SIMPLIFICADO - DEPLOY VERCEL (@leopalha)
+═══════════════════════════════════════════════════════════════
+
+🎯 OBJETIVO: Ter seu site em https://exxquema.vercel.app
+
+═══════════════════════════════════════════════════════════════
+  PARTE 1: CRIAR REPOSITÓRIO NO GITHUB (2 minutos)
+═══════════════════════════════════════════════════════════════
+
+1. Abra no navegador:
+   https://github.com/new
+
+2. Preencha:
+   Repository name: exxquema
+   Description: Plataforma PWA Exxquema
+   ✅ Public
+   ⚠️ NÃO marque nada embaixo (sem README, sem .gitignore)
+
+3. Clique: "Create repository"
+
+4. ✅ Repositório criado! Deixe a página aberta.
+
+═══════════════════════════════════════════════════════════════
+  PARTE 2: ENVIAR CÓDIGO PARA GITHUB (1 minuto)
+═══════════════════════════════════════════════════════════════
+
+OPÇÃO A - POWERSHELL (AUTOMÁTICO):
+──────────────────────────────────
+
+1. Abra PowerShell como Administrador
+
+2. Execute:
+   cd D:\exxquema
+   .\deploy-github.ps1
+
+3. Digite suas credenciais quando pedir
+
+
+OPÇÃO B - MANUAL (COPIAR E COLAR):
+───────────────────────────────────
+
+1. Abra PowerShell ou CMD
+
+2. Copie e cole LINHA POR LINHA:
+
+cd D:\exxquema
+
+git remote add origin https://github.com/leopalha/exxquema.git
+
+git branch -M main
+
+git push -u origin main
+
+3. Quando pedir autenticação:
+   Username: leopalha
+   Password: [Use Personal Access Token - veja abaixo]
+
+
+📝 CRIAR PERSONAL ACCESS TOKEN (se precisar):
+─────────────────────────────────────────────
+
+1. Vá em: https://github.com/settings/tokens/new
+
+2. Preencha:
+   Note: Deploy EXXQUEMA
+   Expiration: No expiration (ou 90 days)
+   ✅ Marque: repo (Full control of private repositories)
+
+3. Clique: "Generate token"
+
+4. ⚠️ COPIE O TOKEN! Ele aparece só uma vez!
+   Exemplo: ghp_abc123XYZ456...
+
+5. Use esse token como SENHA no git push
+
+
+═══════════════════════════════════════════════════════════════
+  PARTE 3: DEPLOY NA VERCEL (3 minutos)
+═══════════════════════════════════════════════════════════════
+
+1. Abra: https://vercel.com/new
+
+2. Você verá "Import Git Repository"
+
+3. Procure por: leopalha/exxquema
+
+4. Clique em: "Import"
+
+5. ⚠️ IMPORTANTE - Configurações:
+
+   ┌─────────────────────────────────────┐
+   │ Root Directory:                     │
+   │ [Edit] → Digite: frontend           │
+   └─────────────────────────────────────┘
+
+   ┌─────────────────────────────────────┐
+   │ Framework Preset:                   │
+   │ Next.js (detectado automático)      │
+   └─────────────────────────────────────┘
+
+   ┌─────────────────────────────────────┐
+   │ Environment Variables:              │
+   │                                     │
+   │ NEXT_PUBLIC_API_URL                 │
+   │ http://localhost:5000               │
+   │                                     │
+   │ NEXT_PUBLIC_SOCKET_URL              │
+   │ http://localhost:5000               │
+   └─────────────────────────────────────┘
+
+6. Clique: "Deploy"
+
+7. ⏳ Aguarde 2-3 minutos (vai aparecer um gif animado)
+
+8. ✅ PRONTO! Você verá: "Congratulations!"
+
+═══════════════════════════════════════════════════════════════
+  PARTE 4: CONFIGURAR DOMÍNIO (1 minuto)
+═══════════════════════════════════════════════════════════════
+
+1. Na tela de sucesso, clique: "Go to Dashboard"
+
+2. Menu lateral → "Settings"
+
+3. Clique em: "Domains"
+
+4. Digite: exxquema
+
+5. Clique: "Add"
+
+6. ✅ Seu site estará em: https://exxquema.vercel.app
+
+═══════════════════════════════════════════════════════════════
+  🎉 FINALIZADO!
+═══════════════════════════════════════════════════════════════
+
+Seu link permanente:
+🌐 https://exxquema.vercel.app
+
+Compartilhe com seus investidores! 🚀
+
+═══════════════════════════════════════════════════════════════
+  ❓ PROBLEMAS COMUNS
+═══════════════════════════════════════════════════════════════
+
+❌ "authentication failed" no git push
+   → Crie Personal Access Token (instruções acima)
+   → Use o token como senha
+
+❌ "repository not found"
+   → Certifique-se que criou o repositório no GitHub
+   → Nome deve ser exatamente: exxquema
+
+❌ Deploy falhou na Vercel
+   → Verifique se Root Directory está como: frontend
+   → Veja os logs de erro na aba "Deployments"
+
+❌ Site não abre
+   → Aguarde alguns minutos
+   → Limpe cache do navegador (Ctrl + F5)
+
+═══════════════════════════════════════════════════════════════
+  📞 PRECISA DE AJUDA?
+═══════════════════════════════════════════════════════════════
+
+Vercel Support: https://vercel.com/help
+GitHub Support: https://support.github.com
+
+═══════════════════════════════════════════════════════════════
+
+BOA SORTE! 💪
