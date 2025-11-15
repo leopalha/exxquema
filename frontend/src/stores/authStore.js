@@ -10,14 +10,31 @@ const shouldUseMockData = () => {
   // Verificar se está no ambiente de browser
   if (typeof window === 'undefined') {
     // No servidor (SSR), sempre usar mock em desenvolvimento
+    console.log('🔧 shouldUseMockData (SSR): NODE_ENV =', process.env.NODE_ENV);
     return process.env.NODE_ENV === 'development';
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    const mockDataSetting = safeLocalStorage.getItem('useMockData');
-    return mockDataSetting === null || mockDataSetting === 'true';
+  const nodeEnv = process.env.NODE_ENV;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const mockDataSetting = safeLocalStorage.getItem('useMockData');
+
+  console.log('🔧 shouldUseMockData (Browser):', {
+    nodeEnv,
+    apiUrl,
+    mockDataSetting,
+    window: typeof window !== 'undefined'
+  });
+
+  if (nodeEnv === 'development') {
+    const result = mockDataSetting === null || mockDataSetting === 'true';
+    console.log('🔧 shouldUseMockData (Dev) returning:', result);
+    return result;
   }
-  return !process.env.NEXT_PUBLIC_API_URL || safeLocalStorage.getItem('useMockData') === 'true';
+
+  // FORÇAR MOCK EM PRODUÇÃO se não houver API configurada
+  const result = !apiUrl || mockDataSetting === 'true';
+  console.log('🔧 shouldUseMockData (Prod) returning:', result);
+  return result;
 };
 
 // Função para simular delay de rede

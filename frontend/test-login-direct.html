@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login Direct</title>
+</head>
+<body>
+    <h1>Test Login - Open Console (F12)</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="checkMockData()">Check Mock Data</button>
+    <div id="result"></div>
+
+    <script>
+        function checkMockData() {
+            console.log('=== CHECKING MOCK DATA ===');
+            console.log('window exists:', typeof window !== 'undefined');
+            console.log('NODE_ENV:', 'development');
+
+            // Simular shouldUseMockData
+            const useMock = true; // sempre true em dev
+            console.log('useMock should be:', useMock);
+
+            // Mock users
+            const mockAuthUsers = {
+                'admin@admin.com': {
+                    id: '3',
+                    nome: 'Admin Exxquema',
+                    email: 'admin@admin.com',
+                    telefone: '(21) 99999-0000',
+                    role: 'admin',
+                    ativo: true,
+                    password: 'admin123'
+                },
+                'cliente@test.com': {
+                    id: '1',
+                    nome: 'Cliente Teste',
+                    email: 'cliente@test.com',
+                    telefone: '(21) 99999-1234',
+                    role: 'customer',
+                    ativo: true,
+                    password: '123456'
+                }
+            };
+
+            console.log('mockAuthUsers:', mockAuthUsers);
+            console.log('Has cliente@test.com?', !!mockAuthUsers['cliente@test.com']);
+            console.log('Password matches?', mockAuthUsers['cliente@test.com'].password === '123456');
+        }
+
+        function testLogin() {
+            const email = 'cliente@test.com';
+            const password = '123456';
+
+            console.log('=== TESTING LOGIN ===');
+            console.log('Email:', email);
+            console.log('Password:', password);
+
+            const mockAuthUsers = {
+                'admin@admin.com': {
+                    id: '3',
+                    nome: 'Admin Exxquema',
+                    email: 'admin@admin.com',
+                    telefone: '(21) 99999-0000',
+                    role: 'admin',
+                    ativo: true,
+                    password: 'admin123'
+                },
+                'cliente@test.com': {
+                    id: '1',
+                    nome: 'Cliente Teste',
+                    email: 'cliente@test.com',
+                    telefone: '(21) 99999-1234',
+                    role: 'customer',
+                    ativo: true,
+                    password: '123456'
+                }
+            };
+
+            const mockUser = mockAuthUsers[email];
+            console.log('Found user:', mockUser);
+
+            if (mockUser && mockUser.password === password) {
+                console.log('✅ LOGIN SUCCESS!');
+                console.log('User:', mockUser.nome);
+                document.getElementById('result').innerHTML = '<h2 style="color: green">✅ LOGIN FUNCIONOU!</h2><p>Usuário: ' + mockUser.nome + '</p>';
+            } else {
+                console.log('❌ LOGIN FAILED');
+                console.log('User found?', !!mockUser);
+                console.log('Password match?', mockUser ? (mockUser.password === password) : 'N/A');
+                document.getElementById('result').innerHTML = '<h2 style="color: red">❌ LOGIN FALHOU</h2>';
+            }
+        }
+    </script>
+</body>
+</html>
