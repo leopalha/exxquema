@@ -851,12 +851,7 @@ export const slidesData = [
     type: 'questions',
     title: 'PERGUNTAS',
     mainText: 'ABRE O JOGO',
-    subText: 'O que ficou de dúvida?',
-    contact: {
-      whatsapp: '(21) 98765-4321',
-      email: 'leonardo@redlight.bar',
-      location: 'Rio de Janeiro, RJ'
-    }
+    subText: 'O que ficou de dúvida?'
   }
 ];
 
