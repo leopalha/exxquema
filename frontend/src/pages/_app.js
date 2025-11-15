@@ -1,9 +1,15 @@
 import '../styles/globals.css';
 import '../styles/components.css';
 import { Toaster } from 'react-hot-toast';
-import PWANotifications from '../components/PWANotifications';
+import { useState, useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <>
       <Component {...pageProps} />
@@ -36,7 +42,6 @@ function MyApp({ Component, pageProps }) {
           },
         }}
       />
-      <PWANotifications />
     </>
   );
 }
