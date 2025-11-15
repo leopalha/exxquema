@@ -4,6 +4,76 @@ import { Users, DollarSign, TrendingUp, BarChart3, Clock, Target, Settings, Aler
 // Parte 4: Slides finais (fases, riscos, decisão, próximos passos, perguntas)
 export const renderFinalSlides = (slide, textSize, getTextSize, fadeIn) => {
 
+  // SLIDE: TIMELINE HORIZONTAL (ROADMAP)
+  if (slide.type === 'timeline-horizontal') {
+    const iconMap = {
+      'file-text': FileText,
+      'landmark': Landmark,
+      'building': Building,
+      'settings': Settings,
+      'party-popper': PartyPopper,
+      'dollar-sign': DollarSign
+    };
+
+    return (
+      <div className="h-full flex flex-col bg-black">
+        <motion.h2 {...fadeIn} className="text-6xl font-bold text-white pt-12 pb-8 text-center">
+          {slide.title}
+        </motion.h2>
+
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-12 pb-32">
+          <div className="max-w-7xl mx-auto space-y-16">
+            {/* Timeline */}
+            <div className="relative">
+              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-800" />
+              <div className="relative grid grid-cols-6 gap-4">
+                {slide.timeline.map((item, i) => {
+                  const Icon = iconMap[item.icon] || Clock;
+                  const isLucro = item.icon === 'dollar-sign';
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: -30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + i * 0.15, duration: 0.5 }}
+                      className="flex flex-col items-center"
+                    >
+                      <div className={`w-16 h-16 rounded-full ${isLucro ? 'bg-green-500' : 'bg-orange-500'} border-4 border-black mb-6 flex items-center justify-center`}>
+                        <Icon className="w-8 h-8 text-white" />
+                      </div>
+                      <div className={`${isLucro ? 'bg-green-900/30 border-green-700' : 'bg-gray-900 border-gray-800'} border rounded-xl p-4 text-center`}>
+                        <p className={`${getTextSize('xs')} text-gray-400 mb-2`}>{item.mes}</p>
+                        <h3 className={`${getTextSize('lg')} font-bold text-white mb-2`}>{item.fase}</h3>
+                        <p className={`${getTextSize('xl')} font-black ${isLucro ? 'text-green-400' : 'text-orange-400'} mb-3`}>{item.custo}</p>
+                        <p className={`${getTextSize('sm')} text-gray-400`}>{item.detalhe}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Highlight */}
+            {slide.highlight && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="bg-gradient-to-r from-orange-900/20 to-transparent border-2 border-orange-700 rounded-xl p-8"
+              >
+                <div className="space-y-3">
+                  {slide.highlight.map((line, i) => (
+                    <p key={i} className={`${getTextSize('xl')} text-orange-400 font-semibold text-center`}>✓ {line}</p>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // SLIDE: PHASES-1 (FASES 1/2)
   if (slide.type === 'phases-1') {
     return (
