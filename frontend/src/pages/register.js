@@ -166,9 +166,9 @@ export default function Register() {
         <meta name="description" content="Crie sua conta no Exxquema" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-orange-900 via-black to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
         {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-5">
           <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-orange-500 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-orange-600 rounded-full blur-3xl" />
         </div>
@@ -185,10 +185,10 @@ export default function Register() {
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </Link>
-            
+
             <div className="mt-6 mb-4">
-              <div className="mx-auto mb-4 flex items-center justify-center">
-                <svg width="80" height="80" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div className="mx-auto mb-6 flex items-center justify-center">
+                <svg width="100" height="100" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="100" cy="100" r="95" stroke="#f97316" strokeWidth="3" fill="#000000"/>
                   <circle cx="100" cy="100" r="85" stroke="#F7931E" strokeWidth="1" fill="none" opacity="0.3"/>
                   <path d="M50 70 L50 130 L75 130 M50 100 L70 100 M50 70 L75 70" stroke="#f97316" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -196,15 +196,14 @@ export default function Register() {
                   <path d="M120 70 L145 130 M145 70 L120 130" stroke="#F7931E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-white">Exxquema</h1>
-              <p className="text-gray-400 mt-2">Crie sua conta</p>
+              <p className="text-gray-400 mt-2 text-lg">Crie sua conta</p>
             </div>
           </div>
 
           {/* Registration Form */}
           <motion.div
             variants={formVariants}
-            className="bg-gray-900/80 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 shadow-2xl"
+            className="bg-gray-900 rounded-2xl p-8 border border-gray-800 shadow-2xl"
           >
             {!isCodeStep ? (
               <>

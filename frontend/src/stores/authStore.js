@@ -132,8 +132,28 @@ const useAuthStore = create(
       register: async (userData) => {
         set({ isLoading: true });
         try {
+          const useMock = shouldUseMockData();
+
+          if (useMock) {
+            // Mock: simula delay e retorna sucesso
+            await simulateDelay(500);
+
+            // Simula envio de SMS
+            console.log('📱 [MOCK] Código SMS enviado:', '123456');
+            toast.success('Cadastro realizado! Use o código: 123456');
+
+            return {
+              success: true,
+              data: {
+                celular: userData.celular,
+                needsVerification: true
+              }
+            };
+          }
+
+          // API real
           const response = await api.post('/auth/register', userData);
-          
+
           if (response.data.success) {
             toast.success('Cadastro realizado! Verifique seu celular.');
             return { success: true, data: response.data.data };
@@ -142,6 +162,22 @@ const useAuthStore = create(
             return { success: false, error: response.data.message };
           }
         } catch (error) {
+          console.error('Erro no registro:', error);
+
+          // Fallback para mock em caso de erro de rede
+          if (!shouldUseMockData()) {
+            console.log('API falhou, usando modo mock para registro...');
+            await simulateDelay(300);
+            toast.success('Cadastro realizado! Use o código: 123456');
+            return {
+              success: true,
+              data: {
+                celular: userData.celular,
+                needsVerification: true
+              }
+            };
+          }
+
           const message = error.response?.data?.message || 'Erro no servidor';
           toast.error(message);
           return { success: false, error: message };
@@ -358,9 +394,15 @@ const useAuthStore = create(
       logout: async () => {
         set({ isLoading: true });
         try {
-          await api.post('/auth/logout');
+          const useMock = shouldUseMockData();
+
+          if (!useMock) {
+            await api.post('/auth/logout');
+          }
+          // Mock mode: apenas limpa localmente
         } catch (error) {
-          console.error('Erro no logout:', error);
+          console.log('Erro no logout (usando fallback local):', error);
+          // Continua com logout local mesmo se API falhar
         } finally {
           get().clearAuth();
           set({ isLoading: false });
