@@ -1,0 +1,284 @@
+import { useState } from 'react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { Plus, Minus, Star, Clock } from 'lucide-react';
+import { useCartStore } from '../stores/cartStore';
+import { useAuthStore } from '../stores/authStore';
+import { formatCurrency } from '../utils/format';
+import { toast } from 'react-hot-toast';
+
+const ProductCard = ({ product, showActions = true, variant = 'default', onImageClick }) => {
+  const [quantity, setQuantity] = useState(1);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { addItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast.error('Faça login para adicionar produtos ao carrinho');
+      return;
+    }
+
+    addItem(product, quantity);
+    toast.success(`${product.name} adicionado ao carrinho!`);
+    setQuantity(1);
+  };
+
+  const incrementQuantity = () => {
+    setQuantity(prev => prev + 1);
+  };
+
+  const decrementQuantity = () => {
+    setQuantity(prev => Math.max(1, prev - 1));
+  };
+
+  const hasDiscount = product.discount > 0;
+  const discountedPrice = hasDiscount 
+    ? product.price * (1 - product.discount / 100) 
+    : product.price;
+
+  if (variant === 'compact') {
+    return (
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-orange-500 transition-colors"
+      >
+        <div className="flex items-center space-x-4">
+          <div className="relative w-16 h-16 flex-shrink-0">
+            {product.image ? (
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                className="object-cover rounded-lg"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500 text-xs">Sem foto</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-white text-sm truncate">
+              {product.name}
+            </h3>
+            <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+              {product.description}
+            </p>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center space-x-2">
+                {hasDiscount && (
+                  <span className="text-xs text-gray-500 line-through">
+                    {formatCurrency(product.price)}
+                  </span>
+                )}
+                <span className="font-bold text-orange-400 text-sm">
+                  {formatCurrency(discountedPrice)}
+                </span>
+              </div>
+              
+              {showActions && (
+                <button
+                  onClick={handleAddToCart}
+                  className="bg-orange-600 hover:bg-orange-700 text-white p-1.5 rounded-lg transition-colors"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.2 }}
+      className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 hover:border-orange-500 transition-colors"
+    >
+      {/* Product Image */}
+      <div
+        className="relative h-48 overflow-hidden cursor-pointer group"
+        onClick={() => onImageClick && product.image && onImageClick(product)}
+      >
+        {product.image ? (
+          <>
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+            {onImageClick && (
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <span className="text-white font-semibold bg-orange-500 px-4 py-2 rounded-lg shadow-lg text-sm">
+                  Clique para ampliar
+                </span>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+            <span className="text-gray-500">Sem foto</span>
+          </div>
+        )}
+        
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col space-y-2">
+          {product.isFeatured && (
+            <span className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">
+              Destaque
+            </span>
+          )}
+          {hasDiscount && (
+            <span className="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+              -{product.discount}%
+            </span>
+          )}
+          {!product.isActive && (
+            <span className="bg-gray-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+              Indisponível
+            </span>
+          )}
+        </div>
+
+        {/* Category */}
+        <div className="absolute top-3 right-3">
+          <span className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+            {product.category}
+          </span>
+        </div>
+      </div>
+
+      {/* Product Info */}
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="font-bold text-white text-lg leading-tight flex-1">
+            {product.name}
+          </h3>
+          
+          {product.preparationTime && (
+            <div className="flex items-center text-gray-400 text-xs ml-2">
+              <Clock className="w-3 h-3 mr-1" />
+              {product.preparationTime}min
+            </div>
+          )}
+        </div>
+
+        <p className={`text-gray-400 text-sm leading-relaxed mb-4 ${
+          isExpanded ? '' : 'line-clamp-3'
+        }`}>
+          {product.description}
+        </p>
+
+        {product.description && product.description.length > 150 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-orange-400 text-xs font-medium mb-4 hover:text-orange-300"
+          >
+            {isExpanded ? 'Ver menos' : 'Ver mais'}
+          </button>
+        )}
+
+        {/* Rating */}
+        {product.rating && (
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-4 h-4 ${
+                    star <= product.rating 
+                      ? 'text-yellow-400 fill-current' 
+                      : 'text-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-gray-400 text-sm">
+              ({product.rating.toFixed(1)})
+            </span>
+          </div>
+        )}
+
+        {/* Price */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            {hasDiscount && (
+              <span className="text-gray-500 line-through text-sm mr-2">
+                {formatCurrency(product.price)}
+              </span>
+            )}
+            <span className="font-bold text-2xl text-orange-400">
+              {formatCurrency(discountedPrice)}
+            </span>
+          </div>
+
+          {/* Stock Status */}
+          {product.hasStock && (
+            <div className="text-right">
+              <span className={`text-xs font-medium ${
+                product.stock > 10 
+                  ? 'text-green-400' 
+                  : product.stock > 0 
+                    ? 'text-yellow-400' 
+                    : 'text-orange-400'
+              }`}>
+                {product.stock > 0 
+                  ? `${product.stock} em estoque` 
+                  : 'Fora de estoque'
+                }
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        {showActions && product.isActive && (
+          <div className="flex items-center space-x-4">
+            {/* Quantity Selector */}
+            <div className="flex items-center border border-gray-600 rounded-lg">
+              <button
+                onClick={decrementQuantity}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors rounded-l-lg"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="px-4 py-2 text-white font-medium bg-gray-700">
+                {quantity}
+              </span>
+              <button
+                onClick={incrementQuantity}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors rounded-r-lg"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={product.hasStock && product.stock < quantity}
+              className="flex-1 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              Adicionar ao Carrinho
+            </button>
+          </div>
+        )}
+
+        {!product.isActive && (
+          <div className="text-center py-3">
+            <span className="text-gray-500 font-medium">
+              Produto indisponível
+            </span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export default ProductCard;

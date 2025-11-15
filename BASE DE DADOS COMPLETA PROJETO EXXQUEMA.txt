@@ -1,0 +1,554 @@
+# 📋 BASE DE DADOS COMPLETA PROJETO EXXQUEMA
+
+Pub & Lounge Bar - Seu esquema perfeito em Botafogo
+
+---
+
+## 📋 DADOS BÁSICOS DO PROJETO
+
+### IDENTIFICAÇÃO
+
+- Nome EXXQUEMA
+- Conceito Pub & Lounge Bar focado em conexões sociais e networking descontraído
+- Tagline Principal Seu esquema perfeito em Botafogo
+- Taglines Alternativas 
+  - Entre no esquema
+  - Onde conexões acontecem
+  - O esquema certo para a noite certa
+- Localização Rua Arnaldo Quintela, Botafogo, Rio de Janeiro
+- Referência 8ª rua mais cool do mundo (Time Out Magazine)
+
+### ESTRUTURA FÍSICA
+
+- Imóvel Prédio 2 andares, fachada branca
+- Área interna Térreo para operação principal
+- Área externa Calçada ampla para mesas (sujeito a TUAP)
+- Capacidade total estimada 150-200 pessoas
+- Formato Pub descontraído com área de lounge
+
+---
+
+## 🎯 POSICIONAMENTO E CONCEITO
+
+### DIFERENCIAL ÚNICO
+
+- Pub descontraído (não é lounge sofisticado demais)
+- Foco em conexões sociais (networking descontraído, conhecer gente)
+- Energia contagiante (música boa, ambiente animado sem ser balada)
+- Preço justo (drinks de qualidade com preço acessível)
+- Localização premium (Arnaldo Quintela, melhor rua de Botafogo)
+
+### PÚBLICO-ALVO
+
+- Primário Jovens adultos 25-40 anos, classe AB
+- Perfil Sociáveis, gostam de sair, valorizam conexões reais
+- Comportamento Buscam ambiente descontraído, sem frescura
+- Ocasiões Happy hours, encontro de amigos, after office, sextassábados
+
+### O QUE EXXQUEMA É
+
+- ✅ Descontraído e acolhedor
+- ✅ Energético e animado
+- ✅ Social e conectado
+- ✅ Autêntico e sem frescura
+- ✅ Moderno mas acessível
+
+### O QUE EXXQUEMA NÃO É
+
+- ❌ Não é sofisticado demais
+- ❌ Não é caro
+- ❌ Não é pretensioso
+- ❌ Não é silencioso
+
+### FILOSOFIA EXXQUEMA
+
+Exxquema representa
+- Ter esquema = Ter um plano, estar preparado
+- Entrar no esquema = Fazer parte de algo exclusivo
+- Qual é o esquema = Vamos combinar algo
+- Fazer esquema = Conectar pessoas, criar oportunidades
+
+---
+
+## 🎨 IDENTIDADE VISUAL COMPLETA
+
+### PALETA DE CORES
+
+- Primária Laranja Vibrante `#FF6B35` (energia, calor social)
+- Secundária Laranja Dourado `#F7931E` (conexão, valor)
+- Acento Azul Petróleo `#004E89` (profundidade, estratégia)
+- Neutros Preto `#0A0A0A`, Cinza Grafite `#2D2D2D`
+- Highlights Ciano `#00B4D8` (tecnologia, modernidade)
+
+### MATERIAIS
+
+- Pisos Cimento queimado + detalhes madeira clara
+- Paredes Tijolo aparente + grafismo geométrico laranja
+- Balcão Madeira rústica + LED laranja embutido
+- Teto Industrial exposto com iluminação direcionada
+- Mesas Mix madeira + metal industrial
+
+### LOGO & BRANDING
+
+- Logo Duplo X conectado por nós (simboliza conexões, estratégia, energia)
+- Tipografia Sans-serif moderna e geométrica
+- Elementos gráficos Redes, conexões, mapas urbanos
+- Aplicações Horizontal, vertical, ícone
+
+---
+
+## 🍸 CARDÁPIO E PREÇOS
+
+### FILOSOFIA DRINKS
+
+- Qualidade com preço justo
+- Criatividade acessível
+- Porções generosas
+- Apresentação caprichada
+
+### SIGNATURES EXXQUEMA
+
+- O Esquema R$ 24 (gin, limão, gengibre, tônica, alecrim)
+- Conexão Perfeita R$ 26 (vodka, maracujá, licor pêssego, espuma cítrica)
+- Estratégia Dupla R$ 28 (whisky, vermute, bitter, laranja flambada)
+- Esquema de Verão R$ 22 (cachaça, abacaxi, hortelã, limão)
+
+### DRINKS CLÁSSICOS
+
+- Caipirinha Tradicional R$ 18
+- Moscow Mule R$ 22
+- Aperol Spritz R$ 24
+- Gin Tônica R$ 20-26 (conforme gin)
+- Old Fashioned R$ 28
+
+### CARDÁPIO COMIDA
+
+- Tábua do Esquema R$ 65 (queijos, frios, geleias, pães)
+- Batatas Exxquema R$ 32 (batata rústica, molhos artesanais)
+- Bruschetta Conectada R$ 28 (4 sabores)
+- Burgers do Esquema R$ 38-45 (3 opções criativas)
+- Poke Bowl Estratégico R$ 42 (salmãoatum, base personalizada)
+- Mini Tacos R$ 35 (6 unidades)
+- Ceviche R$ 38
+- Porções R$ 28-40 (fritas, anéis cebola, wings)
+
+### CERVEJAS
+
+- Artesanais R$ 14-18
+- Importadas R$ 12-16
+- Nacionais Premium R$ 8-10
+- Chopp R$ 9-12 (300ml)
+
+---
+
+## 💰 PROJEÇÕES FINANCEIRAS
+
+### PREMISSAS OPERACIONAIS
+
+- Funcionamento Qui-Dom, 18h-2h (4 noites, 8hnoite)
+- Equipe mínima 8-10 pessoas
+- Ticket médio R$ 95pessoa (mais acessível que conceito anterior)
+- Ocupação projetada 70% (140 de 200 pessoas)
+
+### FATURAMENTO MENSAL ESTIMADO
+
+Cálculo
+- Clientesnoite 200 × 70% = 140 pessoas
+- Receitanoite 140 × R$ 95 = R$ 13.300
+- Receitasemana R$ 13.300 × 4 noites = R$ 53.200
+- Receitamês R$ 212.800
+
+### ESTRUTURA DE CUSTOS
+
+CMV (35% da receita)
+- Bebidas 25%
+- Alimentos 10%
+- Total CMV R$ 74.480mês
+
+Custos Fixos
+- Aluguel R$ 15.000
+- Salários (8-10 pessoas) R$ 28.000
+- Encargos (40%) R$ 11.200
+- Utilidades (luz, água, gás) R$ 3.500
+- Internettelefone R$ 500
+- Contador R$ 1.000
+- Sistema PDV R$ 300
+- Seguros R$ 700
+- Limpezamanutenção R$ 1.500
+- Marketing digital R$ 2.000
+- Total Fixo R$ 63.700mês
+
+Custos Variáveis
+- Materiais descartáveis R$ 2.000
+- Manutenção equipamentos R$ 800
+- Diversos R$ 1.200
+- Total Variável R$ 4.000mês
+
+### PROJEÇÃO DE RESULTADO MENSAL
+
+ Item  Valor  % Receita 
+------------------------
+ Receita Bruta  R$ 212.800  100% 
+ (-) CMV  R$ 74.480  35% 
+ Margem Bruta  R$ 138.320  65% 
+ (-) Custos Fixos  R$ 63.700  30% 
+ (-) Custos Variáveis  R$ 4.000  2% 
+ EBITDA  R$ 70.620  33% 
+ (-) Pró-labore Leonardo  R$ 15.000  7% 
+ (-) Pró-labore Rodrigo  R$ 25.000  12% 
+ Lucro Operacional  R$ 30.620  14% 
+ (-) Impostos (Simples ~6%)  R$ 12.768  6% 
+ LUCRO LÍQUIDO  R$ 17.852  8% 
+
+### INVESTIMENTO INICIAL
+
+- Reforma e infraestrutura R$ 150.000
+- Equipamentos R$ 35.000
+- Mobiliário e decoração R$ 40.000
+- Estoque inicial R$ 30.000
+- Marketing pré-abertura R$ 10.000
+- Licenças e documentação R$ 8.000
+- Capital de giro R$ 27.000
+- TOTAL R$ 300.000
+
+### RETORNO PARA RODRIGO (60%)
+
+Retorno mensal
+- Pró-labore R$ 25.000
+- Lucro distribuído (60%) R$ 17.852 × 60% = R$ 10.711
+- Total mensal R$ 35.711
+
+ROI anual
+- R$ 35.711 × 12 = R$ 428.532
+- ROI 428.532  300.000 = 143% ao ano
+
+Payback
+- 300.000  35.711 = 8,4 meses
+
+---
+
+## 🎵 IDENTIDADE SONORA
+
+### PROGRAMAÇÃO MUSICAL
+
+- 18h-21h (Happy Hour) Indie, Alt Rock, Electro Pop (70-80% volume)
+- 21h-00h (Prime Time) House, Deep House, Nu Disco (80-90% volume)
+- 00h-03h (Late Night) Tech House, Melodic Techno (85-95% volume)
+
+### NOITES TEMÁTICAS
+
+- Quinta Esquema Acústico Músicos locais ao vivo
+- Sexta Esquema DJ Sets de DJs convidados
+- Sábado Esquema Total Melhor DJ da semana
+- Domingo Esquema Relax Bossa, Jazz, Lounge
+
+### ARTISTAS REFERÊNCIA
+
+- IndieAlt Tame Impala, Alt-J, Glass Animals
+- House Disclosure, Duke Dumont, Gorgon City
+- Brasileiros Vintage Culture, Mochakk, Bhaskar
+
+---
+
+## 📱 MARKETING E DIGITAL
+
+### INSTAGRAM BIO
+
+```
+🔶 EXXQUEMA
+Pub & Lounge Bar • Botafogo
+🍹 Drinks + Conexões + Boa Música
+🎵 Qui-Dom  18h-2h
+📍 Arnaldo Quintela (8ª rua + cool do mundo)
+👇 Entre no esquema
+```
+
+### TOM DE VOZ
+
+- Descontraído mas inteligente
+- Informal mas respeitoso
+- Divertido mas não forçado
+- Inclusivo e acolhedor
+
+### FRASES PARA MARKETING
+
+- Qual é o seu esquema hoje
+- Entre no esquema e descubra
+- Esquema perfeito amigos + drinks + boa música
+- Seu novo ponto de conexão em Botafogo
+- Onde toda noite é um esquema diferente
+
+### DESTAQUES INSTAGRAM
+
+1. 🔶 EXXQUEMA (sobre nós, conceito, filosofia)
+2. 🍹 DRINKS (signatures, preparo, bartender)
+3. 🍔 COMIDA (pratos, ingredientes, chef)
+4. 🎵 MÚSICA (DJs, eventos, vibes)
+5. 🎉 EVENTOS (festas, happy hour, promoções)
+6. 💬 CONEXÕES (clientes, histórias, depoimentos)
+7. 🎁 ESQUEMAS (promoções, sorteios, benefícios)
+8. 📸 GALERIA (fotos dos clientes, momentos)
+
+### ESTRATÉGIA CONTEÚDO
+
+- 45% Lifestyle Pessoas curtindo, conectando, se divertindo
+- 30% Produto Drinks, pratos, detalhes gastronômicos
+- 15% Behind Bastidores, equipe, preparo
+- 10% Educativo Receitas, dicas, curiosidades
+
+### ORÇAMENTO MARKETING
+
+- Digital R$ 2.000mês
+  - InstagramFacebook Ads R$ 1.000
+  - Google Ads R$ 500
+  - Influencers micro R$ 500
+- Offline R$ 1.000mês
+  - Eventosexperiências R$ 600
+  - Material gráfico R$ 200
+  - Parceriasbrindes R$ 200
+- Total R$ 3.000mês (1,4% do faturamento)
+
+---
+
+## 🏛️ DESIGN DE INTERIORES
+
+### ZONA BAR
+
+- Balcão 6m madeira rústica + LED laranja embutido
+- Back bar Prateleiras industriais + espelho + iluminação laranja
+- Banquetas Madeira + metal preto (8 lugares)
+- Parede fundo Grafismos geométricos (tema conexões)
+
+### ÁREA INTERNA (60 lugares)
+
+- Mesas Mix alturas (altas para grupos, baixas para casais)
+- Assentos Banquetas, sofás couro marrom, cadeiras industriais
+- Iluminação Pendentes industriais + neon laranja + spots
+- Parede destaque Mural artístico rede de conexões
+- Mesa comunitária Mesa longa para grupospessoas sozinhas
+
+### ÁREA EXTERNA (Calçada)
+
+- Mesas Madeira clara + metal (estilo bistrô moderno)
+- Cadeiras Mix industrial + rattan
+- Separação Jardineiras + biombo com grafismo
+- Iluminação String lights + luminárias de chão
+- Aquecedores Para noites frias (estilo industrial)
+
+### ELEMENTOS ESPECIAIS
+
+- Neon Principal EXXQUEMA em laranja vibrante
+- Lousa Interativa Esquema do Dia com promoções
+- QR Codes Cada mesa para pedidos digitais
+- Arte Murais com tema redes, conexões, mapas urbanos
+
+---
+
+## 💡 EXPERIÊNCIAS ESPECIAIS
+
+### HAPPY HOUR ESQUEMA DUPLO
+Segunda a Quinta, 18h-20h
+- 2 drinks selecionados pelo preço de 1
+- Petiscos com 30% off
+- Música ao vivo (quintas)
+
+### ESQUEMA CEGO (Blind Date Event)
+Uma sexta por mês
+- Clientes se inscrevem
+- Match aleatório para mesa compartilhada
+- Drink de boas-vindas incluso
+- Quebra-gelo com jogo de cartas
+
+### ESQUEMA CORPORATIVO
+Para empresas
+- After office privativo
+- Open bar 2h
+- Petiscos inclusos
+- DJ exclusivo
+
+### ESQUEMA ANIVERSÁRIO
+Para aniversariantes
+- Bolo + vela + cantoria
+- Drink especial grátis
+- Post nos stories
+- 10% desconto na conta
+
+---
+
+## ⚙️ ESTRUTURA SOCIETÁRIA
+
+### PARTICIPAÇÃO SUGERIDA
+
+ Sócio  Capital  %  Pró-labore  Função 
+---------------------------------------
+ Rodrigo Azevedo  R$ 300k  60%  R$ 25k  Investidor + Op. Parcial 
+ Leonardo Palha  Trabalho + IP  30%  R$ 15k  Administrador Único 
+ Rodrigo Figueiredo  TrabalhoCLT  10%CLT  R$ 8k  Gerente Op.Segurança 
+
+### CLÁUSULAS CRÍTICAS DO CONTRATO
+
+1. Controle Operacional Leonardo = Administrador único
+2. Propriedade Intelectual Marca, conceito em nome Leonardo (licenciamento 5%)
+3. Controle Financeiro Dupla assinatura acima R$ 20k
+4. Aumento Progressivo Leonardo aumenta % por metas (até maioria em 3 anos)
+5. Veto Qualificado Leonardo veta mudanças de conceitoIP
+6. Bloqueio de Saída Rodrigo não sai fácil (180 dias aviso, -30% desconto)
+7. Cláusulas Comportamentais Penalidades para tratamento desrespeitoso
+8. Mediação Obrigatória Antes de ação judicial
+9. Não Concorrência 24 meses após saída, raio 5km
+
+---
+
+## 📅 CRONOGRAMA DE IMPLEMENTAÇÃO
+
+### FASE 0 Decisão (30 dias) - R$ 5.000
+- Educação do Rodrigo (5 reuniões)
+- Proteção de ativos (marca, domínio)
+- Estrutura societária (contratos)
+
+### FASE 1 Legalização (45 dias) - R$ 8.000
+- CNPJ, alvarás, licenças
+- Bombeiros, Vigilância Sanitária
+- TUAP (uso da calçada)
+
+### FASE 2 Infraestrutura (60 dias) - R$ 150.000
+- Reforma geral
+- Decoração e identidade visual
+- Som, iluminação, climatização
+
+### FASE 3 Operacional (30 dias) - R$ 82.000
+- Equipamentos e mobiliário
+- Estoque inicial completo
+- Contratação e treinamento equipe
+
+### FASE 4 Pré-Abertura (15 dias) - R$ 10.000
+- Marketing digital
+- Influencers e imprensa
+- Preview VIP
+
+### FASE 5 Soft Opening (7 dias) - Gera R$ +20k
+- Testes operacionais
+- Ajustes finos
+- Criação de buzz
+
+### FASE 6 Grand Opening (30 dias) - Gera R$ +80k
+- Evento oficial de lançamento
+- Consolidação da marca
+- Operação estabilizada
+
+TOTAL 217 dias (~7 meses)  Investimento R$ 255.000 líquido
+
+---
+
+## 🚨 PONTOS DE ATENÇÃO
+
+### RISCOS IDENTIFICADOS
+
+- Sazonalidade Verãoinverno podem variar 15-20%
+- Concorrência Arnaldo Quintela tem vários bares
+- Regulamentação TUAP precisa renovação trimestral
+- Operação Depende da presença de Leonardo
+
+### MITIGAÇÕES
+
+- Eventos temáticos Manter movimento o ano todo
+- Diferenciação forte Conceito esquema é único
+- Relacionamento prefeitura Cumprimento exemplar
+- Equipe backup Treinamento para autonomia
+
+---
+
+## 📊 KPIS DE SUCESSO
+
+### OPERACIONAIS
+
+- Ocupação média 70%+ sustentável
+- Ticket médio R$ 95+ estável
+- Tempo permanência 1h30+ por mesa
+- Avaliação clientes 4.5+ estrelas
+
+### FINANCEIROS
+
+- Margem líquida 30%+ consistente
+- Faturamento R$ 200k+ mensal
+- ROI 140%+ anual
+- Payback Máximo 9 meses
+
+### MARKETING
+
+- Instagram 10k+ seguidores (6 meses)
+- Engagement 10%+ sustentável
+- Reservas digitais 40%+ do total
+- Recomendação 85%+ clientes
+
+---
+
+## 💫 VALORES DA MARCA EXXQUEMA
+
+### CONEXÃO
+Acreditamos que os melhores momentos acontecem quando pessoas se conectam de verdade.
+
+### AUTENTICIDADE
+Sem frescura, sem pose. Aqui você pode ser você mesmo.
+
+### ENERGIA
+Ambiente animado, música boa, vibe contagiante - todo dia.
+
+### INCLUSÃO
+Todo mundo é bem-vindo. Exxquema é para quem quer se divertir e fazer parte.
+
+### ESTRATÉGIA
+Tudo que fazemos é pensado drinks, ambiente, música, atendimento. Nada é por acaso.
+
+---
+
+## 🎯 PRÓXIMOS PASSOS IMEDIATOS
+
+### SEMANA 1
+1. Registrar marca Exxquema no INPI
+2. Registrar domínio exxquema.com.br
+3. Criar Instagram @exxquema
+4. Visitar ponto e medir espaço exato
+
+### SEMANA 2
+1. Negociar aluguel com proprietário
+2. Solicitar orçamentos de reforma (3 fornecedores)
+3. Criar logo definitivo
+4. Iniciar educação do Rodrigo (Reunião 1)
+
+### SEMANA 3
+1. Finalizar contrato societário
+2. Continuar educação Rodrigo (Reuniões 2-3)
+3. Protocolar CNPJ
+4. Começar design de interiores
+
+### SEMANA 4
+1. Assinar contrato societário
+2. Primeira transferência de capital
+3. Abrir conta PJ
+4. Contratar contador
+
+---
+
+## 🔑 DIFERENCIAIS COMPETITIVOS
+
+Por que Exxquema vai funcionar
+
+1. Conceito único Esquema ressoa com público brasileiro
+2. Preço acessível Mais barato que concorrentes sofisticados
+3. Localização premium Arnaldo Quintela em alta
+4. Propósito claro Conexões reais, não só bebidas
+5. Marketing forte Storytelling envolvente
+6. Equipe comprometida Leonardo operacional, Rodrigo financeiro
+7. Estrutura protegida Contratos blindados
+8. Experiências diferenciadas Eventos únicos (Esquema Cego, etc)
+
+---
+
+EXXQUEMA - Onde conexões acontecem e sua noite encontra o esquema perfeito! 🔶✨
+
+---
+
+Última atualização Outubro 2025  
+Base de dados para continuidade do projeto  
+Todos os números são estimativas conservadoras baseadas em pesquisa de mercado

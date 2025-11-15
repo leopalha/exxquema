@@ -1,0 +1,2041 @@
+# 🔴 RED LIGHT - PLATAFORMA DIGITAL COMPLETA
+## Especificação Técnica, PRD, Fluxogramas e Instruções para Desenvolvimento
+
+---
+
+## 📋 ÍNDICE
+
+1. [Visão Geral do Projeto](#1-visão-geral)
+2. [PRD - Product Requirements Document](#2-prd)
+3. [Arquitetura da Informação](#3-arquitetura)
+4. [Fluxogramas UX](#4-fluxogramas)
+5. [Especificações de Telas](#5-telas)
+6. [Integrações e APIs](#6-integrações)
+7. [Regras de Negócio](#7-regras)
+8. [Requisitos Técnicos](#8-requisitos)
+9. [Prompt para Agente de IA](#9-prompt)
+
+---
+
+## 1. VISÃO GERAL DO PROJETO {#1-visão-geral}
+
+### 1.1 Objetivo
+
+Criar uma plataforma web progressiva (PWA) para o Red Light que permita aos clientes:
+- Acessar via QR Code na mesa
+- Cadastrar-se de forma simples e rápida
+- Visualizar cardápio digital completo
+- Fazer pedidos diretamente da mesa
+- Pagar antecipadamente
+- Avaliar experiência
+
+E permite à operação:
+- Receber pedidos em tempo real
+- Gerenciar fila de produção
+- Acompanhar status dos pedidos
+- Coletar feedbacks
+
+### 1.2 Personas
+
+**CLIENTE (Usuário Final)**
+- Idade: 25-45 anos
+- Comportamento: Quer rapidez, conveniência, não quer esperar garçom
+- Expectativa: Experiência moderna, sem fricção
+
+**ATENDENTE**
+- Função: Receber notificação, buscar pedido pronto, entregar na mesa
+- Expectativa: Interface simples, notificações claras
+
+**COZINHA**
+- Função: Receber pedidos, preparar, marcar como pronto
+- Expectativa: Tela grande, informações claras, fácil de usar
+
+**GESTOR (Leonardo/Rodrigo)**
+- Função: Acompanhar vendas, métricas, feedbacks
+- Expectativa: Dashboard com números em tempo real
+
+---
+
+## 2. PRD - PRODUCT REQUIREMENTS DOCUMENT {#2-prd}
+
+### 2.1 Problema a Resolver
+
+**Dores atuais:**
+- Cliente espera muito para garçom anotar pedido
+- Erros de comunicação entre garçom e cozinha
+- Falta de visibilidade do status do pedido
+- Processo de pagamento demorado
+- Dificuldade de coletar feedback estruturado
+
+**Solução:**
+Plataforma digital self-service que elimina intermediários, acelera pedidos e pagamentos, e automatiza coleta de dados.
+
+### 2.2 Objetivos do Produto
+
+**Primários:**
+1. Reduzir tempo médio de pedido de 8min para 2min
+2. Aumentar ticket médio em 15% (upsell automático)
+3. Eliminar 80% dos erros de pedido
+4. Coletar feedback de 60%+ dos clientes
+
+**Secundários:**
+1. Reduzir necessidade de 3 garçons para 2 (economia operacional)
+2. Criar base de dados de clientes (marketing futuro)
+3. Analisar produtos mais vendidos (otimização cardápio)
+
+### 2.3 Métricas de Sucesso
+
+| Métrica | Valor Atual | Meta 3 meses | Como medir |
+|---------|-------------|--------------|------------|
+| Tempo médio pedido | 8 min | 2 min | Timestamp pedido - timestamp acesso |
+| Taxa conversão QR→Pedido | 0% | 70% | Pedidos / Scans QR |
+| Ticket médio | R$ 120 | R$ 138 | Valor total / Pedidos |
+| NPS | - | 70+ | Pesquisa satisfação |
+| Taxa erro pedido | 15% | <3% | Pedidos com reclamação / Total |
+| Uso pagamento digital | 60% | 85% | Pag. digital / Total pagamentos |
+
+### 2.4 Roadmap de Funcionalidades
+
+**MVP (Versão 1.0 - Lançamento):**
+- ✅ Landing page institucional
+- ✅ Cadastro simplificado (nome, CPF, email, celular)
+- ✅ Validação SMS (4 dígitos)
+- ✅ Cardápio digital completo
+- ✅ Carrinho de compras
+- ✅ Pagamento antecipado (cartão, PIX)
+- ✅ Dashboard atendente (pedidos ativos)
+- ✅ Dashboard cozinha (fila produção)
+- ✅ Pesquisa satisfação pós-pedido
+
+**Versão 2.0 (3 meses após):**
+- 🔄 Programa fidelidade (pontos)
+- 🔄 Histórico de pedidos
+- 🔄 Favoritos
+- 🔄 Recomendações personalizadas
+- 🔄 Notificações push
+- 🔄 Cupons e promoções
+
+**Versão 3.0 (6 meses após):**
+- 🔄 Reserva de mesa
+- 🔄 Pré-pedido (antes de chegar)
+- 🔄 Delivery integrado
+- 🔄 Gamificação
+
+### 2.5 Fora do Escopo (Não fazer agora)
+
+❌ App nativo iOS/Android (apenas PWA)
+❌ Sistema de delivery próprio
+❌ Integração com iFood/Rappi
+❌ Sistema de gestão financeira completo
+❌ CRM avançado
+
+---
+
+## 3. ARQUITETURA DA INFORMAÇÃO {#3-arquitetura}
+
+### 3.1 Mapa do Site
+
+```
+RED LIGHT PLATAFORMA
+│
+├─ 🌐 FRONT-END PÚBLICO (Clientes)
+│   │
+│   ├─ Landing Page (/)
+│   │   ├─ Hero Section
+│   │   ├─ Sobre o Red Light
+│   │   ├─ Preview Cardápio
+│   │   ├─ Galeria Fotos
+│   │   ├─ Localização
+│   │   ├─ Horários
+│   │   └─ CTA "Fazer Pedido"
+│   │
+│   ├─ Acesso via QR Code (/qr/:mesaId)
+│   │   └─ Redirect automático para fluxo
+│   │
+│   ├─ Cadastro (/cadastro)
+│   │   ├─ Dados básicos (nome, CPF, email, celular)
+│   │   ├─ Validação SMS
+│   │   └─ Confirmação email
+│   │
+│   ├─ Login (/login)
+│   │   ├─ Por celular + SMS
+│   │   └─ Por email + senha
+│   │
+│   ├─ Cardápio (/cardapio)
+│   │   ├─ Categorias (Bebidas, Petiscos, Pratos, etc)
+│   │   ├─ Filtros (vegetariano, sem lactose, etc)
+│   │   ├─ Busca
+│   │   └─ Detalhes do produto
+│   │
+│   ├─ Carrinho (/carrinho)
+│   │   ├─ Itens selecionados
+│   │   ├─ Editar quantidades
+│   │   ├─ Adicionar observações
+│   │   └─ Resumo total
+│   │
+│   ├─ Checkout (/checkout)
+│   │   ├─ Revisão pedido
+│   │   ├─ Escolha pagamento
+│   │   ├─ Processamento
+│   │   └─ Confirmação
+│   │
+│   ├─ Acompanhamento (/pedido/:id)
+│   │   ├─ Status em tempo real
+│   │   ├─ Tempo estimado
+│   │   └─ Chamar garçom
+│   │
+│   └─ Avaliação (/avaliacao/:pedidoId)
+│       ├─ NPS (0-10)
+│       ├─ Comentários
+│       └─ Perguntas específicas
+│
+├─ 🔐 PAINEL ATENDENTE (/atendente)
+│   ├─ Login
+│   ├─ Pedidos Ativos
+│   │   ├─ Aguardando preparo
+│   │   ├─ Em preparo
+│   │   ├─ Pronto para retirar
+│   │   └─ Entregue
+│   ├─ Histórico do dia
+│   ├─ Mesas ativas
+│   └─ Notificações
+│
+├─ 🔐 PAINEL COZINHA (/cozinha)
+│   ├─ Login
+│   ├─ Fila de Produção
+│   │   ├─ Próximos pedidos
+│   │   ├─ Em preparo
+│   │   └─ Prontos
+│   ├─ Timer por pedido
+│   └─ Alertas de atraso
+│
+└─ 🔐 PAINEL ADMIN (/admin)
+    ├─ Login
+    ├─ Dashboard Geral
+    │   ├─ Vendas em tempo real
+    │   ├─ Ticket médio
+    │   ├─ Itens mais vendidos
+    │   └─ Tempo médio de preparo
+    ├─ Gestão Cardápio
+    │   ├─ Adicionar/editar produtos
+    │   ├─ Ativar/desativar
+    │   └─ Gestão de estoque
+    ├─ Gestão de Usuários
+    ├─ Relatórios
+    └─ Configurações
+```
+
+---
+
+## 4. FLUXOGRAMAS UX {#4-fluxogramas}
+
+### 4.1 Fluxo Principal do Cliente
+
+```
+INÍCIO
+  ↓
+[Cliente senta na mesa]
+  ↓
+[Escaneia QR Code na mesa]
+  ↓
+[Sistema detecta: Mesa #X]
+  ↓
+┌─────────────────────────────┐
+│ Usuário está logado?        │
+└─────────────────────────────┘
+  │           │
+  │ NÃO       │ SIM
+  ↓           ↓
+[Tela Boas-vindas]   [Vai direto para CARDÁPIO]
+  ↓
+[Escolhe: Cadastrar OU Login]
+  ↓
+┌─────────────────────────────┐
+│ CADASTRO                    │
+├─────────────────────────────┤
+│ 1. Preenche nome            │
+│ 2. Preenche CPF             │
+│ 3. Preenche email           │
+│ 4. Preenche celular         │
+│    ↓                        │
+│ [Clica "Enviar SMS"]        │
+│    ↓                        │
+│ [Recebe SMS com 4 dígitos]  │
+│    ↓                        │
+│ [Digita código]             │
+│    ↓                        │
+│ [Sistema valida]            │
+│    ↓                        │
+│ ✅ Cadastro concluído       │
+│    ↓                        │
+│ [Recebe email confirmação]  │
+└─────────────────────────────┘
+  ↓
+[CARDÁPIO]
+  ↓
+[Navega categorias]
+  ↓
+[Clica em produto]
+  ↓
+[Vê detalhes (foto, descrição, preço)]
+  ↓
+[Escolhe quantidade]
+  ↓
+[Adiciona observações (opcional)]
+  ↓
+[Clica "Adicionar ao Carrinho"]
+  ↓
+[Ícone carrinho atualiza (+1)]
+  ↓
+┌─────────────────────────────┐
+│ Quer adicionar mais?        │
+└─────────────────────────────┘
+  │           │
+  │ SIM       │ NÃO
+  ↓           ↓
+[Volta CARDÁPIO]  [Clica no carrinho]
+                    ↓
+                [CARRINHO]
+                    ↓
+                [Revisa itens]
+                    ↓
+                [Edita quantidades se quiser]
+                    ↓
+                [Vê total]
+                    ↓
+                [Clica "Finalizar Pedido"]
+                    ↓
+                [CHECKOUT]
+                    ↓
+                [Revisa pedido final]
+                    ↓
+                [Escolhe forma de pagamento]
+                    ├─ Cartão de Crédito
+                    ├─ Cartão de Débito
+                    ├─ PIX
+                    ├─ Apple Pay
+                    └─ Dinheiro (avisar garçom)
+                    ↓
+                [Preenche dados pagamento]
+                    ↓
+                [Confirma]
+                    ↓
+                [Sistema processa pagamento]
+                    ↓
+                ✅ Pagamento aprovado
+                    ↓
+                [Pedido enviado para cozinha]
+                    ↓
+                [Tela confirmação]
+                "Pedido #1234 confirmado!"
+                "Tempo estimado: 15-20 min"
+                    ↓
+                [ACOMPANHAMENTO]
+                    ↓
+                [Vê status em tempo real]
+                ┌─ "Recebido" (0-2 min)
+                ├─ "Em preparo" (2-15 min)
+                ├─ "Pronto" (15-18 min)
+                └─ "A caminho da mesa" (18-20 min)
+                    ↓
+                [Pedido entregue na mesa]
+                    ↓
+                [Cliente consome]
+                    ↓
+                [10 min depois]
+                    ↓
+                [Notificação: "Avaliar experiência?"]
+                    ↓
+                [PESQUISA SATISFAÇÃO]
+                    ↓
+                [NPS: 0-10]
+                    ↓
+                [Comentário opcional]
+                    ↓
+                [Envia]
+                    ↓
+                ✅ "Obrigado pelo feedback!"
+                    ↓
+                [Pode fazer novo pedido ou sair]
+                    ↓
+                FIM
+```
+
+### 4.2 Fluxo do Atendente
+
+```
+INÍCIO
+  ↓
+[Atendente faz login no painel]
+  ↓
+[Dashboard Atendente]
+  ↓
+🔔 [NOVO PEDIDO - Notificação]
+  ↓
+[Pedido aparece em "Aguardando Preparo"]
+  │
+  │ Mesa: #12
+  │ Pedido: #1234
+  │ Itens: 2x Drink, 1x Petisco
+  │ Valor: R$ 85,00
+  │ Status: Pagamento aprovado ✅
+  ↓
+[Cozinha recebe pedido automaticamente]
+  ↓
+[Atendente acompanha status]
+  ↓
+[Status muda: "Em Preparo"] 🍳
+  ↓
+[Timer mostrando tempo decorrido]
+  ↓
+[Status muda: "Pronto"] ✅
+  ↓
+🔔 [NOTIFICAÇÃO: "Pedido #1234 pronto!"]
+  ↓
+[Atendente clica "Retirei da cozinha"]
+  ↓
+[Status: "A caminho da mesa"]
+  ↓
+[Atendente leva para Mesa #12]
+  ↓
+[Entrega ao cliente]
+  ↓
+[Atendente clica "Entregue"]
+  ↓
+[Pedido sai da lista ativa]
+  ↓
+[Vai para histórico]
+  ↓
+FIM
+```
+
+### 4.3 Fluxo da Cozinha
+
+```
+INÍCIO
+  ↓
+[Cozinha faz login no painel]
+  ↓
+[Tela: Fila de Produção]
+  ↓
+🔔 [NOVO PEDIDO - Notificação sonora]
+  ↓
+[Pedido aparece na fila]
+  │
+  │ PEDIDO #1234 - Mesa #12
+  │ ┌─────────────────────┐
+  │ │ 2x Gin Tônica      │
+  │ │ 1x Tábua de Queijos│
+  │ │ OBS: Sem azeitonas │
+  │ └─────────────────────┘
+  │ Horário: 20:35
+  │ Cliente: João Silva
+  ↓
+[Cozinheiro lê pedido]
+  ↓
+[Clica "Iniciar Preparo"]
+  ↓
+[Timer começa a contar]
+  ↓
+[Status muda para "Em Preparo" 🍳]
+  ↓
+[Cozinheiro prepara itens]
+  ↓
+[Finaliza preparo]
+  ↓
+[Clica "Pronto"]
+  ↓
+[Status muda para "Pronto" ✅]
+  ↓
+🔔 [Notificação enviada ao atendente]
+  ↓
+[Pedido fica em "Aguardando Retirada"]
+  ↓
+[Atendente retira]
+  ↓
+[Pedido sai da tela da cozinha]
+  ↓
+[Próximo pedido da fila aparece]
+  ↓
+FIM
+```
+
+### 4.4 Fluxo de Validação SMS
+
+```
+INÍCIO
+  ↓
+[Cliente preenche celular: (21) 98765-4321]
+  ↓
+[Clica "Enviar código"]
+  ↓
+[Sistema valida formato]
+  ↓
+┌─────────────────────────────┐
+│ Número válido?              │
+└─────────────────────────────┘
+  │           │
+  │ NÃO       │ SIM
+  ↓           ↓
+❌ Erro:     [Sistema gera código aleatório 4 dígitos]
+"Formato      Exemplo: 8472
+inválido"       ↓
+  │         [Envia SMS via API (Twilio/SMS.to)]
+  │             ↓
+  └──────→  [SMS enviado]
+                ↓
+            [Tela: "Digite o código recebido"]
+                ↓
+            [Cliente digita: 8472]
+                ↓
+            [Clica "Validar"]
+                ↓
+            [Sistema compara]
+                ↓
+            ┌─────────────────────────────┐
+            │ Código correto?             │
+            └─────────────────────────────┘
+              │           │
+              │ NÃO       │ SIM
+              ↓           ↓
+            ❌ Erro:    ✅ Validado
+            "Código       ↓
+            incorreto"  [Marca celular como verificado]
+              │           ↓
+              │         [Continua cadastro]
+              │           ↓
+              │         FIM
+              │
+            [Tenta novamente (max 3x)]
+                ↓
+            [Após 3 erros]
+                ↓
+            🔒 Bloqueia por 15 minutos
+                ↓
+            "Aguarde 15min para tentar novamente"
+                ↓
+            FIM
+```
+
+---
+
+## 5. ESPECIFICAÇÕES DE TELAS {#5-telas}
+
+### 5.1 LANDING PAGE (/)
+
+**Objetivo:** Apresentar o Red Light e gerar desejo de visitar
+
+**Seções:**
+
+#### HERO SECTION
+- **Fundo:** Vídeo/foto ambiente Red Light (luzes vermelhas, pessoas)
+- **Logo:** Red Light centralizado (grande, impactante)
+- **Headline:** "Onde a noite encontra o sabor"
+- **Subheadline:** "Bar & Lounge | Botafogo, RJ"
+- **CTA:** Botão grande "FAZER PEDIDO" (vermelho vibrante)
+- **Informações rápidas:**
+  - 📍 Arnaldo Quintela, Botafogo
+  - 🕐 Qui-Dom | 18h-2h
+  - 📞 (21) 98765-4321
+
+#### SOBRE
+- **Título:** "Experiência Red Light"
+- **Texto:** 2-3 parágrafos sobre conceito (luzes vermelhas, drinks autorais, ambiente intimista, música eletrônica)
+- **3 Ícones:**
+  - 🍸 Drinks Autorais
+  - 🎵 DJ Sets
+  - 🔥 Petiscos Premium
+
+#### PREVIEW CARDÁPIO
+- **Título:** "Destaques do Menu"
+- **Cards:** 6 produtos (3 drinks + 3 petiscos)
+  - Cada card: Foto, Nome, Descrição curta, Preço
+- **CTA:** "Ver cardápio completo"
+
+#### GALERIA
+- **Título:** "Atmosfera"
+- **Grid:** 8-12 fotos do ambiente, drinks, pessoas
+- **Efeito:** Hover com zoom suave
+
+#### LOCALIZAÇÃO
+- **Mapa:** Google Maps embed
+- **Endereço:** Rua Arnaldo Quintela, XXX - Botafogo, RJ
+- **Como chegar:** Ícones metrô + ônibus + carro
+
+#### FOOTER
+- **Redes sociais:** Instagram, Facebook, TikTok
+- **Políticas:** Termos de uso, Privacidade
+- **Copyright:** © 2025 Red Light. Todos direitos reservados.
+
+**Design:**
+- Cores: Fundo preto (#000), Vermelho (#E30613), Branco (#FFF)
+- Tipografia: Sans-serif moderna (Montserrat/Poppins)
+- Responsivo: Mobile-first
+- Animações: Suaves, não exageradas
+
+---
+
+### 5.2 TELA: ACESSO VIA QR CODE
+
+**URL:** `/qr/:mesaId`
+
+**Comportamento:**
+1. Cliente escaneia QR Code na mesa
+2. URL contém ID da mesa: `/qr/12` (Mesa 12)
+3. Sistema detecta:
+   - ✅ Se cliente JÁ está logado → Redireciona para `/cardapio?mesa=12`
+   - ❌ Se NÃO está logado → Redireciona para `/boas-vindas?mesa=12`
+
+**Tela Boas-Vindas:**
+- **Logo:** Red Light
+- **Texto:** "Bem-vindo à Mesa #12"
+- **Subtexto:** "Faça seu pedido direto da mesa"
+- **2 Botões:**
+  - "Já tenho cadastro" → `/login`
+  - "Criar cadastro" → `/cadastro`
+
+---
+
+### 5.3 TELA: CADASTRO
+
+**URL:** `/cadastro?mesa=12`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  [← Voltar]    RED LIGHT    [?]   │
+├────────────────────────────────────┤
+│                                    │
+│  Criar sua conta                   │
+│  ─────────────                     │
+│                                    │
+│  📝 Seus dados                     │
+│                                    │
+│  [Nome completo          ]         │
+│  João Silva                        │
+│                                    │
+│  [CPF                    ]         │
+│  123.456.789-00                    │
+│                                    │
+│  [Email                  ]         │
+│  joao@email.com                    │
+│                                    │
+│  [Celular                ]         │
+│  (21) 98765-4321                   │
+│                                    │
+│  [ ✓ ] Aceito os termos de uso     │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │  ENVIAR CÓDIGO SMS   │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Validações:**
+- **Nome:** Mínimo 3 caracteres
+- **CPF:** Validação de formato + dígitos verificadores
+- **Email:** Formato válido + único no sistema
+- **Celular:** Formato (XX) XXXXX-XXXX + único no sistema
+- **Termos:** Obrigatório aceitar
+
+**Após clicar "Enviar código SMS":**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│  📱 Validação de celular           │
+│  ─────────────────────              │
+│                                    │
+│  Enviamos um código de 4 dígitos   │
+│  para (21) 98765-4321              │
+│                                    │
+│  Digite o código:                  │
+│                                    │
+│  ┌───┐ ┌───┐ ┌───┐ ┌───┐          │
+│  │ 8 │ │ 4 │ │ 7 │ │ 2 │          │
+│  └───┘ └───┘ └───┘ └───┘          │
+│                                    │
+│  Não recebeu? Reenviar em 60s      │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │     VALIDAR          │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Após validação bem-sucedida:**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│         ✅ Cadastro completo!      │
+│                                    │
+│  Enviamos um email de confirmação  │
+│  para joao@email.com               │
+│                                    │
+│  Você já pode fazer seu pedido!    │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │  VER CARDÁPIO        │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+### 5.4 TELA: LOGIN
+
+**URL:** `/login?mesa=12`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  [← Voltar]    RED LIGHT    [?]   │
+├────────────────────────────────────┤
+│                                    │
+│  Entrar                            │
+│  ─────                             │
+│                                    │
+│  [Celular ou Email       ]         │
+│  (21) 98765-4321                   │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │  ENVIAR CÓDIGO       │          │
+│  └──────────────────────┘          │
+│                                    │
+│  ─────── ou ───────                │
+│                                    │
+│  [Email                  ]         │
+│  [Senha                  ]         │
+│                                    │
+│  [ ] Lembrar de mim                │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │     ENTRAR           │          │
+│  └──────────────────────┘          │
+│                                    │
+│  Esqueceu senha?                   │
+│                                    │
+│  Não tem conta? Cadastre-se        │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Opções de Login:**
+1. **Via SMS:** Digita celular → recebe código → valida
+2. **Via Email/Senha:** Tradicional
+
+---
+
+### 5.5 TELA: CARDÁPIO
+
+**URL:** `/cardapio?mesa=12`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  RED LIGHT        Mesa #12  [👤][🛒3]│
+├────────────────────────────────────┤
+│                                    │
+│  🔍 [Buscar no cardápio...]        │
+│                                    │
+│  ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │🍸Drinks│Petiscos│Pratos│ ...   │
+│  └──────┘ └──────┘ └──────┘       │
+│                                    │
+│  🔥 Em alta agora                  │
+│  ─────────────────                 │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │  [Foto]                     │   │
+│  │  GIN TÔNICA RED              │   │
+│  │  Gin premium, tônica, limão  │   │
+│  │  R$ 28,00          [+ Add]  │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │  [Foto]                     │   │
+│  │  MOSCOW MULE                 │   │
+│  │  Vodka, gengibre, limão     │   │
+│  │  R$ 32,00          [+ Add]  │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  🍴 Petiscos                       │
+│  ─────────────────                 │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │  [Foto]                     │   │
+│  │  TÁBUA DE QUEIJOS            │   │
+│  │  Seleção premium + geleia   │   │
+│  │  R$ 65,00          [+ Add]  │   │
+│  └─────────────────────────────┘   │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Funcionalidades:**
+- **Busca:** Filtro em tempo real
+- **Categorias:** Filtros horizontais (scroll)
+- **Filtros especiais:**
+  - 🌱 Vegetariano
+  - 🥛 Sem lactose
+  - 🌾 Sem glúten
+  - 🔥 Picante
+- **Card do produto:**
+  - Foto alta qualidade
+  - Nome
+  - Descrição curta (1 linha)
+  - Preço destacado
+  - Botão "+ Adicionar"
+- **Badge:** Produtos em destaque (🔥 Popular, ⭐ Novidade)
+
+**Ao clicar em produto:**
+
+```
+┌────────────────────────────────────┐
+│  [← Voltar]             [✕ Fechar]│
+├────────────────────────────────────┤
+│                                    │
+│  [Foto grande do produto]          │
+│                                    │
+│  GIN TÔNICA RED                    │
+│  ─────────────────                 │
+│                                    │
+│  Gin Tanqueray premium, tônica     │
+│  premium Fever-Tree, limão         │
+│  siciliano fresco, alecrim.        │
+│                                    │
+│  🍸 350ml                          │
+│  ⏱️ Serve imediatamente            │
+│                                    │
+│  💰 R$ 28,00                       │
+│                                    │
+│  Quantidade:                       │
+│  ┌───┐  ┌───┐  ┌───┐              │
+│  │ - │  │ 1 │  │ + │              │
+│  └───┘  └───┘  └───┘              │
+│                                    │
+│  Observações:                      │
+│  [Sem gelo, mais limão...    ]     │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ ADICIONAR R$ 28,00   │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+### 5.6 TELA: CARRINHO
+
+**URL:** `/carrinho`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  [← Cardápio]  CARRINHO      [👤] │
+├────────────────────────────────────┤
+│                                    │
+│  Seu pedido - Mesa #12             │
+│  ─────────────────────              │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ [img] GIN TÔNICA RED        │   │
+│  │       1x R$ 28,00           │   │
+│  │       OBS: Sem gelo         │   │
+│  │       ┌──┐ ┌──┐ [🗑️]       │   │
+│  │       │- │ │1 │ │+ │       │   │
+│  │       └──┘ └──┘             │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ [img] MOSCOW MULE           │   │
+│  │       2x R$ 32,00 = R$ 64   │   │
+│  │       ┌──┐ ┌──┐ [🗑️]       │   │
+│  │       │- │ │2 │ │+ │       │   │
+│  │       └──┘ └──┘             │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ [img] TÁBUA DE QUEIJOS      │   │
+│  │       1x R$ 65,00           │   │
+│  │       OBS: Sem azeitonas    │   │
+│  │       ┌──┐ ┌──┐ [🗑️]       │   │
+│  │       │- │ │1 │ │+ │       │   │
+│  │       └──┘ └──┘             │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ + Adicionar mais     │          │
+│  └──────────────────────┘          │
+│                                    │
+│  ─────────────────────────────     │
+│  Subtotal:          R$ 157,00      │
+│  Taxa serviço (10%):R$ 15,70       │
+│  ─────────────────────────────     │
+│  TOTAL:             R$ 172,70      │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ FINALIZAR PEDIDO     │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Funcionalidades:**
+- Editar quantidade (+/-)
+- Remover item (🗑️)
+- Adicionar observações por item
+- Cálculo automático
+- Taxa serviço 10% (padrão)
+
+---
+
+### 5.7 TELA: CHECKOUT
+
+**URL:** `/checkout`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  [← Carrinho]  PAGAMENTO     [👤] │
+├────────────────────────────────────┤
+│                                    │
+│  Revisão do Pedido                 │
+│  ─────────────────                 │
+│                                    │
+│  Mesa: #12                         │
+│  Cliente: João Silva               │
+│                                    │
+│  3 itens • Total: R$ 172,70        │
+│                                    │
+│  [Ver detalhes ▼]                  │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  Forma de Pagamento                │
+│  ─────────────────────              │
+│                                    │
+│  ○ Cartão de Crédito               │
+│  ○ Cartão de Débito                │
+│  ○ PIX                             │
+│  ○ Apple Pay                       │
+│  ○ Dinheiro (avisar garçom)        │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  [SE CARTÃO SELECIONADO:]          │
+│                                    │
+│  [Número do cartão       ]         │
+│  1234 5678 9012 3456               │
+│                                    │
+│  [Nome no cartão         ]         │
+│  JOAO SILVA                        │
+│                                    │
+│  [Val] [CVV]                       │
+│  12/28  123                        │
+│                                    │
+│  [ ✓ ] Salvar para próximas vezes  │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ PAGAR R$ 172,70      │          │
+│  └──────────────────────┘          │
+│                                    │
+│  🔒 Pagamento seguro               │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Fluxo PIX:**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│  Pagamento via PIX                 │
+│  ─────────────────                 │
+│                                    │
+│  Valor: R$ 172,70                  │
+│                                    │
+│  [QR CODE grande]                  │
+│                                    │
+│  Escanei o código acima ou         │
+│  copie a chave:                    │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ redlight@pix.com.br  │ [Copiar] │
+│  └──────────────────────┘          │
+│                                    │
+│  ⏱️ Aguardando pagamento...        │
+│                                    │
+│  Válido por: 05:00                 │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Após pagamento aprovado:**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│         ✅ Pedido confirmado!      │
+│                                    │
+│  Pedido #1234                      │
+│  Mesa #12                          │
+│                                    │
+│  Seu pedido foi enviado para       │
+│  a cozinha!                        │
+│                                    │
+│  ⏱️ Tempo estimado: 15-20 min      │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ ACOMPANHAR PEDIDO    │          │
+│  └──────────────────────┘          │
+│                                    │
+│  [Ver recibo]                      │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+### 5.8 TELA: ACOMPANHAMENTO
+
+**URL:** `/pedido/1234`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  RED LIGHT        Mesa #12   [👤] │
+├────────────────────────────────────┤
+│                                    │
+│  Pedido #1234                      │
+│  ─────────────                     │
+│                                    │
+│  Status do seu pedido:             │
+│                                    │
+│  ●━━━━━○━━━━━○━━━━━○               │
+│  ↑                                 │
+│  Recebido                          │
+│                                    │
+│  Etapas:                           │
+│  ✅ Recebido (20:35)               │
+│  🔄 Em preparo (20:37)             │
+│  ⏳ Pronto (aguardando...)         │
+│  ⏳ Entregue (aguardando...)       │
+│                                    │
+│  ⏱️ Tempo decorrido: 5 minutos     │
+│  ⏱️ Tempo estimado: 10-15 min      │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  Itens do pedido:                  │
+│  • 1x Gin Tônica Red               │
+│  • 2x Moscow Mule                  │
+│  • 1x Tábua de Queijos             │
+│                                    │
+│  Total pago: R$ 172,70 ✅          │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ 🔔 CHAMAR GARÇOM     │          │
+│  └──────────────────────┘          │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ 🍽️ FAZER NOVO PEDIDO│          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Atualização em tempo real:**
+- Status muda automaticamente
+- Notificação quando muda de etapa
+- Som sutil + vibração
+
+**Quando pedido entregue:**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│  ✅ Pedido entregue!               │
+│                                    │
+│  Bom apetite! 🍽️                  │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  Que tal avaliar sua experiência?  │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ AVALIAR AGORA        │          │
+│  └──────────────────────┘          │
+│                                    │
+│  [Depois]                          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+### 5.9 TELA: AVALIAÇÃO
+
+**URL:** `/avaliacao/1234`
+
+**Layout:**
+
+```
+┌────────────────────────────────────┐
+│  [✕ Fechar]   AVALIAÇÃO           │
+├────────────────────────────────────┤
+│                                    │
+│  Como foi sua experiência?         │
+│  ─────────────────────              │
+│                                    │
+│  De 0 a 10, quanto você            │
+│  recomendaria o Red Light?         │
+│                                    │
+│  ┌──┐┌──┐┌──┐┌──┐┌──┐┌──┐┌──┐    │
+│  │0 ││1 ││2 ││3 ││4 ││5 ││6 │    │
+│  └──┘└──┘└──┘└──┘└──┘└──┘└──┘    │
+│  ┌──┐┌──┐┌──┐┌──┐                 │
+│  │7 ││8 ││9 ││10│                 │
+│  └──┘└──┘└──┘└──┘                 │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  Como estava:                      │
+│                                    │
+│  Qualidade dos drinks:             │
+│  ☆☆☆☆☆                            │
+│                                    │
+│  Velocidade do atendimento:        │
+│  ☆☆☆☆☆                            │
+│                                    │
+│  Ambiente:                         │
+│  ☆☆☆☆☆                            │
+│                                    │
+│  Preço (custo-benefício):          │
+│  ☆☆☆☆☆                            │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  Quer deixar um comentário?        │
+│  (Opcional)                        │
+│                                    │
+│  [Conte sua experiência...   ]     │
+│  [                           ]     │
+│  [                           ]     │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ ENVIAR AVALIAÇÃO     │          │
+│  └──────────────────────┘          │
+│                                    │
+│  [Pular]                           │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Após enviar:**
+
+```
+┌────────────────────────────────────┐
+│                                    │
+│         ⭐ Obrigado!               │
+│                                    │
+│  Sua opinião nos ajuda a melhorar  │
+│  cada vez mais!                    │
+│                                    │
+│  ┌──────────────────────┐          │
+│  │ VOLTAR AO CARDÁPIO   │          │
+│  └──────────────────────┘          │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+### 5.10 PAINEL ATENDENTE
+
+**URL:** `/atendente`
+
+**Login:**
+- Usuário: atendente@redlight.com
+- Senha: definida pelo admin
+
+**Dashboard:**
+
+```
+┌────────────────────────────────────┐
+│  RED LIGHT - Painel Atendente      │
+│  Olá, Carlos!          [🔔3] [Sair]│
+├────────────────────────────────────┤
+│                                    │
+│  📊 Resumo do Turno                │
+│  ─────────────────                 │
+│  Pedidos atendidos: 12             │
+│  Valor total: R$ 2.140,00          │
+│  Tempo médio entrega: 18 min       │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  🔔 PEDIDOS ATIVOS                 │
+│  ─────────────────                 │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ 🔴 PRONTO PARA RETIRAR      │   │
+│  │ ──────────────────────      │   │
+│  │ Pedido #1234 • Mesa #12     │   │
+│  │ 3 itens • R$ 172,70         │   │
+│  │ Cliente: João Silva         │   │
+│  │ Tempo: 18 min               │   │
+│  │                             │   │
+│  │ ┌──────────┐ ┌──────────┐   │   │
+│  │ │ RETIREI  │ │Ver itens│   │   │
+│  │ └──────────┘ └──────────┘   │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ 🟡 EM PREPARO               │   │
+│  │ ──────────────────────      │   │
+│  │ Pedido #1235 • Mesa #08     │   │
+│  │ 2 itens • R$ 96,00          │   │
+│  │ Cliente: Maria Santos       │   │
+│  │ Tempo: 8 min                │   │
+│  │                             │   │
+│  │ [Ver itens]                 │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ┌─────────────────────────────┐   │
+│  │ 🟢 AGUARDANDO PREPARO       │   │
+│  │ ──────────────────────      │   │
+│  │ Pedido #1236 • Mesa #15     │   │
+│  │ 5 itens • R$ 285,00         │   │
+│  │ Cliente: Pedro Costa        │   │
+│  │ Tempo: 2 min                │   │
+│  │                             │   │
+│  │ [Ver itens]                 │   │
+│  └─────────────────────────────┘   │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  [Ver histórico do dia]            │
+│                                    │
+└────────────────────────────────────┘
+```
+
+**Notificações:**
+- 🔴 Som + badge quando pedido fica pronto
+- 🟢 Badge discreto para novos pedidos
+
+**Ao clicar "RETIREI":**
+- Abre confirmação: "Confirma retirada do Pedido #1234?"
+- Ao confirmar:
+  - Status muda para "A caminho da mesa"
+  - Cliente recebe notificação
+  - Timer começa (meta: entregar em 2 min)
+- Botão aparece: "ENTREGUE"
+
+**Ao clicar "ENTREGUE":**
+- Pedido sai da lista ativa
+- Vai para histórico
+- Cliente recebe pesquisa de satisfação
+
+---
+
+### 5.11 PAINEL COZINHA
+
+**URL:** `/cozinha`
+
+**Layout (Tela Grande - Tablet/Monitor):**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  RED LIGHT - COZINHA              [🔔2]  20:45  [Sair]  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  🔥 FILA DE PRODUÇÃO                                    │
+│  ──────────────────                                     │
+│                                                         │
+│  ┌──────────────────┐  ┌──────────────────┐           │
+│  │ PEDIDO #1234     │  │ PEDIDO #1235     │           │
+│  │ Mesa #12 • 20:35 │  │ Mesa #08 • 20:40 │           │
+│  ├──────────────────┤  ├──────────────────┤           │
+│  │ ⏱️ 12 min        │  │ ⏱️ 7 min         │           │
+│  │                  │  │                  │           │
+│  │ 🔴 EM PREPARO    │  │ 🟢 AGUARDANDO    │           │
+│  │                  │  │                  │           │
+│  │ ITENS:           │  │ ITENS:           │           │
+│  │ ✅ Gin Tônica    │  │ ⏳ 2x Moscow     │           │
+│  │ ⏳ 2x Moscow     │  │                  │           │
+│  │ ⏳ Tábua Queijos │  │                  │           │
+│  │                  │  │                  │           │
+│  │ OBS:             │  │ OBS: Nenhuma     │           │
+│  │ Sem azeitonas    │  │                  │           │
+│  │                  │  │                  │           │
+│  │ Cliente:         │  │ Cliente:         │           │
+│  │ João Silva       │  │ Maria Santos     │           │
+│  │                  │  │                  │           │
+│  │ ┌──────────────┐ │  │ ┌──────────────┐│           │
+│  │ │   PRONTO     │ │  │ │   INICIAR    ││           │
+│  │ └──────────────┘ │  │ └──────────────┘│           │
+│  └──────────────────┘  └──────────────────┘           │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ ⚠️ ATENÇÃO: Pedido #1233 há 22 minutos           │  │
+│  │    Mesa #05 aguardando há mais de 20 minutos     │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+│  ─────────────────────────────────────────────────────  │
+│                                                         │
+│  📊 ESTATÍSTICAS DO TURNO                              │
+│  Pedidos concluídos: 8                                 │
+│  Tempo médio: 16 minutos                               │
+│  Pedidos atrasados: 1                                  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Funcionalidades:**
+- **Novo pedido:** Som alto + animação + badge vermelho
+- **Cores:**
+  - 🟢 Verde: Aguardando (acabou de chegar)
+  - 🔴 Vermelho: Em preparo
+  - ⚠️ Laranja: Atrasado (>20 min)
+  - ✅ Verde escuro: Pronto
+- **Timer:** Atualiza automaticamente a cada segundo
+- **Alertas:** Vibração/som se passar de 20 minutos
+- **Touch-friendly:** Botões grandes para tela touchscreen
+
+---
+
+### 5.12 PAINEL ADMIN
+
+**URL:** `/admin`
+
+**Dashboard:**
+
+```
+┌────────────────────────────────────┐
+│  RED LIGHT - Admin Dashboard       │
+│  Olá, Leonardo!            [Sair]  │
+├────────────────────────────────────┤
+│                                    │
+│  📊 HOJE (05/10/2025)              │
+│  ─────────────────                 │
+│                                    │
+│  ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │R$2.8k│ │  18  │ │R$156 │       │
+│  │Vendas│ │Pedid.│ │Ticket│       │
+│  └──────┘ └──────┘ └──────┘       │
+│                                    │
+│  🔥 Pedidos Ativos: 3              │
+│  ⏱️ Tempo Médio Entrega: 17 min    │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  📈 ÚLTIMOS 7 DIAS                 │
+│                                    │
+│  [Gráfico de vendas por dia]       │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  🏆 MAIS VENDIDOS                  │
+│                                    │
+│  1. Gin Tônica Red (45 vendas)     │
+│  2. Moscow Mule (38 vendas)        │
+│  3. Tábua de Queijos (22 vendas)   │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  ⭐ NPS: 8.5 (Excelente!)          │
+│  📝 15 avaliações hoje             │
+│                                    │
+│  ─────────────────────────────     │
+│                                    │
+│  ATALHOS:                          │
+│  • Gerenciar Cardápio              │
+│  • Ver Relatórios Completos        │
+│  • Gerenciar Usuários              │
+│  • Configurações                   │
+│                                    │
+└────────────────────────────────────┘
+```
+
+---
+
+## 6. INTEGRAÇÕES E APIS {#6-integrações}
+
+### 6.1 Validação SMS
+
+**Provedor sugerido:** Twilio (https://www.twilio.com)
+
+**Alternativas:**
+- SMS.to
+- AWS SNS
+- Nexmo/Vonage
+
+**Fluxo:**
+1. Cliente digita celular
+2. Backend valida formato
+3. Backend gera código aleatório 4 dígitos
+4. Backend envia para API Twilio:
+   ```
+   POST https://api.twilio.com/2010-04-01/Accounts/{AccountSid}/Messages.json
+   Body: {
+     "To": "+5521987654321",
+     "From": "+15551234567",
+     "Body": "Seu código Red Light: 8472"
+   }
+   ```
+5. API retorna status
+6. Backend salva código + timestamp no banco
+7. Cliente digita código
+8. Backend valida (match + não expirado <5min)
+9. Marca celular como verificado
+
+**Custo estimado:** R$ 0,12 por SMS
+
+---
+
+### 6.2 Pagamentos
+
+**Provedor sugerido:** Stripe (https://stripe.com)
+
+**Alternativas:**
+- Mercado Pago
+- PagSeguro
+- Asaas
+
+**Métodos aceitos:**
+- Cartão de crédito/débito
+- PIX (geração QR Code dinâmico)
+- Apple Pay
+- Google Pay
+
+**Fluxo Cartão:**
+1. Cliente preenche dados
+2. Frontend tokeniza com Stripe.js (PCI compliance)
+3. Backend recebe token (não dados reais)
+4. Backend cria Payment Intent via API
+5. Stripe processa
+6. Webhook notifica backend (approved/declined)
+7. Backend atualiza status pedido
+
+**Fluxo PIX:**
+1. Backend cria cobrança PIX via Stripe API
+2. API retorna QR Code + chave copiável
+3. Frontend exibe
+4. Cliente paga em outro app
+5. Stripe recebe confirmação
+6. Webhook notifica backend
+7. Backend atualiza pedido
+
+**Taxa:** ~3,99% + R$ 0,39 por transação
+
+---
+
+### 6.3 Email Transacional
+
+**Provedor sugerido:** SendGrid (https://sendgrid.com)
+
+**Alternativas:**
+- Mailgun
+- AWS SES
+- Postmark
+
+**Emails necessários:**
+1. **Confirmação de cadastro**
+   - Assunto: "Bem-vindo ao Red Light!"
+   - Conteúdo: Dados de acesso, link app
+2. **Recibo de pedido**
+   - Assunto: "Pedido #1234 confirmado"
+   - Conteúdo: Itens, total, forma pagamento
+3. **Pedido pronto**
+   - Assunto: "Seu pedido está pronto!"
+   - Conteúdo: Mesa, horário
+4. **Lembrete de avaliação**
+   - Assunto: "Como foi sua experiência?"
+   - Conteúdo: Link avaliação
+
+**Custo:** Grátis até 100 emails/dia
+
+---
+
+### 6.4 Notificações Push (Futuro)
+
+**Provedor:** Firebase Cloud Messaging
+
+**Quando implementar:**
+- Versão 2.0 (após 3 meses)
+- Quando tiver PWA instalado em >30% clientes
+
+**Notificações:**
+- Pedido em preparo
+- Pedido pronto
+- Promoções
+- Eventos especiais
+
+---
+
+### 6.5 Analytics
+
+**Google Analytics 4:**
+- Página mais acessada
+- Taxa conversão QR→Pedido
+- Carrinho abandonado
+- Tempo por etapa
+
+**Eventos personalizados:**
+- `qr_scan`
+- `cadastro_iniciado`
+- `cadastro_completo`
+- `produto_visualizado`
+- `produto_adicionado_carrinho`
+- `checkout_iniciado`
+- `pagamento_completo`
+- `avaliacao_enviada`
+
+---
+
+## 7. REGRAS DE NEGÓCIO {#7-regras}
+
+### 7.1 Cadastro
+
+- CPF único no sistema (não pode cadastrar 2x)
+- Email único no sistema
+- Celular único no sistema
+- Código SMS válido por 5 minutos
+- Máximo 3 tentativas de validação SMS
+- Após 3 erros: bloqueio por 15 minutos
+- Nome mínimo 3 caracteres
+- Senha (se usar): mínimo 6 caracteres
+
+### 7.2 Pedidos
+
+- **Valor mínimo:** R$ 15,00
+- **Valor máximo:** R$ 1.000,00 (anti-fraude)
+- **Taxa serviço:** 10% automático (pode remover se solicitar)
+- **Horário pedidos:** Apenas durante funcionamento (18h-1h45)
+- **Último pedido:** Até 1h30 (cozinha fecha 2h)
+- **Pagamento:** Sempre antecipado (não aceita "pagar depois")
+- **Cancelamento:** Não permitido após pagamento aprovado
+  - Exceção: Atendente pode cancelar manualmente
+- **Tempo máximo preparo:** 30 minutos
+  - Se ultrapassar: alerta para gerente
+
+### 7.3 Mesas
+
+- Cada mesa tem QR Code único
+- QR Code contém: `https://redlight.app/qr/{mesaId}`
+- Mesa pode ter múltiplos pedidos simultâneos
+- Pedidos são vinculados ao cliente, não à mesa
+- Cliente pode trocar de mesa (re-escanear QR)
+
+### 7.4 Produtos
+
+- Produto pode estar "indisponível" (não aparece no app)
+- Produto pode ter "estoque limitado" (badge "últimas unidades")
+- Preço pode ter promoção (preço riscado + novo preço)
+- Cada produto tem categoria obrigatória
+- Observações limitadas a 200 caracteres
+
+### 7.5 Pagamentos
+
+- Somente pagamento antecipado
+- Se pagamento falhar: pedido não vai para cozinha
+- Cliente pode tentar novamente
+- Após 3 falhas consecutivas: bloquear por 30 min (anti-fraude)
+- PIX expira em 5 minutos
+- Dinheiro: gera "pedido pendente", atendente confirma recebimento
+
+### 7.6 Avaliações
+
+- Somente após pedido entregue
+- Pode avaliar até 7 dias depois
+- Avaliação anônima (gestor não vê nome)
+- NPS: 0-6 (Detrator), 7-8 (Neutro), 9-10 (Promotor)
+- Comentários moderados (não publicados automaticamente)
+
+### 7.7 Dados e Privacidade (LGPD)
+
+- Dados armazenados apenas para operação
+- Cliente pode solicitar exclusão de conta
+- Dados bancários não armazenados (tokenizados)
+- Opt-in obrigatório para marketing
+- Cookie banner obrigatório
+
+---
+
+## 8. REQUISITOS TÉCNICOS {#8-requisitos}
+
+### 8.1 Stack Tecnológico Sugerido
+
+**Frontend:**
+- **Framework:** React.js ou Next.js
+- **Styling:** Tailwind CSS
+- **PWA:** Workbox (service workers)
+- **State:** Redux ou Context API
+- **HTTP:** Axios
+- **Forms:** React Hook Form
+- **QR Reader:** html5-qrcode
+
+**Backend:**
+- **Runtime:** Node.js
+- **Framework:** Express.js ou NestJS
+- **Database:** PostgreSQL (relacional)
+- **ORM:** Prisma ou TypeORM
+- **Cache:** Redis
+- **Real-time:** Socket.io (status pedidos)
+- **Jobs:** Bull (filas, emails)
+- **Auth:** JWT
+
+**Infraestrutura:**
+- **Hosting:** Vercel (front) + Railway/Render (back)
+- **Database:** Supabase ou Railway
+- **Storage:** AWS S3 (fotos produtos)
+- **CDN:** Cloudflare
+- **Monitoring:** Sentry (errors)
+
+**DevOps:**
+- **CI/CD:** GitHub Actions
+- **Versionamento:** Git + GitHub
+- **Ambiente:** Dev, Staging, Production
+
+### 8.2 Banco de Dados - Modelo
+
+**Principais Tabelas:**
+
+```
+users
+├─ id (uuid)
+├─ name
+├─ cpf (unique)
+├─ email (unique)
+├─ phone (unique)
+├─ phone_verified (boolean)
+├─ created_at
+└─ updated_at
+
+products
+├─ id (uuid)
+├─ name
+├─ description
+├─ category_id (fk)
+├─ price (decimal)
+├─ image_url
+├─ available (boolean)
+├─ created_at
+└─ updated_at
+
+categories
+├─ id (uuid)
+├─ name
+├─ slug
+├─ order
+└─ icon
+
+orders
+├─ id (uuid)
+├─ user_id (fk)
+├─ table_number
+├─ status (enum: pending, preparing, ready, delivered)
+├─ subtotal
+├─ service_fee
+├─ total
+├─ payment_method
+├─ payment_status
+├─ paid_at
+├─ created_at
+└─ updated_at
+
+order_items
+├─ id (uuid)
+├─ order_id (fk)
+├─ product_id (fk)
+├─ quantity
+├─ unit_price
+├─ observations
+└─ created_at
+
+reviews
+├─ id (uuid)
+├─ order_id (fk)
+├─ nps_score (0-10)
+├─ quality_rating (1-5)
+├─ speed_rating (1-5)
+├─ ambience_rating (1-5)
+├─ price_rating (1-5)
+├─ comment
+├─ created_at
+└─ updated_at
+
+sms_verifications
+├─ id (uuid)
+├─ phone
+├─ code (4 digits)
+├─ verified (boolean)
+├─ expires_at
+├─ created_at
+└─ attempts (integer)
+```
+
+### 8.3 Performance
+
+**Targets:**
+- Tempo carregamento inicial: <3s
+- Time to Interactive: <5s
+- Lighthouse Score: >90
+- First Contentful Paint: <1.5s
+
+**Otimizações:**
+- Lazy loading de imagens
+- Code splitting
+- Compressão gzip/brotli
+- CDN para assets
+- Cache agressivo (service worker)
+- Minificação CSS/JS
+
+### 8.4 Segurança
+
+**Obrigatórios:**
+- HTTPS em tudo
+- Sanitização inputs (SQL injection, XSS)
+- Rate limiting (anti-DDOS)
+- CORS configurado
+- Tokens JWT com expiração
+- Hashing de senhas (bcrypt)
+- Validação server-side
+- Headers de segurança (helmet.js)
+- Auditoria de dependências (npm audit)
+
+### 8.5 Acessibilidade (a11y)
+
+- Contraste mínimo WCAG AA
+- Navegação por teclado
+- Screen reader friendly
+- Labels em inputs
+- Alt text em imagens
+- Focus visível
+- Erros descritivos
+
+### 8.6 Responsividade
+
+**Breakpoints:**
+- Mobile: 320px - 767px
+- Tablet: 768px - 1023px
+- Desktop: 1024px+
+
+**Prioridade:**
+- Mobile-first (80% acesso será mobile)
+- Touch-friendly (botões mín 44x44px)
+- Thumb zone (ações importantes embaixo)
+
+### 8.7 Browser Support
+
+**Mínimo:**
+- Chrome 90+
+- Safari 14+
+- Firefox 88+
+- Edge 90+
+
+**Mobile:**
+- iOS Safari 14+
+- Chrome Android 90+
+
+---
+
+## 9. PROMPT PARA AGENTE DE IA {#9-prompt}
+
+---
+
+# 🤖 PROMPT COMPLETO PARA AGENTE DE IA
+
+Copie e cole este prompt para seu agente construir a plataforma:
+
+---
+
+**CONTEXTO:**
+
+Você é um desenvolvedor full-stack expert. Sua missão é criar uma plataforma web (PWA) completa para o Red Light, um bar/lounge em Botafogo, Rio de Janeiro. A plataforma permite que clientes façam pedidos direto da mesa via QR Code, paguem antecipadamente, e acompanhem o status em tempo real.
+
+---
+
+**REQUISITOS PRINCIPAIS:**
+
+1. **Frontend Cliente (React/Next.js + Tailwind):**
+   - Landing page institucional atrativa
+   - Fluxo de cadastro simplificado (nome, CPF, email, celular)
+   - Validação por SMS (4 dígitos) usando Twilio
+   - Login (SMS ou email/senha)
+   - Cardápio digital completo com categorias e busca
+   - Carrinho de compras com edição
+   - Checkout com múltiplas formas de pagamento (Stripe: cartão, PIX, Apple Pay)
+   - Tela de acompanhamento do pedido em tempo real
+   - Pesquisa de satisfação (NPS + ratings)
+   - PWA (instalável, funciona offline parcialmente)
+
+2. **Painel Atendente (React):**
+   - Login
+   - Dashboard com pedidos ativos
+   - Notificações quando pedido fica pronto
+   - Botões para "Retirei" e "Entregue"
+   - Histórico do turno
+
+3. **Painel Cozinha (React):**
+   - Login
+   - Fila de produção em tempo real
+   - Botões para "Iniciar Preparo" e "Pronto"
+   - Timer por pedido
+   - Alertas de atraso (>20min)
+
+4. **Painel Admin (React):**
+   - Dashboard com métricas (vendas, ticket médio, NPS)
+   - Gestão de cardápio (CRUD produtos)
+   - Relatórios
+   - Configurações
+
+5. **Backend (Node.js + Express + PostgreSQL):**
+   - API RESTful para tudo
+   - Autenticação JWT
+   - Integração Twilio (SMS)
+   - Integração Stripe (pagamentos)
+   - WebSockets (Socket.io) para updates tempo real
+   - Envio de emails (SendGrid)
+   - Validações de segurança
+
+6. **Banco de Dados (PostgreSQL):**
+   - Estrutura conforme modelo fornecido
+   - Migrations e seeds
+
+---
+
+**FLUXO PRINCIPAL:**
+
+1. Cliente escaneia QR Code na mesa (`/qr/12`)
+2. Sistema detecta se está logado
+3. Se não: redireciona para cadastro
+4. Cadastro: preenche dados → recebe SMS → valida código → confirma email
+5. Acessa cardápio completo
+6. Adiciona itens ao carrinho
+7. Faz checkout
+8. Paga antecipadamente (Stripe)
+9. Pedido vai para cozinha automaticamente
+10. Acompanha status em tempo real
+11. Recebe pedido na mesa
+12. Avalia experiência
+
+**ATENDENTE:** Recebe notificação → busca pedido pronto → entrega → marca como entregue
+
+**COZINHA:** Recebe pedido → inicia preparo → marca pronto → notifica atendente
+
+---
+
+**ESPECIFICAÇÕES TÉCNICAS:**
+
+- **Design:** Fundo preto, vermelho vibrante (#E30613), branco. Tipografia Montserrat. Mobile-first.
+- **Real-time:** Socket.io para status de pedidos
+- **Validação SMS:** Código 4 dígitos, expira em 5min, máx 3 tentativas
+- **Pagamento:** Stripe (cartão, PIX, Apple Pay). Sempre antecipado.
+- **Regras:**
+  - Taxa serviço 10% automática
+  - Valor mínimo pedido: R$ 15
+  - Último pedido: 1h30
+  - Tempo max preparo: 30min
+- **PWA:** Service worker, instalável, ícones, manifest
+- **Performance:** Lighthouse >90, carregamento <3s
+- **Segurança:** HTTPS, JWT, rate limiting, sanitização, bcrypt
+
+---
+
+**ESTRUTURA DE PASTAS SUGERIDA:**
+
+```
+red-light/
+├── frontend/
+│   ├── public/
+│   │   ├── icons/
+│   │   ├── manifest.json
+│   │   └── service-worker.js
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Landing/
+│   │   │   ├── Auth/
+│   │   │   ├── Menu/
+│   │   │   ├── Cart/
+│   │   │   ├── Checkout/
+│   │   │   └── Tracking/
+│   │   ├── pages/
+│   │   │   ├── index.js
+│   │   │   ├── cadastro.js
+│   │   │   ├── login.js
+│   │   │   ├── cardapio.js
+│   │   │   ├── carrinho.js
+│   │   │   ├── checkout.js
+│   │   │   ├── pedido/[id].js
+│   │   │   ├── avaliacao/[id].js
+│   │   │   ├── atendente/
+│   │   │   ├── cozinha/
+│   │   │   └── admin/
+│   │   ├── styles/
+│   │   ├── utils/
+│   │   ├── hooks/
+│   │   └── context/
+│   └── package.json
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── middlewares/
+│   │   ├── services/
+│   │   │   ├── sms.service.js (Twilio)
+│   │   │   ├── payment.service.js (Stripe)
+│   │   │   ├── email.service.js (SendGrid)
+│   │   │   └── socket.service.js
+│   │   ├── config/
+│   │   ├── database/
+│   │   │   ├── migrations/
+│   │   │   └── seeds/
+│   │   └── server.js
+│   └── package.json
+└── README.md
+```
+
+---
+
+**APIs NECESSÁRIAS:**
+
+1. **Twilio (SMS):**
+   - Account SID + Auth Token
+   - Número de telefone Twilio
+   - Endpoint: `/auth/send-sms` e `/auth/verify-sms`
+
+2. **Stripe (Pagamento):**
+   - API Keys (test + production)
+   - Webhooks para confirmação
+   - Endpoints: `/payment/create-intent`, `/payment/confirm`
+
+3. **SendGrid (Email):**
+   - API Key
+   - Templates para emails transacionais
+   - Endpoint: `/email/send`
+
+---
+
+**ENTREGÁVEIS:**
+
+1. ✅ Código completo (frontend + backend)
+2. ✅ Banco de dados configurado com migrations
+3. ✅ README com instruções de instalação
+4. ✅ Variáveis de ambiente (.env.example)
+5. ✅ Deploy funcionando (Vercel + Railway)
+6. ✅ Documentação API (Swagger/Postman)
+7. ✅ Testes básicos (Jest)
+
+---
+
+**PRIORIDADES:**
+
+1. **MVP Completo (Versão 1.0):**
+   - Landing page
+   - Cadastro + SMS
+   - Cardápio
+   - Carrinho
+   - Checkout + Pagamento
+   - Painel Atendente
+   - Painel Cozinha
+   - Acompanhamento tempo real
+   - Avaliação
+
+2. **Futuro (Versão 2.0):**
+   - Histórico de pedidos
+   - Favoritos
+   - Programa fidelidade
+   - Notificações push
+
+---
+
+**INSTRUÇÕES DE EXECUÇÃO:**
+
+1. Configure as variáveis de ambiente:
+   ```
+   # Backend .env
+   DATABASE_URL=postgresql://...
+   JWT_SECRET=...
+   TWILIO_ACCOUNT_SID=...
+   TWILIO_AUTH_TOKEN=...
+   TWILIO_PHONE_NUMBER=...
+   STRIPE_SECRET_KEY=...
+   SENDGRID_API_KEY=...
+   FRONTEND_URL=http://localhost:3000
+   ```
+
+2. Instale dependências:
+   ```bash
+   cd backend && npm install
+   cd ../frontend && npm install
+   ```
+
+3. Rode migrations:
+   ```bash
+   cd backend && npm run migrate
+   ```
+
+4. Inicie servidores:
+   ```bash
+   # Terminal 1 (Backend)
+   cd backend && npm run dev
+
+   # Terminal 2 (Frontend)
+   cd frontend && npm run dev
+   ```
+
+5. Acesse: `http://localhost:3000`
+
+---
+
+**COMPORTAMENTOS ESPERADOS:**
+
+- ✅ QR Code redireciona para `/qr/:mesaId`
+- ✅ Cadastro envia SMS real (Twilio)
+- ✅ Pagamento processa via Stripe
+- ✅ Status atualiza em tempo real (Socket.io)
+- ✅ Notificações aparecem em cozinha/atendente
+- ✅ PWA instalável no celular
+- ✅ Funciona offline (cardápio em cache)
+- ✅ Responsivo (mobile, tablet, desktop)
+
+---
+
+**VALIDAÇÕES CRÍTICAS:**
+
+- ❌ Não permitir pedido sem pagamento
+- ❌ Não permitir cadastro com CPF/email/celular duplicado
+- ❌ Não processar pedido fora do horário (18h-1h30)
+- ❌ Não permitir valor <R$ 15 ou >R$ 1000
+- ❌ Não permitir mais de 3 tentativas SMS
+- ❌ Não armazenar dados de cartão (apenas token Stripe)
+
+---
+
+**RESULTADO ESPERADO:**
+
+Uma plataforma 100% funcional, moderna, rápida e segura que transforme a experiência do cliente no Red Light, reduza erros operacionais, acelere pedidos e colete dados valiosos para o negócio.
+
+---
+
+**BOA SORTE! 🚀**
+
+---

@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Read(//d//**)",
+      "Bash(powershell:*)",
+      "Bash(git checkout:*)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(dos2unix:*)",
+      "Bash(curl:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(sqlite3:*)",
+      "Bash(python:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i \"s/const { authenticate } = require/const { authenticate } = require/g; s|''../middlewares/auth''|''../middlewares/auth.middleware''|g; s|''../middlewares/validation''|''../middlewares/validation.middleware''|g\" $file)",
+      "Bash(done)",
+      "Bash(pkill:*)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)",
+      "Bash(fi)",
+      "Bash(do sed -i \"s/bg-red-600/bg-orange-500/g; s/bg-red-500/bg-orange-500/g; s/text-red-400/text-orange-400/g; s/text-red-500/text-orange-500/g; s/border-red-600/border-orange-500/g; s/border-red-500/border-orange-500/g; s/from-red-600/from-orange-500/g; s/to-red-600/to-orange-500/g\" \"$file\")",
+      "Bash(find:*)",
+      "Bash(npx next lint:*)",
+      "Bash(echo:*)",
+      "Bash(git --version:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

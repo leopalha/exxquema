@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Produtos - RED LIGHT</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000 0%, #434343 100%);
+            color: #00ff00;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+        }
+        h1 {
+            color: #ff0000;
+            text-align: center;
+            font-size: 48px;
+            text-shadow: 0 0 20px #ff0000;
+        }
+        .result {
+            font-size: 32px;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #000;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+        }
+        .loading {
+            text-align: center;
+            font-size: 24px;
+            color: #ffff00;
+        }
+        pre {
+            background: #000;
+            padding: 20px;
+            border-radius: 5px;
+            overflow: auto;
+            max-height: 500px;
+            border: 1px solid #333;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 TESTE DIRETO DE PRODUTOS</h1>
+        <div id="result" class="loading">Carregando dados da API...</div>
+        <pre id="details"></pre>
+    </div>
+
+    <script>
+        // Fazer requisição para a API sem cache
+        fetch('/api/test-produtos?' + new Date().getTime(), {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            const detailsPre = document.getElementById('details');
+            
+            if (data.totalProdutos === 62) {
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    ✅ SUCESSO!<br>
+                    <strong>Total: ${data.totalProdutos} produtos</strong><br>
+                    ${data.mensagem}
+                `;
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    ❌ ERRO!<br>
+                    <strong>Total: ${data.totalProdutos} produtos</strong><br>
+                    Esperado: 62 produtos<br>
+                    ${data.mensagem}
+                `;
+            }
+            
+            detailsPre.textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            document.getElementById('result').className = 'result error';
+            document.getElementById('result').innerHTML = `❌ ERRO AO CARREGAR: ${error.message}`;
+        });
+    </script>
+</body>
+</html>

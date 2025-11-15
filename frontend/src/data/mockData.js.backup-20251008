@@ -1,0 +1,2592 @@
+// Mock data OTIMIZADO - Red Light Lounge Bar
+// Versão 2.0 - Cardápio expandido com foco em rentabilidade
+
+export const mockProducts = [
+  // ========================================
+  // 🍸 DRINKS AUTORAIS RED LIGHT (6 produtos)
+  // Margem: 78% | Diferencial competitivo
+  // ========================================
+  
+  {
+    id: '1',
+    nome: 'Red Light Signature',
+    descricao: 'Drink exclusivo da casa: Vodka Absolut, licor de framboesa Chambord, cranberry fresco e splash de lime siciliano',
+    preco: 35.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Red Light Signature.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 50,
+    ingredientes: 'Vodka Absolut, Chambord, suco cranberry, lime siciliano, gelo',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 5,
+    calorias: 180,
+    tags: ['signature', 'vodka', 'framboesa', 'exclusivo']
+  },
+  
+  {
+    id: '2',
+    nome: 'Dark Paradise',
+    descricao: 'Gin Tanqueray, licor de amora Chambord, tônica Schweppes premium e mix de frutas vermelhas frescas maceradas',
+    preco: 42.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Dark Paradise.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Gin Tanqueray, Chambord, tônica Schweppes, frutas vermelhas, alecrim',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 7,
+    calorias: 190,
+    tags: ['gin', 'amora', 'premium', 'frutas']
+  },
+  
+  {
+    id: '3',
+    nome: 'Neon Nights',
+    descricao: 'Tequila José Cuervo Gold, Cointreau triple sec, maracujá fresco espremido e espuma de limão siciliano',
+    preco: 45.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Neon Nights.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    ingredientes: 'Tequila José Cuervo, Cointreau, polpa maracujá, limão siciliano',
+    tempoPreparo: 8,
+    calorias: 210,
+    tags: ['tequila', 'maracujá', 'cítrico', 'tropical']
+  },
+  
+  {
+    id: '4',
+    nome: 'Crimson Kiss',
+    descricao: 'Gin Beefeater infusionado com hibisco, licor St-Germain, prosecco italiano e morango fresco',
+    preco: 48.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Crimson Kiss.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Gin Beefeater, St-Germain, prosecco, hibisco, morango',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 6,
+    calorias: 170,
+    tags: ['gin', 'floral', 'romântico', 'instagramável']
+  },
+  
+  {
+    id: '5',
+    nome: 'Midnight Smoke',
+    descricao: 'Mezcal artesanal, Aperol, limão siciliano, xarope de pimenta rosa, defumação em madeira de carvalho',
+    preco: 75.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Midnight Smoke.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Mezcal, Aperol, limão siciliano, pimenta rosa, defumação',
+    tempoPreparo: 10,
+    calorias: 195,
+    tags: ['mezcal', 'defumado', 'sofisticado', 'sensorial']
+  },
+  
+  {
+    id: '6',
+    nome: 'Ruby Passion',
+    descricao: 'Cachaça Weber Haus premium, maracujá fresco, gengibre, mel orgânico e capim-santo aromático',
+    preco: 58.00,
+    categoria: 'Drinks Autorais',
+    imagem: '/images/cardapio/Ruby Passion.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    ingredientes: 'Cachaça premium, maracujá, gengibre, mel, capim-santo',
+    tempoPreparo: 5,
+    calorias: 185,
+    tags: ['cachaça', 'tropical', 'brasileiro', 'aromático']
+  },
+
+  // ========================================
+  // 🥃 CLÁSSICOS EXECUTADOS COM PERFEIÇÃO (6 produtos)
+  // Margem: 75% | Core do negócio
+  // ========================================
+  
+  {
+    id: '7',
+    nome: 'Caipirinha de Cachaça Artesanal',
+    descricao: 'Caipirinha tradicional com cachaça premium envelhecida, limão tahiti fresco espremido e açúcar orgânico',
+    preco: 32.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Caipirinha de Cachaça Artesanal.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 30,
+    ingredientes: 'Cachaça artesanal envelhecida, limão tahiti, açúcar orgânico, gelo',
+    tempoPreparo: 3,
+    calorias: 220,
+    tags: ['tradicional', 'cachaça', 'limão', 'brasileiro'],
+    variacoes: ['Limão', 'Morango', 'Kiwi', 'Maracujá', 'Frutas Vermelhas']
+  },
+  
+  {
+    id: '8',
+    nome: 'Mojito Clássico',
+    descricao: 'Rum Bacardi Superior, hortelã orgânica macerada, limão siciliano fresco, açúcar demerara e soda',
+    preco: 36.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Mojito Clássico.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    ingredientes: 'Rum Bacardi, hortelã orgânica, limão siciliano, açúcar demerara, soda',
+    tempoPreparo: 4,
+    calorias: 150,
+    tags: ['rum', 'hortelã', 'refrescante', 'cubano'],
+    variacoes: ['Tradicional', 'Morango', 'Maracujá', 'Frutas Vermelhas']
+  },
+  
+  {
+    id: '9',
+    nome: 'Bourbon Sour',
+    descricao: 'Bourbon Jim Beam envelhecido, limão siciliano espremido na hora, xarope artesanal e espuma de clara de ovo',
+    preco: 58.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Bourbon Sour.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 20,
+    ingredientes: 'Bourbon Jim Beam, limão siciliano, xarope artesanal, clara de ovo',
+    alergenos: 'Contém ovo',
+    tempoPreparo: 6,
+    calorias: 200,
+    tags: ['whisky', 'bourbon', 'ácido', 'clássico']
+  },
+  
+  {
+    id: '10',
+    nome: 'Gin Tônica Premium',
+    descricao: 'Gin Tanqueray Ten, tônica Fever-Tree premium, zimbro fresco e casca de limão siciliano',
+    preco: 54.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Gin Tônica Premium.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 22,
+    ingredientes: 'Gin Tanqueray Ten, tônica Fever-Tree, zimbro, limão siciliano',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 3,
+    calorias: 160,
+    tags: ['gin', 'tônica', 'botânicos', 'refrescante']
+  },
+  
+  {
+    id: '11',
+    nome: 'Old Fashioned',
+    descricao: 'Bourbon Maker\'s Mark, açúcar demerara, bitter angostura, casca de laranja flambada',
+    preco: 54.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Old Fashioned.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 18,
+    ingredientes: 'Bourbon Maker\'s Mark, açúcar demerara, bitter angostura, laranja',
+    tempoPreparo: 5,
+    calorias: 180,
+    tags: ['bourbon', 'clássico', 'sofisticado', 'atemporal']
+  },
+  
+  {
+    id: '12',
+    nome: 'Moscow Mule',
+    descricao: 'Vodka Absolut, ginger beer artesanal, limão siciliano fresco e hortelã, servido em caneca de cobre gelada',
+    preco: 38.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Moscow Mule Premium.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 24,
+    ingredientes: 'Vodka Absolut, ginger beer, limão siciliano, hortelã',
+    tempoPreparo: 4,
+    calorias: 155,
+    tags: ['vodka', 'gengibre', 'refrescante', 'caneca']
+  },
+
+  // ========================================
+  // 🔥 SHOTS & DOSES (4 produtos)
+  // Margem: 80% | Alta rotatividade
+  // ========================================
+  
+  {
+    id: '13',
+    nome: 'Red Light Bomb',
+    descricao: 'Shot autoral exclusivo com vodka premium, licor de framboesa e toque de energético, servido com LED vermelho',
+    preco: 28.00,
+    categoria: 'Shots',
+    imagem: '/images/cardapio/Red Light Bomb.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 40,
+    ingredientes: 'Vodka, licor framboesa, energético',
+    tempoPreparo: 2,
+    calorias: 95,
+    tags: ['shot', 'energético', 'festa', 'exclusivo']
+  },
+  
+  {
+    id: '14',
+    nome: 'Tequila Shot Premium',
+    descricao: 'Tequila José Cuervo Especial com ritual completo: limão siciliano fresco e sal marinho',
+    preco: 24.00,
+    categoria: 'Shots',
+    imagem: '/images/cardapio/Tequila Shot Premium.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 35,
+    ingredientes: 'Tequila José Cuervo, limão, sal marinho',
+    tempoPreparo: 1,
+    calorias: 65,
+    tags: ['shot', 'tequila', 'mexicano', 'ritual'],
+    observacoes: 'Combo 3 doses: R$ 45,00 (economize R$ 9)'
+  },
+  
+  {
+    id: '15',
+    nome: 'B-52 Flamejado',
+    descricao: 'Shot clássico em camadas: Kahlúa, Baileys e Grand Marnier, flamejado na hora na sua frente',
+    preco: 32.00,
+    categoria: 'Shots',
+    imagem: '/images/cardapio/B-52 Flamejado.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 30,
+    ingredientes: 'Kahlúa, Baileys, Grand Marnier',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 3,
+    calorias: 120,
+    tags: ['shot', 'flamejado', 'show', 'cremoso']
+  },
+  
+  {
+    id: '16',
+    nome: 'Jägermeister Shot',
+    descricao: 'Jägermeister original gelado a -18°C, servido na temperatura ideal para máximo sabor',
+    preco: 34.00,
+    categoria: 'Shots',
+    imagem: '/images/cardapio/Jägermeister Shot.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 32,
+    ingredientes: 'Jägermeister',
+    tempoPreparo: 1,
+    calorias: 103,
+    tags: ['shot', 'herbal', 'alemão', 'gelado'],
+    observacoes: 'Combo 3 doses: R$ 50,00 (economize R$ 10)'
+  },
+
+  // ========================================
+  // 🌿 MOCKTAILS SOFISTICADOS (3 produtos)
+  // Margem: 85% | Público não-alcoólico
+  // ========================================
+  
+  {
+    id: '17',
+    nome: 'Crimson Spritz Zero',
+    descricao: 'Chá de hibisco gelado premium, mix de frutas vermelhas frescas, espumante sem álcool e hortelã aromática',
+    preco: 34.00,
+    categoria: 'Mocktails',
+    imagem: '/images/cardapio/Crimson Spritz Zero.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 30,
+    ingredientes: 'Chá hibisco, frutas vermelhas, espumante 0%, hortelã',
+    tempoPreparo: 4,
+    calorias: 65,
+    tags: ['sem álcool', 'frutas', 'refrescante', 'sofisticado']
+  },
+  
+  {
+    id: '18',
+    nome: 'Tropical Sunset',
+    descricao: 'Maracujá fresco, manga, gengibre ralado, mel orgânico e tônica rosé premium',
+    preco: 28.00,
+    categoria: 'Mocktails',
+    imagem: '/images/cardapio/Tropical Sunset.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 28,
+    ingredientes: 'Maracujá, manga, gengibre, mel, tônica rosé',
+    tempoPreparo: 5,
+    calorias: 80,
+    tags: ['sem álcool', 'tropical', 'exótico', 'natural']
+  },
+  
+  {
+    id: '19',
+    nome: 'Limonada Suíça Premium',
+    descricao: 'Limão siciliano espremido na hora, leite condensado, água com gás premium e hortelã fresca',
+    preco: 22.00,
+    categoria: 'Mocktails',
+    imagem: '/images/cardapio/Limonada Suíça Premium.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 35,
+    ingredientes: 'Limão siciliano, leite condensado, água com gás, hortelã',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 2,
+    calorias: 120,
+    tags: ['sem álcool', 'cítrico', 'cremoso', 'brasileiro']
+  },
+
+  // ========================================
+  // 🍽️ PETISCOS COMPARTILHÁVEIS (6 produtos)
+  // Margem: 65% | Grupos e mesas
+  // ========================================
+  
+  {
+    id: '20',
+    nome: 'Tábua de Frios Premium',
+    descricao: 'Seleção especial: queijo brie francês, gorgonzola italiano, parmesão 24 meses, presunto parma, salame italiano, geleia artesanal de pimenta rosa, castanhas tostadas e pães artesanais',
+    preco: 85.00,
+    categoria: 'Petiscos',
+    imagem: '/images/cardapio/Tábua de Frios Especiais.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    ingredientes: 'Brie, gorgonzola, parmesão, presunto parma, salame, geleia pimenta, castanhas',
+    alergenos: 'Contém lactose, castanhas, glúten',
+    tempoPreparo: 5,
+    calorias: 680,
+    porcao: 'Serve 2-3 pessoas',
+    tags: ['queijos', 'frios', 'premium', 'compartilhável']
+  },
+  
+  {
+    id: '21',
+    nome: 'Batata Rústica com Molhos Especiais',
+    descricao: 'Batatas artesanais crocantes temperadas com páprica defumada e ervas finas, servidas com trio de molhos: aioli de alho confitado, barbecue defumado caseiro e maionese de ervas',
+    preco: 36.00,
+    categoria: 'Petiscos',
+    imagem: '/images/cardapio/Batata Rústica com Molhos Especiais.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 40,
+    ingredientes: 'Batata rústica, páprica defumada, ervas, aioli, barbecue, maionese',
+    alergenos: 'Contém lactose, alho',
+    tempoPreparo: 15,
+    calorias: 320,
+    tags: ['vegetariano', 'batata', 'molhos', 'compartilhável']
+  },
+  
+  {
+    id: '22',
+    nome: 'Coxinha de Frango com Catupiry',
+    descricao: 'Coxinhas artesanais de massa caseira extra crocante, recheadas com frango orgânico desfiado e cream cheese premium (6 unidades)',
+    preco: 32.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1619221882560-1493e4b32f79?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Massa caseira, frango orgânico, cream cheese, temperos',
+    alergenos: 'Contém glúten, lactose',
+    tempoPreparo: 12,
+    calorias: 450,
+    tags: ['frango', 'cream cheese', 'frito', 'brasileiro']
+  },
+  
+  {
+    id: '23',
+    nome: 'Nachos Red Light',
+    descricao: 'Tortillas artesanais crocantes, carne moída premium temperada, queijo cheddar derretido, guacamole fresco, sour cream, jalapeños e pico de gallo',
+    preco: 48.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Tortillas, carne moída, cheddar, guacamole, sour cream, jalapeños',
+    alergenos: 'Contém glúten, lactose',
+    tempoPreparo: 10,
+    calorias: 550,
+    porcao: 'Serve 2-3 pessoas',
+    tags: ['mexicano', 'carne', 'queijo', 'compartilhável']
+  },
+  
+  {
+    id: '24',
+    nome: 'Bolinho de Bacalhau Português',
+    descricao: 'Bolinhos artesanais crocantes por fora e cremosos por dentro, feitos com bacalhau do Porto premium (6 unidades), acompanha aioli de limão siciliano',
+    preco: 32.00,
+    categoria: 'Petiscos',
+    imagem: '/images/cardapio/Bolinhos de Bacalhau.png',
+    disponivel: true,
+    destaque: false,
+    estoque: 18,
+    ingredientes: 'Bacalhau do Porto, batata, ovos, salsa, aioli limão',
+    alergenos: 'Contém peixe, glúten, ovo, lactose',
+    tempoPreparo: 12,
+    calorias: 380,
+    tags: ['bacalhau', 'português', 'frito', 'premium']
+  },
+  
+  {
+    id: '25',
+    nome: 'Bruschetta Mix Premium',
+    descricao: '6 bruschettas artesanais: (2) tomate orgânico e manjericão fresco, (2) queijo brie com mel trufado, (2) salmão defumado com cream cheese',
+    preco: 32.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 22,
+    ingredientes: 'Pão italiano, tomate, manjericão, brie, mel trufado, salmão, cream cheese',
+    alergenos: 'Contém glúten, lactose, peixe',
+    tempoPreparo: 8,
+    calorias: 420,
+    tags: ['italiano', 'variado', 'sofisticado', 'compartilhável']
+  },
+
+  // ========================================
+  // 🥩 PRATOS PRINCIPAIS (6 produtos)
+  // Incluindo a PICANHA - Produto âncora
+  // ========================================
+  
+  {
+    id: '26',
+    nome: 'Picanha Red Light',
+    descricao: 'Picanha nobre argentina (400g) grelhada ao ponto perfeito, finalizada na manteiga de ervas aromáticas, acompanha arroz negro com alho assado, farofa crocante de bacon, vinagrete especial da casa e chips de batata-doce. Show de finalização na mesa!',
+    preco: 129.00,
+    categoria: 'Pratos Principais',
+    imagem: '/images/cardapio/Picanha na Brasa.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Picanha argentina nobre, manteiga ervas, arroz negro, farofa bacon, vinagrete, batata-doce',
+    alergenos: 'Contém lactose, glúten',
+    tempoPreparo: 25,
+    calorias: 820,
+    temperatura: 'Ao ponto (pode pedir mal passada ou bem passada)',
+    addons: [
+      { nome: 'Ovo frito orgânico', preco: 8.00 },
+      { nome: 'Fritas trufadas', preco: 12.00 },
+      { nome: 'Gorgonzola derretido', preco: 15.00 }
+    ],
+    tags: ['picanha', 'carne', 'premium', 'show', 'flagship']
+  },
+  
+  {
+    id: '27',
+    nome: 'Red Light Burger Premium',
+    descricao: 'Blend artesanal 200g (costela + paleta), queijo cheddar inglês trufado, bacon artesanal crocante, cebola roxa caramelizada em vinho tinto, alface americana, tomate orgânico, molho Red Light secreto, brioche australiano. Acompanha batatas rústicas',
+    preco: 65.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Blend bovino premium, cheddar trufado, bacon, cebola roxa, molho especial, brioche, batatas',
+    alergenos: 'Contém glúten, lactose',
+    tempoPreparo: 20,
+    calorias: 750,
+    ponto: 'Médio (pode pedir ao ponto ou bem passado)',
+    tags: ['burger', 'carne', 'bacon', 'queijo', 'premium']
+  },
+  
+  {
+    id: '28',
+    nome: 'Salmão ao Molho de Maracujá',
+    descricao: 'Filé de salmão norueguês grelhado (300g) com risotto cremoso de limão siciliano, aspargos grelhados no azeite trufado e redução agridoce de maracujá fresco',
+    preco: 92.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Salmão norueguês, arroz arbóreo, limão siciliano, aspargos, azeite trufado, maracujá',
+    alergenos: 'Contém peixe, lactose',
+    tempoPreparo: 25,
+    calorias: 480,
+    tags: ['peixe', 'salmão', 'risotto', 'saudável', 'sofisticado']
+  },
+  
+  {
+    id: '29',
+    nome: 'Filé Mignon ao Molho Madeira',
+    descricao: 'Filé mignon nacional premium (300g) grelhado ao ponto, molho madeira aveludado com cogumelos frescos, batatas rústicas ao alecrim e legumes salteados na manteiga',
+    preco: 135.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    ingredientes: 'Filé mignon, molho madeira, cogumelos, batatas, legumes, manteiga',
+    alergenos: 'Contém lactose, glúten',
+    tempoPreparo: 22,
+    calorias: 680,
+    tags: ['filé', 'carne', 'molho', 'premium', 'clássico']
+  },
+  
+  {
+    id: '30',
+    nome: 'Frango Grelhado com Mostarda e Mel',
+    descricao: 'Peito de frango orgânico grelhado (350g), molho cremoso de mostarda dijon e mel silvestre, arroz integral com brócolis e cenouras baby glaceadas',
+    preco: 75.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 20,
+    ingredientes: 'Frango orgânico, mostarda dijon, mel, arroz integral, brócolis, cenoura',
+    tempoPreparo: 18,
+    calorias: 520,
+    tags: ['frango', 'saudável', 'mel', 'leve']
+  },
+  
+  {
+    id: '31',
+    nome: 'Costelinha BBQ Defumada',
+    descricao: 'Costelinha suína ao molho barbecue defumado (12h de preparo lento), purê de batata-doce com manteiga de ervas e coleslaw cremoso caseiro (500g)',
+    preco: 115.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Costelinha suína, molho BBQ defumado, batata-doce, coleslaw',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 15,
+    calorias: 750,
+    tags: ['costela', 'bbq', 'defumado', 'suculento']
+  },
+
+  // ========================================
+  // 🌱 OPÇÕES PLANT-BASED (2 produtos)
+  // Margem: 65% | Vegetarianos e veganos
+  // ========================================
+  
+  {
+    id: '32',
+    nome: 'Burger Vegano Red Light',
+    descricao: 'Hambúrguer artesanal de grão-de-bico e beterraba (180g), queijo vegano derretido, guacamole cremoso, rúcula orgânica, tomate seco, cebola roxa, pão vegano de fermentação natural. Acompanha batatas rústicas',
+    preco: 58.00,
+    categoria: 'Plant-Based',
+    imagem: 'https://images.unsplash.com/photo-1520072959219-c595dc870360?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    ingredientes: 'Hambúrguer grão-de-bico/beterraba, queijo vegano, guacamole, rúcula, tomate seco, pão vegano',
+    tempoPreparo: 18,
+    calorias: 520,
+    selos: ['🌱 100% Plant-Based', '🥬 Vegano'],
+    tags: ['vegano', 'burger', 'saudável', 'plant-based']
+  },
+  
+  {
+    id: '33',
+    nome: 'Buddha Bowl Completo',
+    descricao: 'Bowl nutritivo e colorido: quinoa tricolor, grão-de-bico tostado ao curry, abacate cremoso, cenoura ralada, tomate cereja, homus artesanal, molho tahine, mix de sementes tostadas',
+    preco: 54.00,
+    categoria: 'Plant-Based',
+    imagem: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Quinoa, grão-de-bico, abacate, cenoura, tomate, homus, tahine, sementes',
+    tempoPreparo: 12,
+    calorias: 480,
+    selos: ['🌱 Vegano', '🥗 Nutritivo'],
+    tags: ['vegano', 'bowl', 'saudável', 'completo', 'nutritivo']
+  },
+
+  // ========================================
+  // 🍰 SOBREMESAS (4 produtos)
+  // Margem: 70% | Finalização perfeita
+  // ========================================
+  
+  {
+    id: '34',
+    nome: 'Petit Gateau Red Light',
+    descricao: 'Bolinho quente de chocolate belga 70% cacau com recheio cremoso, sorvete artesanal de baunilha bourbon e calda de chocolate amargo',
+    preco: 36.00,
+    categoria: 'Sobremesas',
+    imagem: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 25,
+    ingredientes: 'Chocolate belga 70%, farinha, ovos, sorvete baunilha bourbon, calda chocolate',
+    alergenos: 'Contém glúten, lactose, ovos',
+    tempoPreparo: 10,
+    calorias: 420,
+    tags: ['chocolate', 'quente', 'sorvete', 'clássico']
+  },
+  
+  {
+    id: '35',
+    nome: 'Cheesecake de Frutas Vermelhas',
+    descricao: 'Cheesecake cremoso de cream cheese Philadelphia com base crocante de biscoito amanteigado, coulis de frutas vermelhas frescas e farofa doce',
+    preco: 32.00,
+    categoria: 'Sobremesas',
+    imagem: 'https://images.unsplash.com/photo-1533134486753-c833f0ed4866?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 18,
+    ingredientes: 'Cream cheese Philadelphia, biscoito, frutas vermelhas, açúcar, ovos',
+    alergenos: 'Contém glúten, lactose, ovos',
+    tempoPreparo: 5,
+    calorias: 380,
+    tags: ['cheesecake', 'cremoso', 'frutas', 'gelado']
+  },
+  
+  {
+    id: '36',
+    nome: 'Brownie Premium com Sorvete',
+    descricao: 'Brownie quente de chocolate belga meio amargo, nozes pecã, sorvete de creme artesanal, calda de chocolate quente e raspas de chocolate',
+    preco: 34.00,
+    categoria: 'Sobremesas',
+    imagem: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Chocolate belga, nozes pecã, sorvete creme, calda chocolate',
+    alergenos: 'Contém glúten, lactose, ovos, nozes',
+    tempoPreparo: 8,
+    calorias: 450,
+    tags: ['brownie', 'chocolate', 'nozes', 'quente']
+  },
+  
+  {
+    id: '37',
+    nome: 'Mousse de Maracujá Premium',
+    descricao: 'Mousse aerado e leve de maracujá orgânico, farofa crocante de castanhas caramelizadas e redução agridoce de maracujá',
+    preco: 28.00,
+    categoria: 'Sobremesas',
+    imagem: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 22,
+    ingredientes: 'Maracujá orgânico, creme de leite, castanhas, açúcar',
+    alergenos: 'Contém lactose, ovos, castanhas',
+    tempoPreparo: 5,
+    calorias: 320,
+    tags: ['mousse', 'maracujá', 'leve', 'tropical']
+  },
+
+  // ========================================
+  // 🍺 CERVEJAS ARTESANAIS (5 produtos)
+  // Margem: 55% | Bebidas geladas
+  // ========================================
+  
+  {
+    id: '38',
+    nome: 'IPA Red Light',
+    descricao: 'Nossa IPA exclusiva: amargor equilibrado (50 IBU), aroma intenso de lúpulos americanos Cascade e Centennial, notas cítricas de laranja e grapefruit. 600ml',
+    preco: 28.00,
+    categoria: 'Cervejas',
+    imagem: 'https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 24,
+    ingredientes: 'Malte Pilsen, lúpulo Cascade/Centennial, levedura americana',
+    tempoPreparo: 1,
+    calorias: 180,
+    teor: '6.5% ABV',
+    temperatura: '-2°C',
+    tags: ['ipa', 'artesanal', 'cítrica', 'exclusiva']
+  },
+  
+  {
+    id: '39',
+    nome: 'Witbier Artesanal',
+    descricao: 'Cerveja de trigo belga com coentro orgânico e casca de laranja valenciana, leve, refrescante e aromática. 600ml',
+    preco: 34.00,
+    categoria: 'Cervejas',
+    imagem: 'https://images.unsplash.com/photo-1615799998603-7c6270a45196?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 20,
+    ingredientes: 'Malte de trigo, coentro orgânico, casca de laranja, levedura belga',
+    tempoPreparo: 1,
+    calorias: 150,
+    teor: '5.0% ABV',
+    temperatura: '-1°C',
+    tags: ['witbier', 'trigo', 'coentro', 'laranja', 'belga']
+  },
+  
+  {
+    id: '40',
+    nome: 'Porter Imperial',
+    descricao: 'Cerveja escura complexa com maltes tostados, notas intensas de chocolate belga 70% e café espresso. Encorpada e cremosa. 600ml',
+    preco: 32.00,
+    categoria: 'Cervejas',
+    imagem: 'https://images.unsplash.com/photo-1605248772531-79740597ff24?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 16,
+    ingredientes: 'Malte torrado Munich/Chocolate, café, levedura ale inglesa',
+    tempoPreparo: 1,
+    calorias: 210,
+    teor: '7.2% ABV',
+    temperatura: '4°C',
+    tags: ['porter', 'escura', 'chocolate', 'café', 'encorpada']
+  },
+  
+  {
+    id: '41',
+    nome: 'Lager Pilsen Artesanal',
+    descricao: 'Cerveja clara refrescante de baixa fermentação, amargor suave e notas herbais. Perfeita para o calor carioca. 600ml',
+    preco: 24.00,
+    categoria: 'Cervejas',
+    imagem: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 28,
+    ingredientes: 'Malte Pilsen, lúpulo Saaz, levedura lager',
+    tempoPreparo: 1,
+    calorias: 140,
+    teor: '4.5% ABV',
+    temperatura: '-3°C',
+    tags: ['lager', 'pilsen', 'refrescante', 'leve']
+  },
+  
+  {
+    id: '42',
+    nome: 'APA Tropical',
+    descricao: 'American Pale Ale com lúpulos Galaxy e Mosaic, explosão de notas tropicais: manga, maracujá, abacaxi e cítricos. 600ml',
+    preco: 28.00,
+    categoria: 'Cervejas',
+    imagem: 'https://images.unsplash.com/photo-1618183479302-1e0aa382c36b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 22,
+    ingredientes: 'Malte Pale Ale, lúpulo Galaxy/Mosaic, levedura americana',
+    tempoPreparo: 1,
+    calorias: 165,
+    teor: '5.8% ABV',
+    temperatura: '-2°C',
+    tags: ['apa', 'tropical', 'frutada', 'americana']
+  },
+
+  // ========================================
+  // 🍷 VINHOS & ESPUMANTES (4 produtos)
+  // Margem: 50% | Ocasiões especiais
+  // ========================================
+  
+  {
+    id: '43',
+    nome: 'Cabernet Sauvignon Reserva',
+    descricao: 'Vinho tinto argentino encorpado de Mendoza, 14 meses em carvalho francês, notas de frutas vermelhas maduras, taninos macios e final persistente. 750ml',
+    preco: 145.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    ingredientes: 'Uva Cabernet Sauvignon 100%, carvalho francês',
+    alergenos: 'Contém sulfitos',
+    teor: '14.5% ABV',
+    temperatura: '16-18°C',
+    tags: ['tinto', 'argentino', 'encorpado', 'reserva']
+  },
+  
+  {
+    id: '44',
+    nome: 'Chandon Brut',
+    descricao: 'Espumante brasileiro método champenoise, bolhas finas e persistentes, notas de maçã verde e pão torrado, perfeito para brindes. 750ml',
+    preco: 120.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1502768040783-423da5fd5fa0?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 8,
+    ingredientes: 'Uvas Chardonnay e Pinot Noir, método tradicional',
+    alergenos: 'Contém sulfitos',
+    teor: '12.0% ABV',
+    temperatura: '4-6°C',
+    tags: ['espumante', 'brut', 'celebração', 'brasileiro']
+  },
+  
+  {
+    id: '45',
+    nome: 'Sauvignon Blanc Chileno',
+    descricao: 'Vinho branco chileno fresco do Vale do Colchagua, notas cítricas de limão siciliano e maracujá, acidez vibrante. 750ml',
+    preco: 125.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 10,
+    ingredientes: 'Uva Sauvignon Blanc 100%',
+    alergenos: 'Contém sulfitos',
+    teor: '13.0% ABV',
+    temperatura: '8-10°C',
+    tags: ['branco', 'chileno', 'cítrico', 'fresco']
+  },
+  
+  {
+    id: '46',
+    nome: 'Malbec Argentino Premium',
+    descricao: 'Vinho tinto argentino de altitude (1.200m), encorpado e aveludado, notas de ameixa, chocolate e especiarias. 750ml',
+    preco: 145.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Uva Malbec 100%, altitude 1.200m',
+    alergenos: 'Contém sulfitos',
+    teor: '14.0% ABV',
+    temperatura: '16-18°C',
+    tags: ['tinto', 'malbec', 'argentino', 'encorpado']
+  },
+
+  // ========================================
+  // 🍾 GARRAFAS PARA MESA (12 produtos)
+  // Margem: 70% | Alta rentabilidade para grupos
+  // ========================================
+  
+  {
+    id: '47',
+    nome: 'Vodka Absolut 1L',
+    descricao: 'Garrafa de vodka premium sueca Absolut 1L (12-15 doses). Acompanha gelo, copos, limão siciliano e frutas. Ideal para grupos 4-6 pessoas',
+    preco: 360.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1608885889584-1da7e5d8c02f?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos Red Light, limão siciliano cortado, frutas frescas',
+    tags: ['garrafa', 'vodka', 'premium', 'grupo'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 285.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 340.00, economia: 50.00 }
+    ]
+  },
+  
+  {
+    id: '48',
+    nome: 'Vodka Ciroc 750ml',
+    descricao: 'Garrafa de vodka ultra-premium francesa Ciroc 750ml, feita de uvas. Garrafa exclusiva. Acompanha setup VIP completo',
+    preco: 480.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1618885472179-5e474019f2a9?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 6,
+    volume: '750ml',
+    teor: '40% ABV',
+    doses: '10-12 doses',
+    serve: '3-4 pessoas',
+    inclui: 'Gelo premium, copos cristal, frutas premium, balde LED',
+    tags: ['garrafa', 'vodka', 'ultra-premium', 'exclusivo'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 445.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 500.00, economia: 50.00 }
+    ]
+  },
+  
+  {
+    id: '49',
+    nome: 'Jack Daniel\'s 1L',
+    descricao: 'Garrafa de whiskey Tennessee Jack Daniel\'s 1L (12-15 doses). Acompanha gelo, copos e frutas. Perfeito para apreciadores de whiskey',
+    preco: 330.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1527484809243-2f67cfca2dd6?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos Red Light, limão/laranja',
+    tags: ['garrafa', 'whiskey', 'americano', 'premium'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 325.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 480.00, economia: 50.00 }
+    ]
+  },
+  
+  {
+    id: '50',
+    nome: 'Johnnie Walker Black Label 1L',
+    descricao: 'Garrafa de scotch whisky premium Johnnie Walker Black Label 12 anos 1L. Complexo e defumado. Setup completo incluído',
+    preco: 360.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1582880421648-a369a0f7b810?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 6,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos whisky, frutas cítricas',
+    tags: ['garrafa', 'scotch', 'premium', '12-anos'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 345.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 400.00, economia: 50.00 }
+    ]
+  },
+  
+  {
+    id: '51',
+    nome: 'Gin Tanqueray 1L',
+    descricao: 'Garrafa de gin London Dry premium Tanqueray 1L. Perfeito para gin tônicas. Acompanha tônicas e botânicos',
+    preco: 310.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1602980034204-41e3935eb1f6?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    volume: '1000ml',
+    teor: '47.3% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos balão, limão siciliano, zimbro',
+    tags: ['garrafa', 'gin', 'london-dry', 'premium'],
+    combos: [
+      { nome: 'Garrafa + 5 Tônicas Schweppes', preco: 295.00, economia: 20.00 },
+      { nome: 'Garrafa + 5 Red Bull', preco: 305.00, economia: 15.00 }
+    ]
+  },
+  
+  {
+    id: '52',
+    nome: 'Tequila José Cuervo Gold 750ml',
+    descricao: 'Garrafa de tequila mexicana José Cuervo Especial Gold 750ml. Suave e adocicada. Setup mexicano completo',
+    preco: 330.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1596082296109-e31a168e20eb?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 7,
+    volume: '750ml',
+    teor: '38% ABV',
+    doses: '10-12 doses',
+    serve: '3-5 pessoas',
+    inclui: 'Gelo, copos shot, limão siciliano, sal marinho',
+    tags: ['garrafa', 'tequila', 'mexicano', 'gold'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 255.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 300.00, economia: 50.00 }
+    ]
+  },
+
+  // ========================================
+  // ⚡ ENERGÉTICOS & MIXERS (6 produtos)
+  // Margem: 75% | Essencial para combos
+  // ========================================
+  
+  {
+    id: '53',
+    nome: 'Red Bull Original',
+    descricao: 'Red Bull Energy Drink original 250ml. Taurina, cafeína. Perfeito para mixar com vodka, whisky, gin',
+    preco: 18.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1622543925917-763c34f6a925?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 200,
+    volume: '250ml',
+    tags: ['energético', 'red-bull', 'mixer', 'cafeína'],
+    combos: [
+      { nome: 'Combo 5 latas', preco: 85.00, economia: 10.00 },
+      { nome: 'Combo 10 latas', preco: 145.00, economia: 30.00 }
+    ]
+  },
+
+  {
+    id: '54',
+    nome: 'Red Bull Tropical',
+    descricao: 'Red Bull edição tropical 250ml. Sabor frutas tropicais. Energia + sabor exótico',
+    preco: 22.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 80,
+    volume: '250ml',
+    tags: ['energético', 'red-bull', 'tropical', 'edição-especial'],
+    combos: [
+      { nome: 'Combo 5 latas', preco: 70.00, economia: 10.00 }
+    ]
+  },
+
+  {
+    id: '55',
+    nome: 'Red Bull Açaí',
+    descricao: 'Red Bull edição brasileira sabor açaí 250ml. Edição especial do Brasil',
+    preco: 22.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1622543925917-763c44c95a0e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 60,
+    volume: '250ml',
+    tags: ['energético', 'red-bull', 'açaí', 'brasileiro'],
+    combos: [
+      { nome: 'Combo 5 latas', preco: 70.00, economia: 10.00 }
+    ]
+  },
+
+  {
+    id: '56',
+    nome: 'Red Bull Sugar Free',
+    descricao: 'Red Bull Energy Drink sem açúcar 250ml. Mesma energia, zero açúcar',
+    preco: 18.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1614963366795-8b26c64cc5ee?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 100,
+    volume: '250ml',
+    tags: ['energético', 'red-bull', 'zero-açúcar', 'diet'],
+    combos: [
+      { nome: 'Combo 5 latas', preco: 85.00, economia: 10.00 },
+      { nome: 'Combo 10 latas', preco: 145.00, economia: 30.00 }
+    ]
+  },
+  
+  {
+    id: '57',
+    nome: 'Água Tônica Schweppes',
+    descricao: 'Água tônica premium Schweppes 350ml. Perfeita para gin tônica. Amargor equilibrado',
+    preco: 15.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1599475623994-9940f1e3f8fb?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 120,
+    volume: '350ml',
+    tags: ['tônica', 'schweppes', 'mixer', 'gin'],
+    combos: [
+      { nome: 'Combo 5 garrafas', preco: 55.00, economia: 5.00 }
+    ]
+  },
+
+  {
+    id: '58',
+    nome: 'Água Tônica Fever-Tree',
+    descricao: 'Água tônica ultra-premium Fever-Tree 200ml. Ingredientes naturais, qualidade superior',
+    preco: 18.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1603569283847-aa295f0d016a?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 60,
+    volume: '200ml',
+    tags: ['tônica', 'fever-tree', 'premium', 'natural'],
+    combos: [
+      { nome: 'Combo 5 garrafas', preco: 70.00, economia: 5.00 }
+    ]
+  },
+
+  // ========================================
+  // 💨 NARGUILÉ PREMIUM (1 produto com sabores)
+  // Margem: 85% | Experiência lounge completa
+  // ========================================
+  
+  {
+    id: '59',
+    nome: 'Narguilé Red Light',
+    descricao: 'Narguilé premium com cristal e mangueira de couro. Preparo ritual na mesa. Duração: 60 minutos. Escolha entre 6 sabores exclusivos',
+    preco: 75.00,
+    categoria: 'Narguilé',
+    imagem: 'https://images.unsplash.com/photo-1580982172477-9373ff52ae8f?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    duracao: '60 minutos',
+    preparo: 'Ritual completo na mesa',
+    tags: ['narguilé', 'hookah', 'lounge', 'premium'],
+    sabores: [
+      'Frutas Vermelhas Mix (morango, cereja, framboesa)',
+      'Menta Glacial (refrescante, intenso)',
+      'Uva com Menta (equilíbrio perfeito)',
+      'Maracujá Tropical (exótico, suave)',
+      'Melancia com Hortelã (refrescante)',
+      'Blueberry (suave, adocicado)'
+    ],
+    addons: [
+      { nome: 'Refil 30 min', preco: 15.00 },
+      { nome: 'Sabor premium (dupla maçã, cappuccino)', preco: 10.00 },
+      { nome: 'Narguilé duplo (2 mangueiras)', preco: 90.00 }
+    ]
+  },
+
+  // ========================================
+  // 🎁 PACOTES VIP (3 produtos)
+  // Margem: 60% | Alto valor para grupos
+  // ========================================
+  
+  {
+    id: '60',
+    nome: 'Pacote Friends',
+    descricao: 'Experiência completa para 4-6 pessoas: 1 Vodka Absolut 1L + 1 Jack Daniel\'s 1L + 10 Red Bull + 5 refrigerantes + balde gelo LED + frutas cortadas + mesa reservada 4h + 2 petiscos à escolha (até R$ 35 cada)',
+    preco: 980.00,
+    categoria: 'Pacotes VIP',
+    imagem: 'https://images.unsplash.com/photo-1516997121675-4c2d1684aa3e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 3,
+    serve: '4-6 pessoas',
+    duracao: '4 horas',
+    economia: 120.00,
+    inclui: [
+      '1 Garrafa Vodka Absolut 1L',
+      '1 Garrafa Jack Daniel\'s 1L',
+      '10 Red Bull Original',
+      '5 Refrigerantes variados',
+      'Balde gelo especial com LED',
+      'Frutas cortadas (limão, laranja)',
+      'Mesa reservada área principal 4h',
+      '2 Petiscos à escolha (até R$ 35 cada)'
+    ],
+    tags: ['pacote', 'grupo', 'vip', 'economia']
+  },
+  
+  {
+    id: '61',
+    nome: 'Pacote Premium',
+    descricao: 'Experiência VIP para 6-8 pessoas: 1 Grey Goose 1L + 1 Johnnie Black 1L + 1 Gin Tanqueray 1L + 15 Red Bull + 5 tônicas + 8 refris + 2 baldes LED + frutas premium + mesa VIP 5h + 3 petiscos (até R$ 50) + 1 narguilé duplo',
+    preco: 1650.00,
+    categoria: 'Pacotes VIP',
+    imagem: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 2,
+    serve: '6-8 pessoas',
+    duracao: '5 horas',
+    economia: 200.00,
+    inclui: [
+      '1 Garrafa Grey Goose 1L',
+      '1 Garrafa Johnnie Walker Black 1L',
+      '1 Garrafa Gin Tanqueray 1L',
+      '15 Red Bull Original',
+      '5 Águas Tônica Schweppes',
+      '8 Refrigerantes variados',
+      '2 Baldes gelo especial LED',
+      'Frutas cortadas premium',
+      'Mesa reservada área VIP 5h',
+      '3 Petiscos à escolha (até R$ 50 cada)',
+      '1 Narguilé duplo incluso'
+    ],
+    tags: ['pacote', 'vip', 'premium', 'exclusivo']
+  },
+  
+  {
+    id: '62',
+    nome: 'Pacote Red Light Exclusive',
+    descricao: 'Experiência EXCLUSIVA para 8-12 pessoas: 2 garrafas premium à escolha + 1 Chivas 12 anos + 1 Patrón Silver + 20 Red Bull + 10 tônicas premium + 10 refris + Chandon Brut + 3 baldes LED + frutas premium + área exclusiva 6h + garçom dedicado + 5 petiscos + 2 narguilés duplos + playlist personalizada + fotógrafo 30min',
+    preco: 2800.00,
+    categoria: 'Pacotes VIP',
+    imagem: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 1,
+    serve: '8-12 pessoas',
+    duracao: '6 horas',
+    economia: 400.00,
+    inclui: [
+      '2 Garrafas premium à escolha (Ciroc, Grey Goose, Belvedere)',
+      '1 Garrafa Chivas 12 anos 1L',
+      '1 Garrafa Patrón Silver 750ml',
+      '20 Red Bull Original',
+      '10 Águas Tônica Premium Fever-Tree',
+      '10 Refrigerantes variados',
+      'Champanhe Chandon Brut',
+      '3 Baldes gelo especial LED',
+      'Frutas cortadas premium + garnish especial',
+      'Mesa/área exclusiva 6h',
+      'Atendimento garçom dedicado',
+      '5 Petiscos à escolha (menu completo)',
+      '2 Narguilés duplos inclusos',
+      'Playlist personalizada DJ',
+      'Fotógrafo profissional 30 min'
+    ],
+    tags: ['pacote', 'exclusive', 'luxo', 'celebração']
+  },
+
+  // ========================================
+  // 🍸 DRINKS AUTORAIS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '63',
+    nome: 'Electric Dream',
+    descricao: 'Vodka Ciroc, blue curaçao, lichia fresca, sprite premium e gelo seco com efeito visual futurista',
+    preco: 38.00,
+    categoria: 'Drinks Autorais',
+    imagem: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 18,
+    ingredientes: 'Vodka Ciroc, blue curaçao, lichia, sprite, gelo seco',
+    tempoPreparo: 6,
+    calorias: 165,
+    tags: ['vodka', 'azul', 'visual', 'futurista', 'instagramável']
+  },
+
+  {
+    id: '64',
+    nome: 'Velvet Underground',
+    descricao: 'Bourbon Bulleit, licor de café Mr. Black, espuma de chocolate 70% cacau e bitter de cardamomo',
+    preco: 42.00,
+    categoria: 'Drinks Autorais',
+    imagem: 'https://images.unsplash.com/photo-1509669803555-fd5d53592509?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Bourbon Bulleit, Mr. Black, chocolate 70%, cardamomo',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 7,
+    calorias: 195,
+    tags: ['bourbon', 'café', 'chocolate', 'adulto', 'encorpado']
+  },
+
+  // ========================================
+  // 🥃 CLÁSSICOS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '65',
+    nome: 'Margarita Clássica',
+    descricao: 'Tequila Patrón Silver, Cointreau triple sec, limão fresco espremido na hora e sal de Paraty na borda',
+    preco: 32.00,
+    categoria: 'Clássicos',
+    imagem: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Tequila Patrón Silver, Cointreau, limão fresco, sal Paraty',
+    tempoPreparo: 4,
+    calorias: 175,
+    tags: ['tequila', 'mexicano', 'cítrico', 'clássico']
+  },
+
+  {
+    id: '66',
+    nome: 'Aperol Spritz',
+    descricao: 'Aperol italiano, prosecco fresco, água com gás premium e fatia de laranja siciliana',
+    preco: 36.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Aperol Spritz.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    ingredientes: 'Aperol, prosecco italiano, água com gás, laranja',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 3,
+    calorias: 140,
+    tags: ['aperol', 'italiano', 'refrescante', 'verão']
+  },
+
+  // ========================================
+  // 🔥 SHOTS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '67',
+    nome: 'Lemon Drop Shot',
+    descricao: 'Vodka premium citrus, limão siciliano espremido e açúcar cristal na borda do copo',
+    preco: 22.00,
+    categoria: 'Shots',
+    imagem: 'https://images.unsplash.com/photo-1594041680552-27c68a6c0770?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 45,
+    ingredientes: 'Vodka citrus, limão siciliano, açúcar cristal',
+    tempoPreparo: 2,
+    calorias: 85,
+    tags: ['shot', 'cítrico', 'doce', 'refrescante']
+  },
+
+  {
+    id: '68',
+    nome: 'Saquê Quente',
+    descricao: 'Saquê japonês premium aquecido a 40°C, servido em taça especial de cerâmica',
+    preco: 24.00,
+    categoria: 'Shots',
+    imagem: 'https://images.unsplash.com/photo-1582554367397-5b82c8cfc3ce?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 25,
+    ingredientes: 'Saquê japonês premium',
+    tempoPreparo: 3,
+    calorias: 75,
+    tags: ['shot', 'saquê', 'japonês', 'quente']
+  },
+
+  // ========================================
+  // 🌿 MOCKTAILS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '69',
+    nome: 'Virgin Mojito',
+    descricao: 'Hortelã orgânica macerada na hora, limão siciliano fresco, açúcar demerara, sprite e muito gelo',
+    preco: 24.00,
+    categoria: 'Mocktails',
+    imagem: 'https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 30,
+    ingredientes: 'Hortelã orgânica, limão siciliano, açúcar demerara, sprite',
+    tempoPreparo: 3,
+    calorias: 95,
+    tags: ['sem-álcool', 'hortelã', 'refrescante', 'clássico']
+  },
+
+  {
+    id: '70',
+    nome: 'Cucumber Cooler',
+    descricao: 'Pepino japonês fresco, limão siciliano, alecrim aromático e água tônica premium',
+    preco: 27.00,
+    categoria: 'Mocktails',
+    imagem: 'https://images.unsplash.com/photo-1622484211043-a8e6c36300c3?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 28,
+    ingredientes: 'Pepino japonês, limão siciliano, alecrim, tônica premium',
+    tempoPreparo: 4,
+    calorias: 55,
+    tags: ['sem-álcool', 'pepino', 'leve', 'detox']
+  },
+
+  // ========================================
+  // 🔥 ENTRADAS QUENTES - NOVAS (4 produtos)
+  // ========================================
+
+  {
+    id: '71',
+    nome: 'Mini Pastéis Artesanais',
+    descricao: 'Seleção de 6 mini pastéis: carne moída temperada, queijo coalho cremoso e camarão. Servidos com molhos especiais da casa',
+    preco: 36.00,
+    categoria: 'Entradas',
+    imagem: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    ingredientes: 'Massa caseira, carne moída, queijo coalho, camarão, molhos',
+    alergenos: 'Contém glúten, lactose, frutos do mar',
+    tempoPreparo: 10,
+    calorias: 380,
+    tags: ['frito', 'brasileiro', 'variado', 'compartilhável']
+  },
+
+  {
+    id: '72',
+    nome: 'Camarão Empanado Premium',
+    descricao: '8 camarões grandes em crosta crocante especial, acompanha molho agridoce asiático e limão siciliano',
+    preco: 54.00,
+    categoria: 'Entradas',
+    imagem: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    ingredientes: 'Camarões grandes, farinha panko, molho agridoce, limão',
+    alergenos: 'Contém glúten, frutos do mar',
+    tempoPreparo: 12,
+    calorias: 320,
+    tags: ['camarão', 'frito', 'premium', 'asiático']
+  },
+
+  {
+    id: '73',
+    nome: 'Iscas de Frango Oriental',
+    descricao: 'Frango orgânico marinado em shoyu premium e gergelim tostado, ultra crocante e aromático',
+    preco: 54.00,
+    categoria: 'Entradas',
+    imagem: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 20,
+    ingredientes: 'Frango orgânico, shoyu, gergelim, temperos orientais',
+    alergenos: 'Contém glúten, soja, gergelim',
+    tempoPreparo: 14,
+    calorias: 290,
+    tags: ['frango', 'oriental', 'crocante', 'gergelim']
+  },
+
+  {
+    id: '74',
+    nome: 'Polenta Frita Trufada',
+    descricao: 'Polenta cremosa italiana empanada em crosta crocante, finalizada com óleo de trufa negra e parmesão ralado',
+    preco: 34.00,
+    categoria: 'Entradas',
+    imagem: 'https://images.unsplash.com/photo-1593252719340-b9eae1a1c57c?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 22,
+    ingredientes: 'Polenta italiana, óleo trufa negra, parmesão, farinha',
+    alergenos: 'Contém glúten, lactose',
+    tempoPreparo: 10,
+    calorias: 280,
+    tags: ['vegetariano', 'trufa', 'italiano', 'sofisticado']
+  },
+
+  // ========================================
+  // 🍽️ PETISCOS - NOVOS (4 produtos)
+  // ========================================
+
+  {
+    id: '75',
+    nome: 'Tábua de Queijos Brasileiros',
+    descricao: '4 queijos artesanais brasileiros selecionados: queijo minas, coalho, requeijão cremoso e azul. Acompanha geleia de pimenta biquinho, mel silvestre, castanhas tostadas e pães artesanais',
+    preco: 75.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Queijos artesanais brasileiros, geleia pimenta, mel, castanhas, pães',
+    alergenos: 'Contém lactose, glúten, castanhas',
+    tempoPreparo: 5,
+    calorias: 620,
+    porcao: 'Serve 2-3 pessoas',
+    tags: ['queijos', 'brasileiro', 'artesanal', 'premium']
+  },
+
+  {
+    id: '76',
+    nome: 'Frango à Passarinho',
+    descricao: 'Frango caipira crocante ao alho, limão siciliano fresco e batata palha artesanal. Clássico brasileiro irresistível',
+    preco: 58.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 18,
+    ingredientes: 'Frango caipira, alho, limão siciliano, batata palha',
+    alergenos: 'Contém glúten',
+    tempoPreparo: 18,
+    calorias: 420,
+    tags: ['frango', 'brasileiro', 'alho', 'clássico']
+  },
+
+  {
+    id: '77',
+    nome: 'Anéis de Cebola Gigantes',
+    descricao: 'Anéis de cebola roxa empanados em crosta extra crocante, acompanha molho barbecue defumado caseiro',
+    preco: 32.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 25,
+    ingredientes: 'Cebola roxa, farinha temperada, molho BBQ defumado',
+    alergenos: 'Contém glúten',
+    tempoPreparo: 12,
+    calorias: 340,
+    tags: ['vegetariano', 'cebola', 'frito', 'americano']
+  },
+
+  {
+    id: '78',
+    nome: 'Dadinho de Tapioca',
+    descricao: 'Dadinhos crocantes de queijo coalho artesanal, acompanha melado de cana orgânico. Explosão nordestina de sabor',
+    preco: 38.00,
+    categoria: 'Petiscos',
+    imagem: 'https://images.unsplash.com/photo-1619158401688-e7cfa5fd2b7f?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Queijo coalho artesanal, goma de tapioca, melado de cana',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 10,
+    calorias: 310,
+    tags: ['nordestino', 'queijo', 'doce-salgado', 'brasileiro']
+  },
+
+  // ========================================
+  // 🥩 PRATOS PRINCIPAIS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '79',
+    nome: 'Risotto de Cogumelos e Aspargos',
+    descricao: 'Arroz arbóreo cremoso cozido ao ponto, mix de cogumelos frescos (shitake, shimeji, paris), aspargos grelhados, parmesão reggiano 18 meses e azeite de trufa branca',
+    preco: 75.00,
+    categoria: 'Pratos Principais',
+    imagem: '/images/cardapio/Risoto de Cogumelos.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 12,
+    ingredientes: 'Arroz arbóreo, cogumelos variados, aspargos, parmesão reggiano, trufa',
+    alergenos: 'Contém lactose',
+    tempoPreparo: 25,
+    calorias: 480,
+    tags: ['vegetariano', 'risotto', 'cogumelos', 'italiano', 'sofisticado']
+  },
+
+  {
+    id: '80',
+    nome: 'Espaguete ao Pesto de Manjericão',
+    descricao: 'Massa artesanal fresca al dente, pesto tradicional de manjericão orgânico DOP, pinhões tostados e parmesão ralado na hora',
+    preco: 58.00,
+    categoria: 'Pratos Principais',
+    imagem: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 18,
+    ingredientes: 'Espaguete artesanal, manjericão orgânico, pinhões, parmesão, azeite',
+    alergenos: 'Contém glúten, lactose, castanhas',
+    tempoPreparo: 15,
+    calorias: 520,
+    tags: ['massa', 'italiano', 'pesto', 'vegetariano'],
+    addons: [
+      { nome: 'Camarões grelhados (6 unidades)', preco: 15.00 }
+    ]
+  },
+
+  // ========================================
+  // 🌱 PLANT-BASED - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '81',
+    nome: 'Salada Caesar Vegana',
+    descricao: 'Alface romana crocante, croutons artesanais de pão italiano, molho caesar 100% vegetal, parmesão vegano e grão-de-bico crocante temperado',
+    preco: 48.00,
+    categoria: 'Plant-Based',
+    imagem: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 15,
+    ingredientes: 'Alface romana, croutons, molho caesar vegano, parmesão vegetal, grão-de-bico',
+    tempoPreparo: 8,
+    calorias: 280,
+    selos: ['🌱 100% Plant-Based', '🥬 Vegano'],
+    tags: ['vegano', 'salada', 'caesar', 'saudável']
+  },
+
+  {
+    id: '82',
+    nome: 'Wrap de Falafel',
+    descricao: 'Falafel artesanal crocante de grão-de-bico e especiarias, homus cremoso, tahine, pepino, tomate cereja, alface e wrap integral',
+    preco: 58.00,
+    categoria: 'Plant-Based',
+    imagem: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 14,
+    ingredientes: 'Falafel de grão-de-bico, homus, tahine, vegetais frescos, wrap integral',
+    alergenos: 'Contém glúten, gergelim',
+    tempoPreparo: 10,
+    calorias: 420,
+    selos: ['🌱 100% Plant-Based', '🥬 Vegano'],
+    tags: ['vegano', 'falafel', 'árabe', 'wrap']
+  },
+
+  // ========================================
+  // 🍷 VINHOS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '83',
+    nome: 'Rosé Francês Provence',
+    descricao: 'Vinho rosé seco elegante da Provence francesa, notas de frutas vermelhas e cítricos, refrescante e delicado. 750ml',
+    preco: 135.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1547595628-c61a29f496f0?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    ingredientes: 'Uvas Grenache, Cinsault, Provence',
+    alergenos: 'Contém sulfitos',
+    teor: '12.5% ABV',
+    temperatura: '8-10°C',
+    tags: ['rosé', 'francês', 'provence', 'verão']
+  },
+
+  {
+    id: '84',
+    nome: 'Prosecco Italiano DOC',
+    descricao: 'Espumante italiano autêntico Prosecco DOC, bolhas delicadas, notas de pera e flores brancas. Perfeito para brindes. 750ml',
+    preco: 115.00,
+    categoria: 'Vinhos',
+    imagem: 'https://images.unsplash.com/photo-1510896394664-14e760292a1e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Uva Glera 100%, método Charmat',
+    alergenos: 'Contém sulfitos',
+    teor: '11.0% ABV',
+    temperatura: '6-8°C',
+    tags: ['prosecco', 'italiano', 'espumante', 'brinde']
+  },
+
+  // ========================================
+  // 🍾 GARRAFAS - NOVAS (14 produtos)
+  // Alta rentabilidade para grupos
+  // ========================================
+
+  {
+    id: '85',
+    nome: 'Vodka Smirnoff 1L',
+    descricao: 'Garrafa de vodka russa clássica Smirnoff 1L (12-15 doses). Triple distilled. Acompanha setup completo',
+    preco: 240.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1560963805-6c64416290de?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 12,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos Red Light, limão siciliano, frutas',
+    tags: ['garrafa', 'vodka', 'clássico', 'grupo'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 245.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 290.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '86',
+    nome: 'Vodka Grey Goose 1L',
+    descricao: 'Garrafa de vodka francesa ultra-premium Grey Goose 1L. Suavidade excepcional, qualidade suprema. Setup VIP completo',
+    preco: 540.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1560424138-4e23e0b91d6c?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 5,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo premium, copos cristal, frutas premium, balde LED',
+    tags: ['garrafa', 'vodka', 'ultra-premium', 'francesa'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 485.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 540.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '87',
+    nome: 'Vodka Belvedere 1L',
+    descricao: 'Garrafa de vodka polonesa super premium Belvedere 1L. Pureza absoluta, elegância suprema. Experiência VIP',
+    preco: 580.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1607622750671-6cd3d0ae5bfe?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 4,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Setup VIP completo, balde LED, copos premium',
+    tags: ['garrafa', 'vodka', 'super-premium', 'polonesa'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 515.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 570.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '88',
+    nome: 'Whisky Johnnie Walker Red Label 1L',
+    descricao: 'Garrafa de scotch whisky Johnnie Walker Red Label 1L. Clássico atemporal, blend equilibrado',
+    preco: 240.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1527281400922-a0c2d5800264?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 10,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos whisky, limão/laranja',
+    tags: ['garrafa', 'scotch', 'clássico', 'acessível'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 245.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 290.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '89',
+    nome: 'Whisky Ballantine\'s Finest 1L',
+    descricao: 'Garrafa de scotch whisky Ballantine\'s Finest 1L. Suave e equilibrado, blend premium escocês',
+    preco: 230.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1577767173056-fa9cb0672cce?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 8,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos whisky, frutas cítricas',
+    tags: ['garrafa', 'scotch', 'suave', 'escocês'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 235.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 360.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '90',
+    nome: 'Whisky Chivas Regal 12 Anos 1L',
+    descricao: 'Garrafa de scotch whisky premium Chivas Regal 12 anos 1L. Complexo, notas de mel e frutas. Luxuoso',
+    preco: 420.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1605266491995-2d285708639c?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 6,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Setup premium, copos cristal, frutas',
+    tags: ['garrafa', 'scotch', 'premium', '12-anos'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 385.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 440.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '91',
+    nome: 'Gin Beefeater 1L',
+    descricao: 'Garrafa de gin London Dry Beefeater 1L. Clássico inglês, 9 botânicos. Perfeito para gin tônicas',
+    preco: 330.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1618158015226-e2c8b057cd02?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 10,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos balão, limão, botânicos',
+    tags: ['garrafa', 'gin', 'london-dry', 'clássico'],
+    combos: [
+      { nome: 'Garrafa + 5 Tônicas Schweppes', preco: 245.00, economia: 20.00 },
+      { nome: 'Garrafa + 5 Red Bull', preco: 255.00, economia: 15.00 }
+    ]
+  },
+
+  {
+    id: '92',
+    nome: 'Gin Hendrick\'s 750ml',
+    descricao: 'Garrafa de gin escocês ultra-premium Hendrick\'s 750ml. Pepino e pétalas de rosa. Experiência única',
+    preco: 420.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1623678865977-6ba30b0c7e55?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 5,
+    volume: '750ml',
+    teor: '41.4% ABV',
+    doses: '10-12 doses',
+    serve: '3-4 pessoas',
+    inclui: 'Setup premium, pepino fresco, pétalas',
+    tags: ['garrafa', 'gin', 'ultra-premium', 'exclusivo'],
+    combos: [
+      { nome: 'Garrafa + 5 Tônicas Premium', preco: 375.00, economia: 20.00 }
+    ]
+  },
+
+  {
+    id: '93',
+    nome: 'Gin Bombay Sapphire 1L',
+    descricao: 'Garrafa de gin London Dry premium Bombay Sapphire 1L. 10 botânicos exóticos, garrafa icônica azul',
+    preco: 330.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1595981234058-c5162e2a0e49?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 7,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos premium, botânicos frescos',
+    tags: ['garrafa', 'gin', 'premium', 'botânicos'],
+    combos: [
+      { nome: 'Garrafa + 5 Tônicas Schweppes', preco: 305.00, economia: 20.00 }
+    ]
+  },
+
+  {
+    id: '94',
+    nome: 'Rum Bacardi Carta Branca 1L',
+    descricao: 'Garrafa de rum branco cubano Bacardi Carta Branca 1L. Leve e versátil, perfeito para cocktails',
+    preco: 220.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1627873649417-c67f701f1949?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 9,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos, limão, hortelã',
+    tags: ['garrafa', 'rum', 'branco', 'cubano'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 225.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 270.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '95',
+    nome: 'Rum Bacardi Carta Ouro 1L',
+    descricao: 'Garrafa de rum envelhecido Bacardi Carta Ouro 1L. Notas de baunilha e caramelo, suave e aromático',
+    preco: 240.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1606137975661-0600fed76d65?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    volume: '1000ml',
+    teor: '40% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos, frutas cítricas',
+    tags: ['garrafa', 'rum', 'ouro', 'envelhecido'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 245.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 290.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '96',
+    nome: 'Rum Captain Morgan Spiced 1L',
+    descricao: 'Garrafa de rum com especiarias Captain Morgan 1L. Baunilha e canela, perfil aromático único',
+    preco: 230.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1612528443702-f6741f70a049?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 7,
+    volume: '1000ml',
+    teor: '35% ABV',
+    doses: '12-15 doses',
+    serve: '4-6 pessoas',
+    inclui: 'Gelo, copos, frutas, especiarias',
+    tags: ['garrafa', 'rum', 'spiced', 'especiarias'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 235.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 360.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '97',
+    nome: 'Tequila José Cuervo Silver 750ml',
+    descricao: 'Garrafa de tequila mexicana José Cuervo Especial Silver 750ml. Cristalina e pura, ideal para margaritas',
+    preco: 240.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 7,
+    volume: '750ml',
+    teor: '38% ABV',
+    doses: '10-12 doses',
+    serve: '3-5 pessoas',
+    inclui: 'Gelo, copos shot, limão, sal marinho',
+    tags: ['garrafa', 'tequila', 'silver', 'mexicano'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 245.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 290.00, economia: 50.00 }
+    ]
+  },
+
+  {
+    id: '98',
+    nome: 'Tequila Patrón Silver 750ml',
+    descricao: 'Garrafa de tequila 100% agave ultra-premium Patrón Silver 750ml. Cristalina, refinada, luxuosa',
+    preco: 480.00,
+    categoria: 'Garrafas',
+    imagem: 'https://images.unsplash.com/photo-1608885889595-0d28ba2f421e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 4,
+    volume: '750ml',
+    teor: '40% ABV',
+    doses: '10-12 doses',
+    serve: '3-5 pessoas',
+    inclui: 'Setup VIP, copos premium, limão, sal especial',
+    tags: ['garrafa', 'tequila', 'ultra-premium', '100-agave'],
+    combos: [
+      { nome: 'Garrafa + 5 Red Bull', preco: 445.00, economia: 15.00 },
+      { nome: 'Garrafa + 10 Red Bull', preco: 500.00, economia: 50.00 }
+    ]
+  },
+
+  // ========================================
+  // ⚡ ENERGÉTICOS - NOVOS (2 produtos)
+  // ========================================
+
+  {
+    id: '99',
+    nome: 'Refrigerantes Variados',
+    descricao: 'Refrigerante lata 350ml. Sabores: Coca-Cola, Sprite, Fanta Laranja, Guaraná Antarctica',
+    preco: 12.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 150,
+    volume: '350ml',
+    tags: ['refrigerante', 'mixer', 'variados'],
+    sabores: ['Coca-Cola', 'Sprite', 'Fanta Laranja', 'Guaraná Antarctica']
+  },
+
+  {
+    id: '100',
+    nome: 'Água com Gás Perrier',
+    descricao: 'Água mineral com gás francesa premium Perrier 330ml. Bolhas naturais, elegância francesa',
+    preco: 15.00,
+    categoria: 'Energéticos',
+    imagem: 'https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 80,
+    volume: '330ml',
+    tags: ['água', 'gás', 'premium', 'francesa']
+  },
+
+  // ========================================
+  // 🍹 ADD-ONS (4 produtos)
+  // Alta margem, complementos
+  // ========================================
+
+  {
+    id: '101',
+    nome: 'Balde de Gelo Especial LED',
+    descricao: 'Balde iluminado com LED vermelho personalizado Red Light, capacidade 5L. Torna sua mesa instagramável',
+    preco: 34.00,
+    categoria: 'Add-ons',
+    imagem: 'https://images.unsplash.com/photo-1564671165093-20688ff1fffa?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    tags: ['balde', 'led', 'gelo', 'visual']
+  },
+
+  {
+    id: '102',
+    nome: 'Kit Frutas Premium',
+    descricao: 'Mix de frutas frescas cortadas artisticamente: limão siciliano em espiral, laranja em fatias, morango, menta fresca, alecrim',
+    preco: 32.00,
+    categoria: 'Add-ons',
+    imagem: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 30,
+    tags: ['frutas', 'premium', 'garnish', 'fresco']
+  },
+
+  {
+    id: '103',
+    nome: 'Upgrade Copos Premium',
+    descricao: 'Copos de cristal especiais Red Light com logo gravado. Experiência sofisticada (por garrafa)',
+    preco: 18.00,
+    categoria: 'Add-ons',
+    imagem: 'https://images.unsplash.com/photo-1461009312844-e80697a81cc7?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 40,
+    tags: ['copos', 'cristal', 'premium', 'upgrade']
+  },
+
+  {
+    id: '104',
+    nome: 'Gelo Especial',
+    descricao: 'Gelo esférico grande ou cubos especiais que derretem mais devagar, mantendo o drink gelado por mais tempo',
+    preco: 15.00,
+    categoria: 'Add-ons',
+    imagem: 'https://images.unsplash.com/photo-1563379091862-d3114c87b8d9?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 50,
+    tags: ['gelo', 'esférico', 'premium', 'qualidade']
+  },
+
+  // ========================================
+  // 🍸 CLÁSSICOS ADICIONAIS (1 produto)
+  // ========================================
+
+  {
+    id: '105',
+    nome: 'Negroni Clássico',
+    descricao: 'Clássico italiano perfeito: Gin Tanqueray, Campari italiano, vermute rosso Cinzano, finalizado com casca de laranja fresca',
+    preco: 48.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Negroni Clássico.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    ingredientes: 'Gin Tanqueray, Campari, vermute rosso Cinzano, laranja',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 5,
+    calorias: 195,
+    tags: ['clássico', 'italiano', 'gin', 'campari', 'negroni']
+  },
+
+  {
+    id: '106',
+    nome: 'Gin Tônica Especial',
+    descricao: 'Gin Beefeater premium, tônica Schweppes, mix de botânicos frescos (alecrim, zimbro, cardamomo) e frutas vermelhas',
+    preco: 58.00,
+    categoria: 'Clássicos',
+    imagem: '/images/cardapio/Gin Tônica Premium 2.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    ingredientes: 'Gin Beefeater, tônica Schweppes, botânicos frescos, frutas vermelhas',
+    alergenos: 'Contém sulfitos',
+    tempoPreparo: 6,
+    calorias: 160,
+    tags: ['gin', 'tônica', 'botânicos', 'premium', 'refrescante']
+  },
+
+  // ========================================
+  // 🧀 ENTRADAS PREMIUM (1 produto)
+  // ========================================
+
+  {
+    id: '107',
+    nome: 'Burrata com Tomate Confit',
+    descricao: 'Burrata italiana artesanal cremosa (250g), tomates cerejas confitados ao azeite de oliva extra virgem com manjericão fresco, redução de balsâmico e pães artesanais crocantes',
+    preco: 75.00,
+    categoria: 'Entradas',
+    imagem: '/images/cardapio/Burrata com Tomate Confit.png',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    ingredientes: 'Burrata italiana, tomate cereja, azeite extra virgem, manjericão, balsâmico, pão artesanal',
+    alergenos: 'Contém lactose, glúten',
+    tempoPreparo: 8,
+    calorias: 380,
+    tags: ['burrata', 'italiano', 'queijo', 'premium', 'entrada']
+  },
+
+  // ========================================
+  // 🍾 COMBOS DE GARRAFAS (13 produtos)
+  // Alta margem - Perfeito para grupos
+  // ========================================
+
+  {
+    id: '108',
+    nome: 'Combo Absolut Energy',
+    descricao: 'Vodka Absolut 1L + 5x Red Bull Original. Setup completo para sua mesa. Economia de R$ 50!',
+    preco: 320.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1560963805-6c64416290de?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    conteudo: ['Vodka Absolut 1L', '5x Red Bull Original', 'Balde de gelo', 'Copos'],
+    economia: 50.00,
+    tags: ['combo', 'vodka', 'energético', 'festa', 'grupo']
+  },
+
+  {
+    id: '109',
+    nome: 'Combo Ciroc Tropical',
+    descricao: 'Vodka Ciroc Premium 750ml + 5x Red Bull Tropical. Experiência premium para sua noite. Economia de R$ 25!',
+    preco: 550.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    conteudo: ['Vodka Ciroc 750ml', '5x Red Bull Tropical', 'Balde de gelo premium', 'Copos premium'],
+    economia: 25.00,
+    tags: ['combo', 'vodka', 'premium', 'ciroc', 'tropical']
+  },
+
+  {
+    id: '110',
+    nome: 'Combo Grey Goose Elite',
+    descricao: 'Vodka Grey Goose 1L + 5x Red Bull Açaí. Ultra premium para noites especiais. Economia de R$ 25!',
+    preco: 610.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 6,
+    conteudo: ['Vodka Grey Goose 1L', '5x Red Bull Açaí', 'Balde LED especial', 'Copos cristal'],
+    economia: 25.00,
+    tags: ['combo', 'vodka', 'ultra-premium', 'grey-goose', 'vip']
+  },
+
+  {
+    id: '111',
+    nome: 'Combo Jack Energy',
+    descricao: 'Jack Daniel\'s 1L + 5x Red Bull Original. Clássico americano com energia. Economia de R$ 40!',
+    preco: 380.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1527281400262-ada7f6e1e8d3?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 12,
+    conteudo: ['Jack Daniel\'s 1L', '5x Red Bull Original', 'Balde de gelo', 'Copos'],
+    economia: 40.00,
+    tags: ['combo', 'whisky', 'jack-daniels', 'americano', 'clássico']
+  },
+
+  {
+    id: '112',
+    nome: 'Combo JW Black Premium',
+    descricao: 'Johnnie Walker Black Label 1L + 5x Red Bull Sugar Free. Sofisticação em cada dose. Economia de R$ 40!',
+    preco: 410.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    conteudo: ['Johnnie Walker Black 1L', '5x Red Bull Sugar Free', 'Balde premium', 'Copos cristal'],
+    economia: 40.00,
+    tags: ['combo', 'whisky', 'johnnie-walker', 'premium', 'black-label']
+  },
+
+  {
+    id: '113',
+    nome: 'Combo Chivas Deluxe',
+    descricao: 'Chivas Regal 12 Anos 1L + 5x Red Bull Tropical. Tradição escocesa com twist tropical. Economia de R$ 35!',
+    preco: 480.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 8,
+    conteudo: ['Chivas Regal 12 Anos 1L', '5x Red Bull Tropical', 'Balde LED', 'Copos premium'],
+    economia: 35.00,
+    tags: ['combo', 'whisky', 'chivas', 'escocês', 'deluxe']
+  },
+
+  {
+    id: '114',
+    nome: 'Combo Tanqueray Tônica',
+    descricao: 'Gin Tanqueray 1L + 5x Água Tônica Fever-Tree Premium. Combinação perfeita para gin lovers. Economia de R$ 40!',
+    preco: 360.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    conteudo: ['Gin Tanqueray 1L', '5x Tônica Fever-Tree', 'Kit botânicos frescos', 'Copos balloon'],
+    economia: 40.00,
+    tags: ['combo', 'gin', 'tanqueray', 'tônica', 'premium']
+  },
+
+  {
+    id: '115',
+    nome: 'Combo Beefeater Mix',
+    descricao: 'Gin Beefeater 1L + 5x Água Tônica Schweppes. Entrada no mundo dos gins. Economia de R$ 25!',
+    preco: 300.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1530652101-e0849585aa1a?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 15,
+    conteudo: ['Gin Beefeater 1L', '5x Tônica Schweppes', 'Limões sicilianos', 'Copos'],
+    economia: 25.00,
+    tags: ['combo', 'gin', 'beefeater', 'tônica', 'acessível']
+  },
+
+  {
+    id: '116',
+    nome: 'Combo Hendrick\'s Premium',
+    descricao: 'Gin Hendrick\'s 750ml + 5x Água Tônica Fever-Tree. Exclusividade e pepino fresco. Economia de R$ 30!',
+    preco: 480.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 6,
+    conteudo: ['Gin Hendrick\'s 750ml', '5x Tônica Fever-Tree', 'Pepino fresco', 'Copos balloon premium'],
+    economia: 30.00,
+    tags: ['combo', 'gin', 'hendricks', 'premium', 'exclusivo']
+  },
+
+  {
+    id: '117',
+    nome: 'Combo José Cuervo Party',
+    descricao: 'Tequila José Cuervo Gold 750ml + 5x Refrigerantes Variados. Festa mexicana garantida! Economia de R$ 30!',
+    preco: 280.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 12,
+    conteudo: ['Tequila José Cuervo Gold 750ml', '5x Refrigerantes variados', 'Limões', 'Sal marinho', 'Shots'],
+    economia: 30.00,
+    tags: ['combo', 'tequila', 'cuervo', 'mexicano', 'festa']
+  },
+
+  {
+    id: '118',
+    nome: 'Combo Patrón Elite',
+    descricao: 'Tequila Patrón Silver 750ml + 5x Água Tônica Fever-Tree. Tequila premium de verdade. Economia de R$ 40!',
+    preco: 540.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1515693887562-a1e3f4c2e749?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 5,
+    conteudo: ['Tequila Patrón Silver 750ml', '5x Tônica Fever-Tree', 'Limões sicilianos', 'Copos premium'],
+    economia: 40.00,
+    tags: ['combo', 'tequila', 'patron', 'silver', 'elite']
+  },
+
+  {
+    id: '119',
+    nome: 'Combo Bacardi Mojito',
+    descricao: 'Rum Bacardi Carta Branca 1L + Kit completo para mojitos (hortelã, limão, açúcar). Faça seus próprios mojitos! Economia de R$ 15!',
+    preco: 250.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1536935338788-846bb9981813?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 10,
+    conteudo: ['Rum Bacardi Branca 1L', 'Hortelã fresca', 'Limões tahiti', 'Açúcar demerara', 'Soda'],
+    economia: 15.00,
+    tags: ['combo', 'rum', 'bacardi', 'mojito', 'diy']
+  },
+
+  {
+    id: '120',
+    nome: 'Combo Captain Morgan Mix',
+    descricao: 'Rum Captain Morgan Spiced 1L + 5x Refrigerantes Variados. Aventura do Capitão na sua mesa! Economia de R$ 20!',
+    preco: 270.00,
+    categoria: 'Combos',
+    imagem: 'https://images.unsplash.com/photo-1608873696287-06e39a838c24?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 12,
+    conteudo: ['Rum Captain Morgan 1L', '5x Refrigerantes variados', 'Limões', 'Copos'],
+    economia: 20.00,
+    tags: ['combo', 'rum', 'captain-morgan', 'spiced', 'aventura']
+  },
+
+  // ========================================
+  // 💎 EXPERIÊNCIAS PREMIUM (2 produtos)
+  // Alto valor agregado
+  // ========================================
+
+  {
+    id: '121',
+    nome: 'Experiência Bartender Privativo (1h)',
+    descricao: 'Bartender exclusivo na sua mesa por 1 hora. Preparação de 5 drinks personalizados com show de coquetelaria. Perfeito para aniversários e celebrações especiais!',
+    preco: 350.00,
+    categoria: 'Experiências',
+    imagem: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 5,
+    conteudo: ['Bartender dedicado 1h', '5 drinks personalizados', 'Show de coquetelaria', 'Fotos profissionais'],
+    tempoPreparo: 60,
+    tags: ['experiência', 'bartender', 'exclusivo', 'aniversário', 'show']
+  },
+
+  {
+    id: '122',
+    nome: 'Mesa VIP com Serviço Premium (4h)',
+    descricao: 'Mesa reservada na área VIP com garçom dedicado por 4 horas. Inclui petiscos de cortesia (R$ 80) e decoração especial. Experiência completa Red Light!',
+    preco: 500.00,
+    categoria: 'Experiências',
+    imagem: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 3,
+    conteudo: ['Mesa área VIP', 'Garçom dedicado 4h', 'Petiscos cortesia R$ 80', 'Decoração especial', 'Balões/velas'],
+    tempoPreparo: 240,
+    tags: ['experiência', 'vip', 'exclusivo', 'mesa-reservada', 'premium']
+  },
+
+  // ========================================
+  // 🎉 KITS PARA EVENTOS (2 produtos)
+  // Momentos instagramáveis
+  // ========================================
+
+  {
+    id: '123',
+    nome: 'Kit Aniversário Red Light',
+    descricao: 'Kit completo para celebrar seu aniversário com estilo! Balde LED, velas sparklers, placa personalizada, shot cortesia para 6 pessoas e foto profissional.',
+    preco: 280.00,
+    categoria: 'Kits Eventos',
+    imagem: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 20,
+    conteudo: ['Balde de gelo LED', 'Velas sparklers profissionais', 'Placa personalizada', '6 shots cortesia', 'Foto profissional'],
+    tags: ['aniversário', 'celebração', 'kit', 'foto', 'especial']
+  },
+
+  {
+    id: '124',
+    nome: 'Kit Despedida de Solteiro/a',
+    descricao: 'Despedida inesquecível! Coroa/faixa personalizada, 10 shots especiais, acesso prioritário, brinde surpresa e foto + vídeo profissional.',
+    preco: 420.00,
+    categoria: 'Kits Eventos',
+    imagem: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 15,
+    conteudo: ['Coroa/faixa personalizada', '10 shots especiais', 'Acesso prioritário', 'Brinde surpresa', 'Foto + vídeo profissional'],
+    tags: ['despedida', 'solteiro', 'festa', 'especial', 'memorável']
+  },
+
+  // ========================================
+  // 🍽️ COMBOS COMIDA + BEBIDA (3 produtos)
+  // Valor agregado
+  // ========================================
+
+  {
+    id: '125',
+    nome: 'Combo Date Night',
+    descricao: 'Noite romântica perfeita para 2 pessoas: 2 Drinks Autorais à escolha + Tábua de Frios Premium + Sobremesa à escolha. Economia de R$ 45!',
+    preco: 280.00,
+    categoria: 'Combos Especiais',
+    imagem: 'https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 30,
+    conteudo: ['2x Drinks Autorais', 'Tábua de Frios Premium', 'Sobremesa à escolha'],
+    economia: 45.00,
+    tempoPreparo: 20,
+    tags: ['combo', 'romântico', 'casal', 'date', 'especial']
+  },
+
+  {
+    id: '126',
+    nome: 'Combo Happy Friends (4 pessoas)',
+    descricao: 'Diversão para 4 amigos: 4 Cervejas Artesanais + 2 Petiscos grandes à escolha + Batata Rústica. Economia de R$ 60!',
+    preco: 380.00,
+    categoria: 'Combos Especiais',
+    imagem: 'https://images.unsplash.com/photo-1513618364601-1e8a26e61fa7?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 25,
+    conteudo: ['4x Cervejas Artesanais', '2x Petiscos grandes', 'Batata Rústica'],
+    economia: 60.00,
+    tempoPreparo: 25,
+    tags: ['combo', 'amigos', 'grupo', 'cerveja', 'petiscos']
+  },
+
+  {
+    id: '127',
+    nome: 'Combo Executivo Almoço',
+    descricao: 'Almoço executivo: Prato Principal à escolha + Bebida (refrigerante/suco) + Café expresso. Economia de R$ 25!',
+    preco: 120.00,
+    categoria: 'Combos Especiais',
+    imagem: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: false,
+    estoque: 40,
+    conteudo: ['Prato Principal', 'Bebida (refri/suco)', 'Café expresso'],
+    economia: 25.00,
+    tempoPreparo: 30,
+    tags: ['combo', 'almoço', 'executivo', 'negócios', 'rápido']
+  },
+
+  // ========================================
+  // 💳 CARTÕES DE RECARGA (2 produtos)
+  // Fidelização
+  // ========================================
+
+  {
+    id: '128',
+    nome: 'Cartão Recarga R$ 500',
+    descricao: 'Cartão pré-pago com R$ 500 em créditos + R$ 20 de bônus! Válido por 90 dias, sem taxa de adesão. Use quando quiser!',
+    preco: 480.00,
+    categoria: 'Cartões',
+    imagem: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 100,
+    creditos: 500.00,
+    bonus: 20.00,
+    validade: '90 dias',
+    tags: ['cartão', 'recarga', 'créditos', 'fidelidade', 'economia']
+  },
+
+  {
+    id: '129',
+    nome: 'Cartão Recarga R$ 1000',
+    descricao: 'Cartão pré-pago com R$ 1000 em créditos + R$ 50 de bônus! Válido por 180 dias + acesso a eventos exclusivos. Melhor custo-benefício!',
+    preco: 950.00,
+    categoria: 'Cartões',
+    imagem: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 100,
+    creditos: 1000.00,
+    bonus: 50.00,
+    validade: '180 dias',
+    beneficios: ['Acesso eventos exclusivos', 'Prioridade em reservas', 'Descontos especiais'],
+    tags: ['cartão', 'recarga', 'créditos', 'vip', 'premium']
+  },
+
+  // ========================================
+  // 🎪 EVENTOS ESPECIAIS (2 produtos)
+  // Experiências únicas
+  // ========================================
+
+  {
+    id: '130',
+    nome: 'Ingresso Noite Temática',
+    descricao: 'Entrada prioritária para nossa noite temática! Inclui 1 drink de boas-vindas + música ao vivo + open bar de cerveja por 2 horas. Imperdível!',
+    preco: 80.00,
+    categoria: 'Eventos',
+    imagem: 'https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 150,
+    conteudo: ['Entrada prioritária', 'Drink de boas-vindas', 'Música ao vivo', 'Open bar cerveja 2h'],
+    tempoPreparo: 120,
+    tags: ['evento', 'noite', 'música', 'open-bar', 'festa']
+  },
+
+  {
+    id: '131',
+    nome: 'Workshop de Drinks (2h)',
+    descricao: 'Aprenda a fazer 4 receitas de drinks autorais Red Light! Inclui todo material, drinks para consumo e certificado. Mínimo 6 pessoas por turma.',
+    preco: 180.00,
+    categoria: 'Eventos',
+    imagem: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop',
+    disponivel: true,
+    destaque: true,
+    estoque: 30,
+    conteudo: ['4 receitas autorais', 'Material incluso', 'Drinks para consumo', 'Certificado', 'Fotos'],
+    tempoPreparo: 120,
+    minimoParticipantes: 6,
+    tags: ['workshop', 'aprender', 'drinks', 'bartender', 'experiência']
+  }
+];
+
+// Categorias do cardápio
+export const mockCategories = [
+  'Drinks Autorais',
+  'Clássicos',
+  'Shots',
+  'Mocktails',
+  'Entradas',
+  'Petiscos',
+  'Pratos Principais',
+  'Plant-Based',
+  'Sobremesas',
+  'Cervejas',
+  'Vinhos',
+  'Garrafas',
+  'Energéticos',
+  'Narguilé',
+  'Pacotes VIP',
+  'Add-ons',
+  'Combos',
+  'Experiências',
+  'Kits Eventos',
+  'Combos Especiais',
+  'Cartões',
+  'Eventos'
+];
+
+// Produtos em destaque (para homepage)
+export const mockFeaturedProducts = mockProducts.filter(product => product.destaque);
+
+// Mock data para usuários (mantido do anterior)
+export const mockUsers = [
+  {
+    id: '1',
+    nome: 'João Silva',
+    email: 'joao@email.com',
+    telefone: '(21) 99999-1234',
+    role: 'customer',
+    ativo: true,
+    createdAt: new Date('2024-01-15').toISOString(),
+    ultimoLogin: new Date('2024-10-05').toISOString()
+  },
+  {
+    id: '2',
+    nome: 'Maria Santos',
+    email: 'maria@email.com',
+    telefone: '(21) 99999-5678',
+    role: 'customer', 
+    ativo: true,
+    createdAt: new Date('2024-02-20').toISOString(),
+    ultimoLogin: new Date('2024-10-04').toISOString()
+  },
+  {
+    id: '3',
+    nome: 'Admin Red Light',
+    email: 'admin@redlight.com.br',
+    telefone: '(21) 99999-0000',
+    role: 'admin',
+    ativo: true,
+    createdAt: new Date('2024-01-01').toISOString(),
+    ultimoLogin: new Date('2024-10-05').toISOString()
+  }
+];
+
+// Mock data para mesas (mantido do anterior)
+export const mockTables = [
+  { id: '1', numero: 1, capacidade: 4, status: 'available', ativo: true, reservavel: true, localizacao: 'Salão Principal' },
+  { id: '2', numero: 2, capacidade: 2, status: 'occupied', ativo: true, reservavel: true, localizacao: 'Salão Principal' },
+  { id: '3', numero: 3, capacidade: 6, status: 'reserved', ativo: true, reservavel: true, localizacao: 'Área Externa' },
+  { id: '4', numero: 4, capacidade: 4, status: 'cleaning', ativo: true, reservavel: true, localizacao: 'Salão Principal' },
+  { id: '5', numero: 5, capacidade: 8, status: 'available', ativo: true, reservavel: true, localizacao: 'Área VIP' },
+  { id: '6', numero: 6, capacidade: 2, status: 'occupied', ativo: true, reservavel: true, localizacao: 'Varanda' },
+  { id: '7', numero: 7, capacidade: 4, status: 'available', ativo: true, reservavel: true, localizacao: 'Salão Principal' },
+  { id: '8', numero: 8, capacidade: 6, status: 'inactive', ativo: false, reservavel: false, localizacao: 'Área Externa' }
+];
+
+// Mock data para pedidos (mantido do anterior)
+export const mockOrders = [
+  {
+    id: '1',
+    numeroSequencial: '001',
+    usuario: { nome: 'João Silva', telefone: '(21) 99999-1234' },
+    mesa: 5,
+    status: 'confirmed',
+    itens: [
+      { produto: { nome: 'Red Light Signature' }, quantidade: 2, preco: 32.00 },
+      { produto: { nome: 'Batata Rústica com Molhos Especiais' }, quantidade: 1, preco: 28.00 }
+    ],
+    total: 92.00,
+    observacoes: 'Sem cebola na batata',
+    createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+  },
+  {
+    id: '2',
+    numeroSequencial: '002',
+    usuario: { nome: 'Maria Santos', telefone: '(21) 99999-5678' },
+    mesa: 2,
+    status: 'preparing',
+    itens: [
+      { produto: { nome: 'Red Light Burger Premium' }, quantidade: 1, preco: 52.00 },
+      { produto: { nome: 'IPA Red Light' }, quantidade: 2, preco: 22.00 }
+    ],
+    total: 96.00,
+    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+  }
+];
+
+export default {
+  mockProducts,
+  mockCategories,
+  mockFeaturedProducts,
+  mockUsers,
+  mockTables,
+  mockOrders
+};
