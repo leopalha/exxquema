@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   BarChart3,
@@ -15,18 +16,35 @@ import {
   Eye,
   Calendar,
   Activity,
-  QrCode
+  QrCode,
+  CalendarDays,
+  Star,
+  ChefHat,
+  CheckCircle
 } from 'lucide-react';
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonChart, SkeletonCard } from '../../components/LoadingSpinner';
 import { useAuthStore } from '../../stores/authStore';
-import { useApi } from '../../hooks';
+import { useOrderStore, ORDER_STATUS } from '../../stores/orderStore';
+import { useReservationStore } from '../../stores/reservationStore';
 import { formatCurrency, formatNumber, formatRelativeTime } from '../../utils/format';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { orders, getActiveOrders } = useOrderStore();
+  const { reservations, getUpcomingReservations } = useReservationStore();
   const [dateRange, setDateRange] = useState('today');
+
+  // Dados calculados dos stores
+  const activeOrders = getActiveOrders();
+  const upcomingReservations = getUpcomingReservations();
+  const todayOrders = orders.filter(o => {
+    const orderDate = new Date(o.createdAt).toDateString();
+    const today = new Date().toDateString();
+    return orderDate === today;
+  });
+  const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
 
   // Dashboard data (mockado)
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -329,57 +347,68 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <button
                       onClick={() => router.push('/admin/orders')}
-                      className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500 rounded-xl p-6 text-left transition-colors group"
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-magenta-500 rounded-xl p-6 text-left transition-colors group"
                     >
-                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500/30">
-                        <ShoppingBag className="w-6 h-6 text-orange-400" />
+                      <div className="w-12 h-12 bg-magenta-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-magenta-500/30">
+                        <ShoppingBag className="w-6 h-6 text-magenta-400" />
                       </div>
                       <div className="text-white font-semibold mb-2">Gerenciar Pedidos</div>
-                      <div className="text-gray-400 text-sm">Ver e atualizar status dos pedidos</div>
+                      <div className="text-neutral-400 text-sm">{activeOrders.length} pedidos ativos</div>
                     </button>
 
                     <button
                       onClick={() => router.push('/admin/products')}
-                      className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500 rounded-xl p-6 text-left transition-colors group"
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-purple-500 rounded-xl p-6 text-left transition-colors group"
                     >
-                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500/30">
-                        <Package className="w-6 h-6 text-orange-400" />
+                      <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-500/30">
+                        <Package className="w-6 h-6 text-purple-400" />
                       </div>
                       <div className="text-white font-semibold mb-2">Produtos</div>
-                      <div className="text-gray-400 text-sm">Adicionar e editar produtos do cardápio</div>
+                      <div className="text-neutral-400 text-sm">Adicionar e editar cardapio</div>
                     </button>
 
                     <button
                       onClick={() => router.push('/admin/tables')}
-                      className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500 rounded-xl p-6 text-left transition-colors group"
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-cyan-500 rounded-xl p-6 text-left transition-colors group"
                     >
-                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500/30">
-                        <MapPin className="w-6 h-6 text-orange-400" />
+                      <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-cyan-500/30">
+                        <MapPin className="w-6 h-6 text-cyan-400" />
                       </div>
                       <div className="text-white font-semibold mb-2">Mesas</div>
-                      <div className="text-gray-400 text-sm">Controlar layout e status das mesas</div>
+                      <div className="text-neutral-400 text-sm">Layout e status das mesas</div>
                     </button>
 
                     <button
                       onClick={() => router.push('/qr-codes')}
-                      className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500 rounded-xl p-6 text-left transition-colors group"
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-green-500 rounded-xl p-6 text-left transition-colors group"
                     >
-                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500/30">
-                        <QrCode className="w-6 h-6 text-orange-400" />
+                      <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-green-500/30">
+                        <QrCode className="w-6 h-6 text-green-400" />
                       </div>
                       <div className="text-white font-semibold mb-2">QR Codes</div>
-                      <div className="text-gray-400 text-sm">Imprimir QR Codes das mesas</div>
+                      <div className="text-neutral-400 text-sm">Imprimir QR Codes das mesas</div>
                     </button>
 
                     <button
                       onClick={() => router.push('/admin/reports')}
-                      className="bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500 rounded-xl p-6 text-left transition-colors group"
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-yellow-500 rounded-xl p-6 text-left transition-colors group"
                     >
-                      <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-500/30">
-                        <BarChart3 className="w-6 h-6 text-orange-400" />
+                      <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-yellow-500/30">
+                        <BarChart3 className="w-6 h-6 text-yellow-400" />
                       </div>
-                      <div className="text-white font-semibold mb-2">Relatórios</div>
-                      <div className="text-gray-400 text-sm">Análises detalhadas e exportações</div>
+                      <div className="text-white font-semibold mb-2">Relatorios</div>
+                      <div className="text-neutral-400 text-sm">Analises e exportacoes</div>
+                    </button>
+
+                    <button
+                      onClick={() => router.push('/reservas')}
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-blue-500 rounded-xl p-6 text-left transition-colors group"
+                    >
+                      <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/30">
+                        <CalendarDays className="w-6 h-6 text-blue-400" />
+                      </div>
+                      <div className="text-white font-semibold mb-2">Reservas</div>
+                      <div className="text-neutral-400 text-sm">{upcomingReservations.length} proximas</div>
                     </button>
                   </div>
                 </motion.div>

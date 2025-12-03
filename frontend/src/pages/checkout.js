@@ -1,607 +1,642 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import Layout from '../components/Layout';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { useAuthStore } from '../stores/authStore';
-import { useCartStore } from '../stores/cartStore';
-import { formatCurrency, formatDuration } from '../utils/format';
-import { toast } from 'react-hot-toast';
-import api from '../services/api';
 import {
+  ShoppingBag,
   CreditCard,
-  Smartphone,
-  DollarSign,
-  Lock,
-  ChevronRight,
-  ChevronDown,
-  User,
+  Wallet,
+  Banknote,
+  QrCode,
+  Utensils,
+  Truck,
   MapPin,
   Clock,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  Minus,
+  Plus,
+  Trash2,
   AlertCircle,
-  ArrowLeft
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
+import Layout from '../components/Layout';
+import { useCartStore } from '../stores/cartStore';
+import { useOrderStore, PAYMENT_METHODS, CONSUMPTION_TYPES } from '../stores/orderStore';
+import { useAuthStore } from '../stores/authStore';
+import { formatCurrency } from '../utils/format';
+import { toast } from 'react-hot-toast';
+
+// Mesas disponiveis
+const MESAS_DISPONIVEIS = Array.from({ length: 20 }, (_, i) => i + 1);
 
 export default function Checkout() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState(null);
+
   const { user, isAuthenticated } = useAuthStore();
   const {
     items,
-    tableNumber,
-    notes,
-    getTotalItems,
     getSubtotal,
     getTotal,
-    getEstimatedTime,
-    clearCart,
-    validateCart,
-    setTable
+    getTotalItems,
+    incrementItem,
+    decrementItem,
+    removeItem,
+    clearCart
   } = useCartStore();
 
-  const [paymentMethod, setPaymentMethod] = useState(''); // 'card', 'pix', 'cash'
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [pixCode, setPixCode] = useState('');
-  const [showPixQR, setShowPixQR] = useState(false);
-  const [selectedTable, setSelectedTable] = useState(tableNumber || null);
-  const [showTableSelection, setShowTableSelection] = useState(!tableNumber);
+  const {
+    checkoutData,
+    setConsumptionType,
+    setTableNumber,
+    setPaymentMethod,
+    setObservacoes,
+    createOrder,
+    resetCheckout,
+    loading
+  } = useOrderStore();
 
-  // Card form states
-  const [cardData, setCardData] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvv: ''
-  });
-
+  // Redirecionar se nao autenticado ou carrinho vazio
   useEffect(() => {
     if (!isAuthenticated) {
-      toast.error('Faça login para continuar');
-      router.push('/login?returnTo=/checkout');
-      return;
-    }
-
-    if (items.length === 0) {
-      toast.error('Seu carrinho está vazio');
+      toast.error('Faca login para finalizar o pedido');
+      router.push('/login?redirect=/checkout');
+    } else if (items.length === 0 && !orderComplete) {
+      toast.error('Seu carrinho esta vazio');
       router.push('/cardapio');
+    }
+  }, [isAuthenticated, items.length, orderComplete, router]);
+
+  // Calculos
+  const subtotal = getSubtotal();
+  const taxaServico = checkoutData.consumptionType === 'table' ? subtotal * 0.10 : 0;
+  const taxaEntrega = checkoutData.consumptionType === 'delivery' ? 8.00 : 0;
+  const total = subtotal + taxaServico + taxaEntrega;
+
+  // Validacao de steps
+  const canProceedStep1 = items.length > 0;
+  const canProceedStep2 = checkoutData.consumptionType &&
+    (checkoutData.consumptionType !== 'table' || checkoutData.tableNumber);
+  const canProceedStep3 = checkoutData.paymentMethod;
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && !canProceedStep1) {
+      toast.error('Adicione itens ao carrinho');
       return;
     }
-
-    // Update selected table when tableNumber changes
-    if (tableNumber) {
-      setSelectedTable(tableNumber);
-      setShowTableSelection(false);
-    }
-  }, [isAuthenticated, items, tableNumber, router]);
-
-  const handleTableSelect = (tableNum) => {
-    setSelectedTable(tableNum);
-  };
-
-  const handleConfirmTable = () => {
-    if (!selectedTable) {
-      toast.error('Selecione uma mesa');
+    if (currentStep === 2 && !canProceedStep2) {
+      toast.error('Selecione o tipo de consumo');
       return;
     }
-    setTable(selectedTable.toString(), selectedTable);
-    setShowTableSelection(false);
-    toast.success(`Mesa ${selectedTable} selecionada!`);
-  };
-
-  const handleCardInputChange = (field, value) => {
-    let formattedValue = value;
-
-    if (field === 'number') {
-      // Format: 1234 5678 9012 3456
-      formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-      formattedValue = formattedValue.slice(0, 19);
-    } else if (field === 'expiry') {
-      // Format: MM/YY
-      formattedValue = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
-    } else if (field === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').slice(0, 4);
-    }
-
-    setCardData(prev => ({ ...prev, [field]: formattedValue }));
-  };
-
-  const generatePixCode = () => {
-    // Mock PIX code generation
-    const mockPixCode = '00020126580014BR.GOV.BCB.PIX0136' +
-      Math.random().toString(36).substring(2, 15) +
-      '5204000053039865802BR5913FLAME BAR6009Botafogo62070503***63041D3D';
-    setPixCode(mockPixCode);
-    return mockPixCode;
-  };
-
-  const handlePayment = async () => {
-    // Validate table selection
-    if (!tableNumber) {
-      toast.error('Selecione uma mesa antes de continuar');
-      setShowTableSelection(true);
+    if (currentStep === 3 && !canProceedStep3) {
+      toast.error('Selecione a forma de pagamento');
       return;
     }
+    setCurrentStep(prev => Math.min(prev + 1, 4));
+  };
 
-    if (!paymentMethod) {
-      toast.error('Selecione uma forma de pagamento');
-      return;
-    }
+  const handlePrevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
-    // Validate card data if card payment
-    if (paymentMethod === 'card') {
-      if (!cardData.number || !cardData.name || !cardData.expiry || !cardData.cvv) {
-        toast.error('Preencha todos os dados do cartão');
-        return;
-      }
-    }
-
+  const handleFinalizarPedido = async () => {
     setIsProcessing(true);
 
-    try {
-      // Mock payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    const result = await createOrder(
+      items,
+      subtotal,
+      user?.id,
+      user?.name
+    );
 
-      if (paymentMethod === 'pix') {
-        // Generate PIX code
-        const code = generatePixCode();
-        setShowPixQR(true);
-        toast.success('QR Code PIX gerado!');
-
-        // Simulate waiting for payment
-        setTimeout(() => {
-          completeOrder();
-        }, 5000);
-      } else {
-        // Direct payment (card/cash)
-        completeOrder();
-      }
-    } catch (error) {
-      console.error('Erro no pagamento:', error);
-      toast.error('Erro ao processar pagamento');
-      setIsProcessing(false);
-    }
-  };
-
-  const completeOrder = async () => {
-    try {
-      // Preparar dados do pedido
-      const orderData = {
-        tableId: tableNumber,
-        items: items.map(item => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          notes: item.notes || '',
-          price: item.product.price
-        })),
-        paymentMethod: paymentMethod,
-        paymentStatus: paymentMethod === 'pix' ? 'pending' : 'paid',
-        subtotal: getSubtotal(),
-        total: getTotal()
-      };
-
-      // Enviar pedido para o backend
-      const response = await api.post('/orders', orderData);
-      const createdOrder = response.data;
-
-      toast.success('Pedido confirmado!');
+    if (result.success) {
+      setCompletedOrder(result.order);
+      setOrderComplete(true);
       clearCart();
+      resetCheckout();
+    }
 
-      // Redirecionar para acompanhamento do pedido
-      router.push(`/pedido/${createdOrder.id}`);
-    } catch (error) {
-      console.error('Erro ao criar pedido:', error);
-      toast.error(error.response?.data?.message || 'Erro ao finalizar pedido');
-      setIsProcessing(false);
+    setIsProcessing(false);
+  };
+
+  // Icone de pagamento
+  const getPaymentIcon = (iconName) => {
+    switch (iconName) {
+      case 'qr-code': return <QrCode className="w-6 h-6" />;
+      case 'credit-card': return <CreditCard className="w-6 h-6" />;
+      case 'banknotes': return <Banknote className="w-6 h-6" />;
+      default: return <Wallet className="w-6 h-6" />;
     }
   };
 
-  const copyPixCode = () => {
-    navigator.clipboard.writeText(pixCode);
-    toast.success('Código PIX copiado!');
+  // Icone de consumo
+  const getConsumptionIcon = (iconName) => {
+    switch (iconName) {
+      case 'utensils': return <Utensils className="w-6 h-6" />;
+      case 'shopping-bag': return <ShoppingBag className="w-6 h-6" />;
+      case 'truck': return <Truck className="w-6 h-6" />;
+      default: return <MapPin className="w-6 h-6" />;
+    }
   };
 
-  if (!isAuthenticated || items.length === 0) {
-    return null;
+  if (!isAuthenticated) return null;
+
+  // Tela de sucesso
+  if (orderComplete && completedOrder) {
+    return (
+      <>
+        <Head>
+          <title>Pedido Confirmado | FLAME</title>
+        </Head>
+        <Layout>
+          <div className="min-h-screen bg-neutral-900 py-12 px-4">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="max-w-lg mx-auto text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring' }}
+                className="w-24 h-24 bg-gradient-to-r from-green-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <CheckCircle className="w-12 h-12 text-white" />
+              </motion.div>
+
+              <h1 className="text-3xl font-bold text-white mb-4">
+                Pedido Confirmado!
+              </h1>
+
+              <p className="text-neutral-400 mb-8">
+                Seu pedido <span className="text-magenta-400 font-semibold">#{completedOrder.id}</span> foi
+                recebido e esta sendo processado.
+              </p>
+
+              <div className="bg-neutral-800 rounded-xl p-6 mb-8 text-left">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-neutral-400">Status</span>
+                  <span className="text-cyan-400 font-medium">Confirmado</span>
+                </div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-neutral-400">Tempo estimado</span>
+                  <span className="text-white font-medium flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {completedOrder.estimatedTime} min
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-neutral-400">Total</span>
+                  <span className="text-magenta-400 font-bold text-xl">
+                    {formatCurrency(completedOrder.total)}
+                  </span>
+                </div>
+                {completedOrder.consumptionType === 'table' && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400">Mesa</span>
+                    <span className="text-white font-medium">#{completedOrder.tableNumber}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => router.push('/pedidos')}
+                  className="w-full bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 text-white font-semibold py-4 px-6 rounded-xl transition-all"
+                >
+                  Acompanhar Pedido
+                </button>
+                <button
+                  onClick={() => router.push('/cardapio')}
+                  className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+                >
+                  Voltar ao Cardapio
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </Layout>
+      </>
+    );
   }
 
   return (
     <>
       <Head>
         <title>Checkout | FLAME</title>
-        <meta name="description" content="Finalize seu pedido no FLAME Lounge Bar" />
       </Head>
-
       <Layout>
-        <div className="min-h-screen pt-16 bg-black">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-screen bg-neutral-900 py-8 px-4">
+          <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
               <button
                 onClick={() => router.back()}
-                className="text-neutral-400 hover:text-white transition-colors"
+                className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
               >
-                <ArrowLeft className="w-6 h-6" />
+                <ChevronLeft className="w-5 h-5 text-white" />
               </button>
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Finalizar Pedido</h1>
-                <p className="text-neutral-400">Revise e escolha a forma de pagamento</p>
-              </div>
+              <h1 className="text-2xl font-bold text-white">Finalizar Pedido</h1>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Customer Info */}
-                <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6">
-                  <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-magenta-400" />
-                    Seus Dados
-                  </h2>
-                  <div className="space-y-2 text-neutral-300">
-                    <p><strong>Nome:</strong> {user?.name || 'Usuario'}</p>
-                    <p><strong>Email:</strong> {user?.email || 'email@exemplo.com'}</p>
+            {/* Progress Steps */}
+            <div className="flex items-center justify-between mb-8 px-4">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
+                      currentStep >= step
+                        ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                        : 'bg-neutral-800 text-neutral-500'
+                    }`}
+                  >
+                    {currentStep > step ? <Check className="w-5 h-5" /> : step}
                   </div>
-                </div>
-
-                {/* Table Info */}
-                <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6">
-                  <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-magenta-400" />
-                    Mesa
-                  </h2>
-
-                  {!showTableSelection && tableNumber ? (
-                    <div className="flex items-center justify-between">
-                      <p className="text-neutral-300">
-                        Mesa <strong className="text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 to-cyan-400">#{tableNumber}</strong>
-                      </p>
-                      <button
-                        onClick={() => setShowTableSelection(true)}
-                        className="text-magenta-400 hover:text-cyan-400 text-sm"
-                      >
-                        Alterar
-                      </button>
-                    </div>
-                  ) : (
-                    <AnimatePresence>
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        {!tableNumber && (
-                          <div className="mb-4 p-3 bg-magenta-900/20 border border-magenta-700/50 rounded-lg flex items-start gap-2">
-                            <AlertCircle className="w-5 h-5 text-magenta-400 mt-0.5" />
-                            <p className="text-magenta-400 text-sm">
-                              Selecione sua mesa para continuar com o pedido
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Table Grid */}
-                        <div className="grid grid-cols-5 gap-2 mb-4">
-                          {Array.from({ length: 20 }, (_, i) => i + 1).map((tableNum) => (
-                            <motion.button
-                              key={tableNum}
-                              onClick={() => handleTableSelect(tableNum)}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className={`
-                                relative aspect-square rounded-lg font-bold text-sm
-                                transition-all duration-200
-                                ${selectedTable === tableNum
-                                  ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white shadow-lg shadow-magenta-600/50'
-                                  : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-neutral-700'
-                                }
-                              `}
-                            >
-                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <MapPin className={`w-3 h-3 mb-0.5 ${selectedTable === tableNum ? 'text-white' : 'text-neutral-500'}`} />
-                                <span>{tableNum}</span>
-                              </div>
-
-                              {selectedTable === tableNum && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 rounded-full flex items-center justify-center"
-                                >
-                                  <Check className="w-3 h-3 text-white" />
-                                </motion.div>
-                              )}
-                            </motion.button>
-                          ))}
-                        </div>
-
-                        {/* Confirm Button */}
-                        <button
-                          onClick={handleConfirmTable}
-                          disabled={!selectedTable}
-                          className={`
-                            w-full py-3 px-4 rounded-lg font-semibold text-sm
-                            transition-all flex items-center justify-center gap-2
-                            ${selectedTable
-                              ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 hover:from-magenta-600 hover:to-cyan-600 text-white'
-                              : 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                            }
-                          `}
-                        >
-                          <Check className="w-4 h-4" />
-                          Confirmar Mesa {selectedTable ? `#${selectedTable}` : ''}
-                        </button>
-                      </motion.div>
-                    </AnimatePresence>
+                  {step < 4 && (
+                    <div
+                      className={`w-16 sm:w-24 h-1 mx-2 rounded transition-all ${
+                        currentStep > step
+                          ? 'bg-gradient-to-r from-magenta-500 to-cyan-500'
+                          : 'bg-neutral-800'
+                      }`}
+                    />
                   )}
                 </div>
+              ))}
+            </div>
 
-                {/* Order Details */}
-                <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6">
-                  <button
-                    onClick={() => setShowOrderDetails(!showOrderDetails)}
-                    className="w-full flex items-center justify-between mb-4"
-                  >
-                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                      Itens do Pedido ({getTotalItems()})
-                    </h2>
-                    {showOrderDetails ? (
-                      <ChevronDown className="w-5 h-5 text-neutral-400" />
-                    ) : (
-                      <ChevronRight className="w-5 h-5 text-neutral-400" />
-                    )}
-                  </button>
+            {/* Step Labels */}
+            <div className="flex justify-between mb-8 px-2 text-xs sm:text-sm text-neutral-500">
+              <span className={currentStep >= 1 ? 'text-white' : ''}>Carrinho</span>
+              <span className={currentStep >= 2 ? 'text-white' : ''}>Consumo</span>
+              <span className={currentStep >= 3 ? 'text-white' : ''}>Pagamento</span>
+              <span className={currentStep >= 4 ? 'text-white' : ''}>Confirmar</span>
+            </div>
 
-                  <AnimatePresence>
-                    {showOrderDetails && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="space-y-3 overflow-hidden"
-                      >
-                        {items.map((item) => (
-                          <div key={item.id} className="flex gap-3 pb-3 border-b border-neutral-800 last:border-0">
-                            <div className="relative w-16 h-16 flex-shrink-0 bg-neutral-800 rounded-lg overflow-hidden">
-                              {item.product.image && (
-                                <Image
-                                  src={item.product.image}
-                                  alt={item.product.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-white font-medium">{item.product.name}</h3>
-                              <p className="text-neutral-400 text-sm">{item.quantity}x {formatCurrency(item.product.price)}</p>
-                              {item.notes && (
-                                <p className="text-neutral-500 text-xs mt-1">Obs: {item.notes}</p>
-                              )}
-                            </div>
-                            <div className="text-white font-semibold">
-                              {formatCurrency(item.product.price * item.quantity)}
-                            </div>
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+            <AnimatePresence mode="wait">
+              {/* Step 1: Carrinho */}
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <h2 className="text-xl font-semibold text-white mb-6">Revise seu pedido</h2>
 
-                {/* Payment Method Selection */}
-                <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6">
-                  <h2 className="text-xl font-semibold text-white mb-6">Forma de Pagamento</h2>
-
-                  <div className="space-y-3">
-                    {/* Card */}
-                    <button
-                      onClick={() => setPaymentMethod('card')}
-                      className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 ${
-                        paymentMethod === 'card'
-                          ? 'border-magenta-500 bg-magenta-500/10'
-                          : 'border-neutral-700 hover:border-neutral-600'
-                      }`}
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-neutral-800 rounded-xl p-4 flex items-center gap-4"
                     >
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                        paymentMethod === 'card' ? 'bg-gradient-to-r from-magenta-500 to-cyan-500' : 'bg-neutral-800'
-                      }`}>
-                        <CreditCard className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="text-white font-semibold">Cartao de Credito/Debito</p>
-                        <p className="text-neutral-400 text-sm">Pagamento instantaneo</p>
-                      </div>
-                      {paymentMethod === 'card' && (
-                        <Check className="w-5 h-5 text-magenta-400" />
-                      )}
-                    </button>
-
-                    {/* PIX */}
-                    <button
-                      onClick={() => setPaymentMethod('pix')}
-                      className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 ${
-                        paymentMethod === 'pix'
-                          ? 'border-cyan-500 bg-cyan-500/10'
-                          : 'border-neutral-700 hover:border-neutral-600'
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                        paymentMethod === 'pix' ? 'bg-gradient-to-r from-cyan-500 to-magenta-500' : 'bg-neutral-800'
-                      }`}>
-                        <Smartphone className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="text-white font-semibold">PIX</p>
-                        <p className="text-neutral-400 text-sm">QR Code ou copia e cola</p>
-                      </div>
-                      {paymentMethod === 'pix' && (
-                        <Check className="w-5 h-5 text-cyan-400" />
-                      )}
-                    </button>
-
-                    {/* Cash */}
-                    <button
-                      onClick={() => setPaymentMethod('cash')}
-                      className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 ${
-                        paymentMethod === 'cash'
-                          ? 'border-purple-500 bg-purple-500/10'
-                          : 'border-neutral-700 hover:border-neutral-600'
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                        paymentMethod === 'cash' ? 'bg-gradient-to-r from-purple-500 to-magenta-500' : 'bg-neutral-800'
-                      }`}>
-                        <DollarSign className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="text-white font-semibold">Dinheiro</p>
-                        <p className="text-neutral-400 text-sm">Pagar na entrega</p>
-                      </div>
-                      {paymentMethod === 'cash' && (
-                        <Check className="w-5 h-5 text-purple-400" />
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Card Form */}
-                  <AnimatePresence>
-                    {paymentMethod === 'card' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-6 space-y-4 overflow-hidden"
-                      >
-                        <div>
-                          <label className="block text-sm text-neutral-400 mb-2">Numero do Cartao</label>
-                          <input
-                            type="text"
-                            value={cardData.number}
-                            onChange={(e) => handleCardInputChange('number', e.target.value)}
-                            placeholder="1234 5678 9012 3456"
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
+                      <div className="relative w-20 h-20 flex-shrink-0">
+                        {item.product.image ? (
+                          <Image
+                            src={item.product.image}
+                            alt={item.product.name}
+                            fill
+                            className="object-cover rounded-lg"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-sm text-neutral-400 mb-2">Nome no Cartao</label>
-                          <input
-                            type="text"
-                            value={cardData.name}
-                            onChange={(e) => handleCardInputChange('name', e.target.value.toUpperCase())}
-                            placeholder="NOME SOBRENOME"
-                            className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm text-neutral-400 mb-2">Validade</label>
-                            <input
-                              type="text"
-                              value={cardData.expiry}
-                              onChange={(e) => handleCardInputChange('expiry', e.target.value)}
-                              placeholder="MM/AA"
-                              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
-                            />
+                        ) : (
+                          <div className="w-full h-full bg-neutral-700 rounded-lg flex items-center justify-center">
+                            <ShoppingBag className="w-8 h-8 text-neutral-500" />
                           </div>
-                          <div>
-                            <label className="block text-sm text-neutral-400 mb-2">CVV</label>
-                            <input
-                              type="text"
-                              value={cardData.cvv}
-                              onChange={(e) => handleCardInputChange('cvv', e.target.value)}
-                              placeholder="123"
-                              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-magenta-500"
-                            />
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        )}
+                      </div>
 
-                  {/* PIX QR Code */}
-                  <AnimatePresence>
-                    {showPixQR && paymentMethod === 'pix' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mt-6 overflow-hidden"
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">
+                          {item.product.name}
+                        </h3>
+                        <p className="text-magenta-400 font-medium">
+                          {formatCurrency(item.product.price)}
+                        </p>
+                        {item.notes && (
+                          <p className="text-neutral-500 text-sm truncate">{item.notes}</p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => decrementItem(item.id)}
+                          className="p-2 bg-neutral-700 rounded-lg hover:bg-neutral-600 transition-colors"
+                        >
+                          <Minus className="w-4 h-4 text-white" />
+                        </button>
+                        <span className="w-8 text-center text-white font-medium">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => incrementItem(item.id)}
+                          className="p-2 bg-neutral-700 rounded-lg hover:bg-neutral-600 transition-colors"
+                        >
+                          <Plus className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="p-2 text-red-400 hover:text-red-300 transition-colors"
                       >
-                        <div className="bg-neutral-800 p-6 rounded-lg text-center border border-cyan-500/30">
-                          <div className="w-48 h-48 bg-white mx-auto mb-4 flex items-center justify-center rounded-lg">
-                            <p className="text-neutral-600 text-sm">QR Code PIX</p>
-                          </div>
-                          <div className="bg-neutral-700 p-3 rounded mb-3">
-                            <p className="text-xs text-neutral-300 break-all font-mono">{pixCode}</p>
-                          </div>
-                          <button
-                            onClick={copyPixCode}
-                            className="bg-gradient-to-r from-cyan-500 to-magenta-500 hover:from-cyan-600 hover:to-magenta-600 text-white px-4 py-2 rounded-lg text-sm"
-                          >
-                            Copiar Codigo
-                          </button>
-                          <p className="text-neutral-400 text-sm mt-3">Aguardando pagamento...</p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
 
-              {/* Summary Sidebar */}
-              <div className="lg:col-span-1">
-                <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 sticky top-24">
-                  <h3 className="text-xl font-semibold text-white mb-6">Resumo</h3>
-
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between text-neutral-400">
+                  <div className="bg-neutral-800 rounded-xl p-4 mt-6">
+                    <div className="flex justify-between text-neutral-400 mb-2">
                       <span>Subtotal ({getTotalItems()} itens)</span>
-                      <span>{formatCurrency(getSubtotal())}</span>
+                      <span>{formatCurrency(subtotal)}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-neutral-400 text-sm">
-                      <Clock className="w-4 h-4" />
-                      <span>Tempo estimado: {formatDuration(getEstimatedTime())}</span>
+                    <div className="flex justify-between text-white font-semibold text-lg">
+                      <span>Total</span>
+                      <span className="text-magenta-400">{formatCurrency(subtotal)}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 2: Tipo de Consumo */}
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-xl font-semibold text-white mb-6">Como deseja consumir?</h2>
+
+                  <div className="grid gap-4">
+                    {CONSUMPTION_TYPES.map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => setConsumptionType(type.id)}
+                        className={`p-6 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
+                          checkoutData.consumptionType === type.id
+                            ? 'border-magenta-500 bg-magenta-500/10'
+                            : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
+                        }`}
+                      >
+                        <div className={`p-3 rounded-lg ${
+                          checkoutData.consumptionType === type.id
+                            ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                            : 'bg-neutral-700 text-neutral-400'
+                        }`}>
+                          {getConsumptionIcon(type.icon)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-white">{type.nome}</h3>
+                          <p className="text-neutral-400 text-sm">{type.descricao}</p>
+                        </div>
+                        {checkoutData.consumptionType === type.id && (
+                          <Check className="w-6 h-6 text-magenta-400 ml-auto" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Selecao de Mesa */}
+                  {checkoutData.consumptionType === 'table' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mt-6"
+                    >
+                      <h3 className="text-lg font-semibold text-white mb-4">Selecione sua mesa</h3>
+                      <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                        {MESAS_DISPONIVEIS.map((mesa) => (
+                          <button
+                            key={mesa}
+                            onClick={() => setTableNumber(mesa)}
+                            className={`p-3 rounded-lg font-semibold transition-all ${
+                              checkoutData.tableNumber === mesa
+                                ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                            }`}
+                          >
+                            {mesa}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Aviso de taxa */}
+                  {checkoutData.consumptionType === 'table' && (
+                    <div className="flex items-center gap-3 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+                      <AlertCircle className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+                      <p className="text-cyan-400 text-sm">
+                        Taxa de servico de 10% sera adicionada para consumo no local.
+                      </p>
+                    </div>
+                  )}
+
+                  {checkoutData.consumptionType === 'delivery' && (
+                    <div className="flex items-center gap-3 p-4 bg-magenta-500/10 border border-magenta-500/30 rounded-xl">
+                      <Truck className="w-5 h-5 text-magenta-400 flex-shrink-0" />
+                      <p className="text-magenta-400 text-sm">
+                        Taxa de entrega: {formatCurrency(8.00)}
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Step 3: Pagamento */}
+              {currentStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-xl font-semibold text-white mb-6">Forma de pagamento</h2>
+
+                  <div className="grid gap-4">
+                    {PAYMENT_METHODS.map((method) => (
+                      <button
+                        key={method.id}
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={`p-6 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
+                          checkoutData.paymentMethod === method.id
+                            ? 'border-magenta-500 bg-magenta-500/10'
+                            : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
+                        }`}
+                      >
+                        <div className={`p-3 rounded-lg ${
+                          checkoutData.paymentMethod === method.id
+                            ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                            : 'bg-neutral-700 text-neutral-400'
+                        }`}>
+                          {getPaymentIcon(method.icon)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-white">{method.nome}</h3>
+                          <p className="text-neutral-400 text-sm">{method.descricao}</p>
+                        </div>
+                        {checkoutData.paymentMethod === method.id && (
+                          <Check className="w-6 h-6 text-magenta-400 ml-auto" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Observacoes */}
+                  <div className="mt-6">
+                    <label className="block text-white font-medium mb-2">
+                      Observacoes (opcional)
+                    </label>
+                    <textarea
+                      value={checkoutData.observacoes}
+                      onChange={(e) => setObservacoes(e.target.value)}
+                      placeholder="Ex: Sem cebola, ponto da carne, alergias..."
+                      className="w-full bg-neutral-800 border border-neutral-700 rounded-xl p-4 text-white placeholder-neutral-500 focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none resize-none"
+                      rows={3}
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 4: Confirmacao */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-xl font-semibold text-white mb-6">Confirme seu pedido</h2>
+
+                  {/* Resumo dos itens */}
+                  <div className="bg-neutral-800 rounded-xl p-6">
+                    <h3 className="font-semibold text-white mb-4">Itens do pedido</h3>
+                    <div className="space-y-3">
+                      {items.map((item) => (
+                        <div key={item.id} className="flex justify-between text-sm">
+                          <span className="text-neutral-400">
+                            {item.quantity}x {item.product.name}
+                          </span>
+                          <span className="text-white">
+                            {formatCurrency(item.product.price * item.quantity)}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="border-t border-neutral-700 pt-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-white">Total</span>
-                      <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 to-cyan-400">
-                        {formatCurrency(getTotal())}
-                      </span>
+                  {/* Detalhes do consumo */}
+                  <div className="bg-neutral-800 rounded-xl p-6">
+                    <h3 className="font-semibold text-white mb-4">Detalhes</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Tipo de consumo</span>
+                        <span className="text-white">
+                          {CONSUMPTION_TYPES.find(t => t.id === checkoutData.consumptionType)?.nome}
+                        </span>
+                      </div>
+                      {checkoutData.consumptionType === 'table' && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-400">Mesa</span>
+                          <span className="text-white">#{checkoutData.tableNumber}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-neutral-400">Pagamento</span>
+                        <span className="text-white">
+                          {PAYMENT_METHODS.find(m => m.id === checkoutData.paymentMethod)?.nome}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <button
-                    onClick={handlePayment}
-                    disabled={!paymentMethod || isProcessing || showPixQR}
-                    className="w-full bg-gradient-to-r from-magenta-500 to-cyan-500 hover:from-magenta-600 hover:to-cyan-600 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-magenta-500/20"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <LoadingSpinner size="small" color="white" />
-                        Processando...
-                      </>
-                    ) : showPixQR ? (
-                      'Aguardando Pagamento PIX...'
-                    ) : (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        Confirmar Pedido
-                      </>
-                    )}
-                  </button>
+                  {/* Totais */}
+                  <div className="bg-neutral-800 rounded-xl p-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-neutral-400">
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(subtotal)}</span>
+                      </div>
+                      {taxaServico > 0 && (
+                        <div className="flex justify-between text-neutral-400">
+                          <span>Taxa de servico (10%)</span>
+                          <span>{formatCurrency(taxaServico)}</span>
+                        </div>
+                      )}
+                      {taxaEntrega > 0 && (
+                        <div className="flex justify-between text-neutral-400">
+                          <span>Taxa de entrega</span>
+                          <span>{formatCurrency(taxaEntrega)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-neutral-700 pt-3 flex justify-between text-white font-semibold text-xl">
+                        <span>Total</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 to-cyan-400">
+                          {formatCurrency(total)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                  <p className="text-xs text-neutral-500 text-center mt-4 flex items-center justify-center gap-1">
-                    <Lock className="w-3 h-3" />
-                    Pagamento seguro e criptografado
-                  </p>
-                </div>
-              </div>
+                  {checkoutData.observacoes && (
+                    <div className="bg-neutral-800 rounded-xl p-6">
+                      <h3 className="font-semibold text-white mb-2">Observacoes</h3>
+                      <p className="text-neutral-400">{checkoutData.observacoes}</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-4 mt-8">
+              {currentStep > 1 && (
+                <button
+                  onClick={handlePrevStep}
+                  className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  Voltar
+                </button>
+              )}
+
+              {currentStep < 4 ? (
+                <button
+                  onClick={handleNextStep}
+                  className="flex-1 bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 text-white font-semibold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  Continuar
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleFinalizarPedido}
+                  disabled={isProcessing || loading}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700 disabled:from-neutral-600 disabled:to-neutral-600 text-white font-semibold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {isProcessing || loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      Confirmar Pedido
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
