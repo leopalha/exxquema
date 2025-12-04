@@ -7,6 +7,7 @@ const tableRoutes = require('./tables');
 const adminRoutes = require('./admin');
 const inventoryRoutes = require('./inventory');
 const staffRoutes = require('./staff');
+const hookahRoutes = require('./hookah');
 
 // Rota de health check
 router.get('/health', (req, res) => {
@@ -37,6 +38,9 @@ router.use('/inventory', inventoryRoutes);
 
 // Rotas de staff
 router.use('/staff', staffRoutes);
+
+// Rotas de narguilé
+router.use('/hookah', hookahRoutes);
 
 // Rota não encontrada
 router.use('*', (req, res) => {
