@@ -3,10 +3,14 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
+import useStaffStore from '../../stores/staffStore';
+import useThemeStore from '../../stores/themeStore';
 import { formatCurrency } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import socketService from '../../services/socket';
 import api from '../../services/api';
+import StaffOrderCard from '../../components/StaffOrderCard';
+import useNotificationSound from '../../hooks/useNotificationSound';
 import {
   Bell,
   Clock,
@@ -26,14 +30,12 @@ import {
 export default function PainelAtendente() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { stats, orders, fetchDashboard, updateOrderStatus } = useStaffStore();
+  const { getPalette } = useThemeStore();
+  const { playSuccess, playAlert } = useNotificationSound();
 
-  const [activeOrders, setActiveOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState('ready'); // ready, delivered, pickup
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [stats, setStats] = useState({
-    ordersToday: 0,
-    totalRevenue: 0,
-    avgDeliveryTime: 0
-  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,220 +44,76 @@ export default function PainelAtendente() {
       return;
     }
 
-    // Carregar pedidos do backend
-    const loadOrders = async () => {
+    // Carregar dashboard inicial
+    const loadDashboard = async () => {
       try {
-        const response = await api.get('/orders?status=preparing,ready,delivering');
-        const ordersData = response.data.map(order => ({
-          ...order,
-          createdAt: new Date(order.createdAt),
-          customer: order.customer?.name || 'Cliente'
-        }));
-        setActiveOrders(ordersData);
-
-        // Carregar estatísticas do dia
-        const statsResponse = await api.get('/orders/stats/today');
-        setStats(statsResponse.data);
+        await fetchDashboard();
       } catch (error) {
-        console.error('Erro ao carregar pedidos:', error);
-        toast.error('Modo offline - usando dados de demonstração');
-
-        // Mock orders data (fallback)
-        const mockOrders = [
-          {
-            id: 1234,
-            tableNumber: 12,
-            customer: 'João Silva',
-            status: 'ready',
-            items: [
-              { name: 'Gin Tônica Red', quantity: 1, price: 28.00 },
-              { name: 'Moscow Mule', quantity: 2, price: 32.00 },
-              { name: 'Tábua de Queijos', quantity: 1, price: 65.00 }
-            ],
-            total: 172.70,
-            createdAt: new Date(Date.now() - 18 * 60000),
-            paymentStatus: 'paid'
-          },
-          {
-            id: 1235,
-            tableNumber: 8,
-            customer: 'Maria Santos',
-            status: 'preparing',
-            items: [
-              { name: 'Caipirinha', quantity: 2, price: 24.00 },
-            ],
-            total: 48.00,
-            createdAt: new Date(Date.now() - 8 * 60000),
-            paymentStatus: 'paid'
-          }
-        ];
-        setActiveOrders(mockOrders);
-
-        setStats({
-          ordersToday: 12,
-          totalRevenue: 2140.00,
-          avgDeliveryTime: 18
-        });
+        console.error('Erro ao carregar dashboard:', error);
+        toast.error('Erro ao carregar pedidos');
       }
     };
 
-    loadOrders();
+    loadDashboard();
 
     // Conectar ao Socket.IO
     const token = localStorage.getItem('token');
     socketService.connect(token);
     socketService.joinWaiterRoom();
 
-    // Listener para novos pedidos criados
-    socketService.onOrderCreated((order) => {
-      console.log('🆕 Novo pedido criado:', order);
-      setActiveOrders(prev => [...prev, {
-        ...order,
-        createdAt: new Date(order.createdAt),
-        customer: order.customer?.name || 'Cliente'
-      }]);
-      toast.success(`Novo pedido #${order.id} - Mesa ${order.tableNumber}`);
-    });
-
-    // Listener para pedidos atualizados (status changed)
-    socketService.onOrderUpdated((updatedOrder) => {
-      console.log('🔄 Pedido atualizado:', updatedOrder);
-      setActiveOrders(prev => prev.map(order =>
-        order.id === updatedOrder.id
-          ? { ...updatedOrder, createdAt: new Date(updatedOrder.createdAt), customer: updatedOrder.customer?.name || 'Cliente' }
-          : order
-      ));
-    });
-
-    // Listener para pedidos prontos (notificação especial)
+    // Listener para novos pedidos prontos
     socketService.onOrderReady((order) => {
       console.log('✅ Pedido pronto para retirar:', order);
-      setActiveOrders(prev => prev.map(o =>
-        o.id === order.id
-          ? { ...order, createdAt: new Date(order.createdAt), customer: order.customer?.name || 'Cliente' }
-          : o
-      ));
-      toast.success(`⚠️ Pedido #${order.id} PRONTO para retirar!`, {
+      toast.success(`⚠️ Pedido #${order.orderNumber || order.id} PRONTO para retirar!`, {
         duration: 10000,
         icon: '🔔'
       });
-      playNotificationSound();
+      playAlert();
+      // Recarregar dashboard para incluir pedido pronto
+      fetchDashboard();
     });
 
-    // Simulate real-time updates for elapsed time
-    const interval = setInterval(() => {
-      setActiveOrders(prev => prev.map(order => ({
-        ...order,
-        createdAt: order.createdAt
-      })));
-    }, 30000); // Update every 30 seconds
+    // Listener para atualização de status
+    socketService.onOrderUpdated((updatedOrder) => {
+      console.log('🔄 Pedido atualizado:', updatedOrder);
+      // Recarregar dashboard quando pedido é atualizado
+      fetchDashboard();
+    });
 
     // Cleanup
     return () => {
-      clearInterval(interval);
       socketService.leaveWaiterRoom();
-      socketService.removeAllListeners('order_created');
-      socketService.removeAllListeners('order_updated');
       socketService.removeAllListeners('order_ready');
+      socketService.removeAllListeners('order_updated');
     };
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, fetchDashboard]);
 
-  const getStatusInfo = (status) => {
-    const statuses = {
-      received: {
-        label: 'Aguardando Preparo',
-        color: 'bg-blue-600',
-        textColor: 'text-blue-400',
-        icon: Package
-      },
-      preparing: {
-        label: 'Em Preparo',
-        color: 'bg-yellow-600',
-        textColor: 'text-yellow-400',
-        icon: ChefHat
-      },
-      ready: {
-        label: 'Pronto para Retirar',
-        color: 'bg-orange-600 animate-pulse',
-        textColor: 'text-orange-400',
-        icon: Bell
-      },
-      delivering: {
-        label: 'A Caminho da Mesa',
-        color: 'bg-purple-600',
-        textColor: 'text-purple-400',
-        icon: Truck
-      }
-    };
-
-    return statuses[status] || statuses.received;
-  };
-
-  const getElapsedTime = (createdAt) => {
-    const now = new Date();
-    const elapsed = Math.floor((now - createdAt) / 60000); // minutes
-    return elapsed;
-  };
-
-  const handlePickup = async (orderId) => {
+  const handleStatusUpdate = async (orderId) => {
     try {
-      // Atualizar status no backend
-      await api.patch(`/orders/${orderId}/status`, { status: 'delivering' });
-
-      // Emitir evento Socket.IO
-      socketService.updateOrderStatus(orderId, 'delivering');
-
-      // Atualizar estado local
-      setActiveOrders(prev => prev.map(order =>
-        order.id === orderId ? { ...order, status: 'delivering' } : order
-      ));
-
-      toast.success('Pedido marcado como "A caminho"');
-      playNotificationSound();
+      toast.success('Status do pedido atualizado');
+      playSuccess();
+      // Recarregar dashboard após atualizar
+      await fetchDashboard();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      toast.error('Erro ao atualizar pedido');
+      toast.error('Erro ao atualizar status do pedido');
     }
   };
 
-  const handleDeliver = async (orderId) => {
-    try {
-      // Atualizar status no backend
-      await api.patch(`/orders/${orderId}/status`, { status: 'delivered' });
-
-      // Emitir evento Socket.IO
-      socketService.markOrderDelivered(orderId);
-
-      // Remover da lista de pedidos ativos
-      setActiveOrders(prev => prev.filter(order => order.id !== orderId));
-
-      toast.success('Pedido entregue com sucesso!');
-      setSelectedOrder(null);
-    } catch (error) {
-      console.error('Erro ao marcar como entregue:', error);
-      toast.error('Erro ao finalizar pedido');
-    }
-  };
-
-  const playNotificationSound = () => {
-    // Mock notification sound
-    if (typeof window !== 'undefined' && 'AudioContext' in window) {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    }
+  const handleTimerAlert = (orderId) => {
+    console.log('⏰ Alerta de atraso para pedido:', orderId);
+    playAlert();
+    toast(
+      `⏰ Pedido #${orderId} está aguardando há >15 min`,
+      {
+        duration: 6000,
+        style: {
+          borderRadius: '10px',
+          background: '#ff9500',
+          color: '#fff',
+        },
+      }
+    );
   };
 
   const handleLogout = () => {
@@ -318,170 +176,155 @@ export default function PainelAtendente() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-orange-400" />
+                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
+                  <Package className="w-6 h-6 text-green-400" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-400" />
               </div>
-              <p className="text-gray-400 text-sm mb-1">Pedidos Atendidos</p>
-              <p className="text-3xl font-bold text-white">{stats.ordersToday}</p>
-            </div>
-
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-green-400" />
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm mb-1">Valor Total</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="text-gray-400 text-sm mb-1">Prontos</p>
+              <p className="text-3xl font-bold text-white">{orders.ready?.length || 0}</p>
             </div>
 
             <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-blue-400" />
+                  <CheckCircle className="w-6 h-6 text-blue-400" />
                 </div>
               </div>
-              <p className="text-gray-400 text-sm mb-1">Tempo Médio Entrega</p>
-              <p className="text-3xl font-bold text-white">{stats.avgDeliveryTime} min</p>
+              <p className="text-gray-400 text-sm mb-1">Entregues Hoje</p>
+              <p className="text-3xl font-bold text-white">{stats.completedToday}</p>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-orange-400" />
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm mb-1">Total Geral</p>
+              <p className="text-3xl font-bold text-white">{stats.total}</p>
             </div>
           </div>
 
-          {/* Active Orders */}
+          {/* Tabs */}
           <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Bell className="w-6 h-6 text-orange-400" />
-                Pedidos Ativos
+                Gerenciar Entrega
               </h2>
-              <span className="text-gray-400">
-                {activeOrders.length} {activeOrders.length === 1 ? 'pedido' : 'pedidos'}
-              </span>
             </div>
 
-            {activeOrders.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-10 h-10 text-gray-600" />
+            {/* Tab Buttons */}
+            <div className="flex gap-2 mb-6 border-b border-gray-700">
+              <button
+                onClick={() => setActiveTab('ready')}
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                  activeTab === 'ready'
+                    ? 'border-orange-500 text-orange-400'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Prontos ({orders.ready?.length || 0})
                 </div>
-                <p className="text-gray-400">Nenhum pedido ativo no momento</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {activeOrders
-                    .sort((a, b) => {
-                      const statusPriority = { ready: 0, preparing: 1, received: 2, delivering: 3 };
-                      return statusPriority[a.status] - statusPriority[b.status];
-                    })
-                    .map((order) => {
-                      const statusInfo = getStatusInfo(order.status);
-                      const StatusIcon = statusInfo.icon;
-                      const elapsedTime = getElapsedTime(order.createdAt);
+              </button>
+              <button
+                onClick={() => setActiveTab('delivered')}
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                  activeTab === 'delivered'
+                    ? 'border-green-500 text-green-400'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Entregues ({stats.completedToday})
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('pickup')}
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                  activeTab === 'pickup'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Balcão
+                </div>
+              </button>
+            </div>
 
-                      return (
-                        <motion.div
-                          key={order.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -100 }}
-                          className={`bg-gray-800 border-2 rounded-xl p-6 ${
-                            order.status === 'ready' ? 'border-orange-500' : 'border-gray-700'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className={`w-10 h-10 ${statusInfo.color} rounded-lg flex items-center justify-center`}>
-                                  <StatusIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                  <h3 className="text-xl font-bold text-white">
-                                    Pedido #{order.id} • Mesa #{order.tableNumber}
-                                  </h3>
-                                  <p className={`text-sm font-semibold ${statusInfo.textColor}`}>
-                                    {statusInfo.label}
-                                  </p>
-                                </div>
-                              </div>
+            {/* Tab Content */}
+            <AnimatePresence mode="wait">
+              {activeTab === 'ready' && (
+                <motion.div
+                  key="ready"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  {!orders.ready || orders.ready.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-10 h-10 text-gray-600" />
+                      </div>
+                      <p className="text-gray-400">Nenhum pedido pronto</p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <AnimatePresence>
+                        {orders.ready.map((order) => (
+                          <StaffOrderCard
+                            key={order.id}
+                            order={order}
+                            onStatusUpdate={handleStatusUpdate}
+                            onTimerAlert={handleTimerAlert}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </motion.div>
+              )}
 
-                              <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
-                                <span className="flex items-center gap-1">
-                                  <User className="w-4 h-4" />
-                                  {order.customer}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-4 h-4" />
-                                  {elapsedTime} min
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <DollarSign className="w-4 h-4" />
-                                  {formatCurrency(order.total)}
-                                </span>
-                                <span className={`flex items-center gap-1 ${
-                                  order.paymentStatus === 'paid' ? 'text-green-400' : 'text-yellow-400'
-                                }`}>
-                                  <CheckCircle className="w-4 h-4" />
-                                  {order.paymentStatus === 'paid' ? 'Pago' : 'Pendente'}
-                                </span>
-                              </div>
+              {activeTab === 'delivered' && (
+                <motion.div
+                  key="delivered"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-10 h-10 text-green-600" />
+                    </div>
+                    <p className="text-gray-400">Histórico de entregas do dia</p>
+                    <p className="text-gray-500 text-sm mt-2">Total: {stats.completedToday} pedidos</p>
+                  </div>
+                </motion.div>
+              )}
 
-                              {/* Items Preview */}
-                              <div className="flex flex-wrap gap-2 mb-4">
-                                {order.items.map((item, idx) => (
-                                  <span key={idx} className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded">
-                                    {item.quantity}x {item.name}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Time Alert */}
-                            {elapsedTime > 20 && (
-                              <div className="flex items-center gap-2 text-orange-400 text-sm">
-                                <AlertCircle className="w-5 h-5" />
-                                <span>Atrasado</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => setSelectedOrder(order)}
-                              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-                            >
-                              <Eye className="w-4 h-4" />
-                              Ver Itens
-                            </button>
-
-                            {order.status === 'ready' && (
-                              <button
-                                onClick={() => handlePickup(order.id)}
-                                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold"
-                              >
-                                <Truck className="w-4 h-4" />
-                                RETIREI
-                              </button>
-                            )}
-
-                            {order.status === 'delivering' && (
-                              <button
-                                onClick={() => handleDeliver(order.id)}
-                                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                                ENTREGUE
-                              </button>
-                            )}
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                </AnimatePresence>
-              </div>
-            )}
+              {activeTab === 'pickup' && (
+                <motion.div
+                  key="pickup"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Package className="w-10 h-10 text-gray-600" />
+                    </div>
+                    <p className="text-gray-400">Pedidos para retirada no balcão</p>
+                    <p className="text-gray-500 text-sm mt-2">Nenhum pedido agora</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
