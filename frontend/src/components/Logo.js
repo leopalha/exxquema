@@ -1,13 +1,11 @@
 /**
  * FLAME - Logo Component
  *
- * Usa a imagem do logo (chama gradiente) + texto "FLAME"
- *
- * Proporcoes padrao: icone + texto 10% maior (ratio 1:1.1)
+ * Usa a imagem do logo (chama gradiente) + tipografia oficial como mascara
  *
  * Versoes:
- * - default: Logo imagem + texto branco (para header/footer)
- * - gradient: Logo imagem + texto gradiente (para hero)
+ * - default: Logo imagem + tipografia branca (para header/footer)
+ * - gradient: Logo imagem + tipografia gradiente (para hero)
  * - compact: Versao menor para header
  * - badge: Apenas o icone da chama
  * - supreme: Apenas icone grande (para login/register)
@@ -24,6 +22,11 @@ const FlameLogo = ({
   showText = true,
   className = ''
 }) => {
+
+  // Calcula proporcoes baseadas no size
+  const iconSize = size;
+  const textWidth = size * 3.05; // Proporcao da tipografia
+  const textHeight = size * 0.83;
 
   // Versao Supreme - Apenas icone grande (para login/register)
   if (supreme) {
@@ -57,30 +60,37 @@ const FlameLogo = ({
     );
   }
 
-  // Versao compacta para header (texto 10% maior que icone)
+  // Versao compacta para header
   if (compact) {
+    const compactTextWidth = size * 2.95;
+    const compactTextHeight = size * 0.82;
+
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <Image
           src="/logo-flame.png"
           alt="FLAME"
-          width={size}
-          height={size}
+          width={iconSize}
+          height={iconSize}
           className="object-contain"
           priority
         />
         {showText && (
-          <span
-            className="text-white font-bold tracking-wider"
-            style={{
-              fontFamily: "var(--font-bebas), 'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: `${size * 1.1}px`,
-              letterSpacing: '0.06em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: compactTextWidth, height: compactTextHeight }}>
+            <div
+              className="absolute inset-0 bg-white"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         )}
       </div>
     );
@@ -93,51 +103,60 @@ const FlameLogo = ({
         <Image
           src="/logo-flame.png"
           alt="FLAME"
-          width={size}
-          height={size}
+          width={iconSize}
+          height={iconSize}
           className="object-contain"
           priority
         />
         {showText && (
-          <span
-            className="font-bold tracking-wider bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
-            style={{
-              fontFamily: "var(--font-bebas), 'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: `${size * 1.1}px`,
-              letterSpacing: '0.06em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: textWidth, height: textHeight }}>
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         )}
       </div>
     );
   }
 
-  // Versao padrao - Logo + texto branco (texto 10% maior que icone)
+  // Versao padrao - Logo + tipografia branca
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <Image
         src="/logo-flame.png"
         alt="FLAME"
-        width={size}
-        height={size}
+        width={iconSize}
+        height={iconSize}
         className="object-contain"
         priority
       />
       {showText && (
-        <span
-          className="text-white font-bold tracking-wider"
-          style={{
-            fontFamily: "var(--font-bebas), 'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${size * 1.1}px`,
-            letterSpacing: '0.06em',
-            lineHeight: '1'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: textWidth, height: textHeight }}>
+          <div
+            className="absolute inset-0 bg-white"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )}
     </div>
   );

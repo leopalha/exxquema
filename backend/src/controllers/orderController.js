@@ -2,6 +2,7 @@ const { Order, OrderItem, User, Product, Table } = require('../models');
 const paymentService = require('../services/payment.service');
 const smsService = require('../services/sms.service');
 const socketService = require('../services/socket.service');
+const InventoryService = require('../services/inventoryService');
 const { Op } = require('sequelize');
 
 class OrderController {
@@ -90,12 +91,29 @@ class OrderController {
           orderId: order.id
         });
 
-        // Atualizar estoque se necessário
-        if (item.hasStock) {
+        // Atualizar estoque e registrar movimento
+        const product = await Product.findByPk(item.productId);
+        if (product && product.hasStock) {
           await Product.decrement('stock', {
             by: item.quantity,
             where: { id: item.productId }
           });
+
+          // Registrar movimento de inventário
+          try {
+            await InventoryService.recordMovement(
+              item.productId,
+              'saida',
+              item.quantity,
+              'venda',
+              `Pedido #${order.orderNumber}`,
+              userId,
+              order.id
+            );
+          } catch (inventoryError) {
+            console.error('Erro ao registrar movimento de estoque:', inventoryError);
+            // Não falha o pedido se houver erro no registro
+          }
         }
       }
 
@@ -383,6 +401,22 @@ class OrderController {
             by: item.quantity,
             where: { id: item.productId }
           });
+
+          // Registrar movimento de devolução
+          try {
+            await InventoryService.recordMovement(
+              item.productId,
+              'devolucao',
+              item.quantity,
+              'devolucao',
+              `Devolução - Pedido #${order.orderNumber} cancelado`,
+              userId,
+              order.id
+            );
+          } catch (inventoryError) {
+            console.error('Erro ao registrar movimento de devolução:', inventoryError);
+            // Não falha o cancelamento se houver erro no registro
+          }
         }
       }
 

@@ -21,11 +21,12 @@ export default function Document() {
         <meta name="msapplication-TileColor" content="#FF006E" />
         <meta name="msapplication-tap-highlight" content="no" />
         
-        {/* Favicons */}
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        {/* Favicons - usando logo-flame.png */}
+        <link rel="icon" type="image/png" href="/logo-flame.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/logo-flame.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/logo-flame.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="shortcut icon" type="image/png" href="/logo-flame.png" />
         
         {/* Apple Touch Icons */}
         <link rel="apple-touch-icon" href="/icon-192x192.png" />

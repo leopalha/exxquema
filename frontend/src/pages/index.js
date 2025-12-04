@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../stores/authStore';
 import { useProductStore } from '../stores/productStore';
+import { useThemeStore } from '../stores/themeStore';
 import Layout from '../components/Layout';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,6 +16,8 @@ export default function Home() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const { featuredProducts, isLoading, fetchFeaturedProducts } = useProductStore();
+  const { getPalette } = useThemeStore();
+  const palette = getPalette();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -58,8 +61,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>FLAME | Lounge Bar + Gastronomia em Botafogo</title>
-        <meta name="description" content="FLAME - Lounge Bar com gastronomia premium e narguile em Botafogo. Drinks autorais, boa musica e ambiente sofisticado." />
+        <title>FLAME | Lounge Bar + Narguile em Botafogo</title>
+        <meta name="description" content="FLAME - Lounge Bar com drinks autorais, gastronomia premium e narguile em Botafogo. Boa musica e ambiente sofisticado." />
         <meta name="keywords" content="flame, botafogo, bar, lounge, drinks autorais, narguile, gastronomia, rio de janeiro" />
       </Head>
 
@@ -126,21 +129,44 @@ export default function Home() {
             </div>
 
             <div className="relative z-10 text-center max-w-5xl mx-auto px-4 pt-20 sm:pt-32">
-              <motion.h1
-                className="text-6xl sm:text-8xl md:text-[10rem] font-black text-white mb-8"
+              {/* Logo com tipografia oficial */}
+              <motion.div
+                className="flex items-center justify-center gap-4 sm:gap-6 mb-8"
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.1 }}
-                style={{
-                  textShadow: '0 0 40px rgba(255, 0, 110, 0.5), 0 0 80px rgba(0, 212, 255, 0.3)',
-                  fontFamily: "'Bebas Neue', 'Futura', 'Helvetica Neue', Arial, sans-serif",
-                  letterSpacing: '0.1em',
-                }}
               >
-                <span className="bg-gradient-to-r from-magenta-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent inline-block">
-                  FLAME
-                </span>
-              </motion.h1>
+                <Image
+                  src="/logo-flame.png"
+                  alt="FLAME"
+                  width={120}
+                  height={120}
+                  className="object-contain w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32"
+                  priority
+                />
+                <div
+                  className="relative"
+                  style={{
+                    width: 'clamp(180px, 40vw, 400px)',
+                    height: 'clamp(49px, 11vw, 109px)',
+                    filter: 'drop-shadow(0 0 40px rgba(255, 255, 255, 0.3))'
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 bg-white"
+                    style={{
+                      WebkitMaskImage: 'url(/tipografia-logo.png)',
+                      maskImage: 'url(/tipografia-logo.png)',
+                      WebkitMaskSize: 'contain',
+                      maskSize: 'contain',
+                      WebkitMaskRepeat: 'no-repeat',
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskPosition: 'center',
+                      maskPosition: 'center'
+                    }}
+                  />
+                </div>
+              </motion.div>
 
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
@@ -148,8 +174,16 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="mb-10"
               >
-                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-magenta-300 to-cyan-300 mb-4">
-                  Lounge Bar + Gastronomia + Narguile
+                <p
+                  className="text-xl sm:text-2xl md:text-3xl font-bold mb-4"
+                  style={{
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  Drinks + Gastronomia + Narguile
                 </p>
                 <p className="text-sm sm:text-base md:text-lg text-neutral-300 max-w-2xl mx-auto leading-relaxed px-6 sm:px-4">
                   Onde o sabor encontra a sofisticacao. Drinks autorais, gastronomia premium e narguile em Botafogo.
@@ -162,17 +196,23 @@ export default function Home() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
               >
-                <div className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-lg ${
-                  isOpen()
-                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 shadow-cyan-500/30'
-                    : 'bg-gradient-to-r from-magenta-500 to-rose-500 shadow-magenta-500/30'
-                }`}>
+                <div
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold shadow-lg text-white"
+                  style={{
+                    background: isOpen()
+                      ? 'linear-gradient(to right, #10B981, #06B6D4)'
+                      : `linear-gradient(to right, var(--theme-primary), var(--theme-accent))`
+                  }}
+                >
                   <Clock className="w-5 h-5" />
                   <span>{isOpen() ? 'ABERTO AGORA' : 'FECHADO'}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-neutral-300 bg-neutral-900/50 backdrop-blur-sm px-5 py-2.5 rounded-full border border-magenta-500/20">
-                  <MapPin className="w-5 h-5 text-magenta-400" />
+                <div
+                  className="flex items-center gap-2 text-neutral-300 bg-neutral-900/50 backdrop-blur-sm px-5 py-2.5 rounded-full"
+                  style={{ borderWidth: '1px', borderStyle: 'solid', borderColor: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}
+                >
+                  <MapPin className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
                   <span>Botafogo, Rio de Janeiro</span>
                 </div>
               </motion.div>
@@ -185,7 +225,10 @@ export default function Home() {
               >
                 <Link
                   href="/cardapio"
-                  className="group relative bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-500 hover:from-magenta-600 hover:via-purple-600 hover:to-cyan-600 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl shadow-magenta-500/30 hover:shadow-magenta-500/50 sm:hover:scale-105 overflow-hidden w-full sm:w-auto"
+                  className="group relative text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl sm:hover:scale-105 overflow-hidden w-full sm:w-auto hover:opacity-90"
+                  style={{
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
+                  }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   <span className="relative z-10 text-white">Ver Cardapio</span>
@@ -196,7 +239,12 @@ export default function Home() {
 
                 <Link
                   href="/historia"
-                  className="group bg-black/40 backdrop-blur-sm border-2 border-magenta-500 text-white hover:bg-magenta-500 hover:text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
+                  className="group bg-black/40 backdrop-blur-sm border-2 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
+                  style={{
+                    borderColor: 'var(--theme-primary)'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--theme-primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.4)'}
                 >
                   <span className="z-10 text-white">Nossa Historia</span>
                   <svg className="z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -251,7 +299,12 @@ export default function Home() {
                   transition={{ delay: 0.1 }}
                   className="text-5xl md:text-6xl font-bold text-white mb-6"
                 >
-                  Por que <span className="bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">FLAME</span>?
+                  Por que <span style={{
+                    background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>FLAME</span>?
                 </motion.h2>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -273,9 +326,15 @@ export default function Home() {
                   whileHover={{ y: -8 }}
                   className="group relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-magenta-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div
+                    className="absolute inset-0 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-20"
+                    style={{ background: 'radial-gradient(circle, var(--theme-primary) 0%, transparent 70%)' }}
+                  />
                   <div className="relative bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-8 rounded-2xl border border-magenta-500/20 group-hover:border-magenta-500/40 transition-all">
-                    <div className="w-20 h-20 bg-gradient-to-br from-magenta-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-magenta-500/30">
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg" style={{
+                      background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)'
+                    }}>
                       <Wine className="w-10 h-10 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-magenta-400 transition-colors">
@@ -366,7 +425,12 @@ export default function Home() {
                     </span>
                   </div>
                   <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
-                    <span className="bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    <span style={{
+                      background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}>
                       Destaques
                     </span>
                     {' '}Especiais
@@ -403,7 +467,11 @@ export default function Home() {
                 >
                   <Link
                     href="/cardapio"
-                    className="group relative bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-500 hover:from-magenta-600 hover:via-purple-600 hover:to-cyan-600 text-white px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl shadow-magenta-500/30 hover:shadow-magenta-500/50 hover:scale-105 overflow-hidden"
+                    className="group relative text-white px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
+                    }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                     <span className="relative">Ver Cardapio Completo</span>
@@ -449,7 +517,12 @@ export default function Home() {
                   </div>
                   <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
                     Venha nos{' '}
-                    <span className="bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    <span style={{
+                      background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}>
                       Visitar
                     </span>
                   </h2>
@@ -462,7 +535,10 @@ export default function Home() {
                       whileHover={{ x: 5 }}
                       className="group flex items-start gap-4 bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-5 rounded-xl border border-magenta-500/20 hover:border-magenta-500/40 transition-all"
                     >
-                      <div className="w-12 h-12 bg-gradient-to-br from-magenta-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-magenta-500/30">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg" style={{
+                        background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
+                      }}>
                         <MapPin className="w-6 h-6 text-white" />
                       </div>
                       <div>
@@ -491,7 +567,11 @@ export default function Home() {
                   <Link
                     href="https://maps.google.com"
                     target="_blank"
-                    className="group relative bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-500 hover:from-magenta-600 hover:via-purple-600 hover:to-cyan-600 text-white px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl shadow-magenta-500/30 hover:shadow-magenta-500/50 hover:scale-105 overflow-hidden"
+                    className="group relative text-white px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
+                    }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                     <MapPin className="relative w-5 h-5" />

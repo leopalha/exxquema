@@ -8,8 +8,8 @@ export default function Termos() {
   return (
     <>
       <Head>
-        <title>Termos de Uso | Red Light</title>
-        <meta name="description" content="Termos de uso e política de privacidade do Red Light" />
+        <title>Termos de Uso | FLAME Lounge Bar</title>
+        <meta name="description" content="Termos de uso e política de privacidade do FLAME Lounge Bar" />
       </Head>
 
       <Layout>
@@ -51,7 +51,7 @@ export default function Termos() {
                   1. Aceitação dos Termos
                 </h2>
                 <p className="text-gray-300 leading-relaxed mb-4">
-                  Ao acessar e usar a plataforma digital do Red Light Lounge Bar, você concorda em cumprir e estar vinculado aos seguintes termos e condições de uso.
+                  Ao acessar e usar a plataforma digital do FLAME Lounge Bar, você concorda em cumprir e estar vinculado aos seguintes termos e condições de uso.
                 </p>
                 <p className="text-gray-300 leading-relaxed">
                   Se você não concordar com qualquer parte destes termos, não deverá usar nossa plataforma.
@@ -131,7 +131,7 @@ export default function Termos() {
                 </h2>
                 <div className="text-gray-300 leading-relaxed space-y-4">
                   <p>
-                    <strong className="text-white">5.1.</strong> O Red Light não se responsabiliza por erros de pedidos causados por informações incorretas fornecidas pelo usuário.
+                    <strong className="text-white">5.1.</strong> O FLAME Lounge Bar não se responsabiliza por erros de pedidos causados por informações incorretas fornecidas pelo usuário.
                   </p>
                   <p>
                     <strong className="text-white">5.2.</strong> Reservamos o direito de recusar serviço a qualquer pessoa por qualquer motivo a qualquer momento.
@@ -167,8 +167,8 @@ export default function Termos() {
                   Para questões sobre estes termos ou sobre privacidade, entre em contato:
                 </p>
                 <div className="text-gray-300 space-y-2">
-                  <p><strong className="text-white">E-mail:</strong> contato@redlight.rio</p>
-                  <p><strong className="text-white">Telefone:</strong> (21) 99999-0000</p>
+                  <p><strong className="text-white">E-mail:</strong> contato@flame.com.br</p>
+                  <p><strong className="text-white">Telefone:</strong> (21) 99554-6492</p>
                   <p><strong className="text-white">Endereço:</strong> Rua Arnaldo Quintela, 19 - Botafogo, RJ</p>
                 </div>
               </div>

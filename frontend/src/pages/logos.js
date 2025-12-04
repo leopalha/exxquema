@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
 import { Download, Copy, Check, Flame } from 'lucide-react';
+import FlameLogo from '../components/Logo';
 
 export default function Logos() {
   const [copiedId, setCopiedId] = useState(null);
@@ -24,29 +25,12 @@ export default function Logos() {
     {
       id: 'flame-logo-principal',
       name: 'FLAME - Logo Principal',
-      description: 'Logo com icone da chama + tipografia Bebas Neue - fundo escuro',
+      description: 'Logo com icone da chama + tipografia branca - fundo escuro',
       category: 'principal',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <div className="flex items-center gap-3" style={{ transform: `scale(${scale})` }}>
-          <Image
-            src="/logo-flame.png"
-            alt="FLAME"
-            width={72}
-            height={72}
-            className="object-contain"
-          />
-          <span
-            className="text-white font-bold tracking-wider"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '80px',
-              letterSpacing: '0.06em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+        <div style={{ transform: `scale(${scale})` }}>
+          <FlameLogo size={72} />
         </div>
       )
     },
@@ -57,7 +41,7 @@ export default function Logos() {
       category: 'principal',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <div className="flex items-center gap-3" style={{ transform: `scale(${scale})` }}>
+        <div className="flex items-center gap-4" style={{ transform: `scale(${scale})` }}>
           <Image
             src="/logo-flame.png"
             alt="FLAME"
@@ -65,17 +49,21 @@ export default function Logos() {
             height={72}
             className="object-contain"
           />
-          <span
-            className="font-bold tracking-wider bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '80px',
-              letterSpacing: '0.06em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: 220, height: 60 }}>
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-400"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       )
     },
@@ -90,21 +78,25 @@ export default function Logos() {
           <Image
             src="/logo-flame.png"
             alt="FLAME"
-            width={36}
-            height={36}
+            width={44}
+            height={44}
             className="object-contain"
           />
-          <span
-            className="text-white font-bold tracking-wider"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '40px',
-              letterSpacing: '0.06em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: 130, height: 36 }}>
+            <div
+              className="absolute inset-0 bg-white"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       )
     },
@@ -149,98 +141,147 @@ export default function Logos() {
 
     // ============ TIPOGRAFIA FLAME ============
     {
-      id: 'flame-tipo-branco',
-      name: 'FLAME - Tipografia Branca',
-      description: 'Texto FLAME em Bebas Neue branco',
+      id: 'flame-tipo-completo',
+      name: 'FLAME - Tipografia Completa',
+      description: 'FLAME + LOUNGE BAR - tipografia oficial',
       category: 'tipografia',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <span
-          className="text-white font-bold tracking-wider"
-          style={{
-            fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${72 * scale}px`,
-            letterSpacing: '0.15em'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-white"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
+      )
+    },
+    {
+      id: 'flame-tipo-branco',
+      name: 'FLAME - Tipografia Branca',
+      description: 'Tipografia oficial em branco',
+      category: 'tipografia',
+      bgColor: 'bg-neutral-900',
+      render: (scale = 1) => (
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-white"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )
     },
     {
       id: 'flame-tipo-gradiente',
       name: 'FLAME - Tipografia Gradiente',
-      description: 'Texto FLAME com gradiente magenta-purple-cyan',
+      description: 'Tipografia oficial com gradiente magenta-purple-cyan',
       category: 'tipografia',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <span
-          className="font-bold tracking-wider bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
-          style={{
-            fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${72 * scale}px`,
-            letterSpacing: '0.15em'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-400"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )
     },
     {
       id: 'flame-tipo-magenta',
       name: 'FLAME - Tipografia Magenta',
-      description: 'Texto FLAME em magenta solido',
+      description: 'Tipografia oficial em magenta solido',
       category: 'tipografia',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <span
-          className="text-magenta-500 font-bold tracking-wider"
-          style={{
-            fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${72 * scale}px`,
-            letterSpacing: '0.15em'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-magenta-500"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )
     },
     {
       id: 'flame-tipo-cyan',
       name: 'FLAME - Tipografia Cyan',
-      description: 'Texto FLAME em cyan solido',
+      description: 'Tipografia oficial em cyan solido',
       category: 'tipografia',
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
-        <span
-          className="text-cyan-400 font-bold tracking-wider"
-          style={{
-            fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${72 * scale}px`,
-            letterSpacing: '0.15em'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-cyan-400"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )
     },
     {
       id: 'flame-tipo-preto',
       name: 'FLAME - Tipografia Preta',
-      description: 'Texto FLAME em preto para fundos claros',
+      description: 'Tipografia oficial em preto para fundos claros',
       category: 'tipografia',
       bgColor: 'bg-white',
       render: (scale = 1) => (
-        <span
-          className="text-black font-bold tracking-wider"
-          style={{
-            fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-            fontSize: `${72 * scale}px`,
-            letterSpacing: '0.15em'
-          }}
-        >
-          FLAME
-        </span>
+        <div className="relative" style={{ width: 280 * scale, height: 76 * scale }}>
+          <div
+            className="absolute inset-0 bg-black"
+            style={{
+              WebkitMaskImage: 'url(/tipografia-logo.png)',
+              maskImage: 'url(/tipografia-logo.png)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center'
+            }}
+          />
+        </div>
       )
     },
 
@@ -365,17 +406,21 @@ export default function Logos() {
             height={48}
             className="object-contain"
           />
-          <span
-            className="text-white font-bold tracking-wider"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '48px',
-              letterSpacing: '0.08em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: 146, height: 40 }}>
+            <div
+              className="absolute inset-0 bg-white"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       )
     },
@@ -400,17 +445,21 @@ export default function Logos() {
             height={48}
             className="object-contain"
           />
-          <span
-            className="font-bold tracking-wider bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '48px',
-              letterSpacing: '0.08em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: 146, height: 40 }}>
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-400"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       )
     },
@@ -422,7 +471,7 @@ export default function Logos() {
       bgColor: 'bg-neutral-900',
       render: (scale = 1) => (
         <div
-          className="flex flex-col items-center gap-2 bg-neutral-900 p-6 rounded-xl border border-neutral-700"
+          className="flex flex-col items-center gap-3 bg-neutral-900 p-6 rounded-xl border border-neutral-700"
           style={{ transform: `scale(${scale})` }}
         >
           <Image
@@ -432,17 +481,21 @@ export default function Logos() {
             height={64}
             className="object-contain"
           />
-          <span
-            className="text-white font-bold tracking-wider"
-            style={{
-              fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-              fontSize: '40px',
-              letterSpacing: '0.15em',
-              lineHeight: '1'
-            }}
-          >
-            FLAME
-          </span>
+          <div className="relative" style={{ width: 122, height: 33 }}>
+            <div
+              className="absolute inset-0 bg-white"
+              style={{
+                WebkitMaskImage: 'url(/tipografia-logo.png)',
+                maskImage: 'url(/tipografia-logo.png)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       )
     },
@@ -464,17 +517,21 @@ export default function Logos() {
               height={56}
               className="object-contain"
             />
-            <span
-              className="text-white font-bold tracking-wider"
-              style={{
-                fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-                fontSize: '56px',
-                letterSpacing: '0.08em',
-                lineHeight: '1'
-              }}
-            >
-              FLAME
-            </span>
+            <div className="relative" style={{ width: 170, height: 46 }}>
+              <div
+                className="absolute inset-0 bg-white"
+                style={{
+                  WebkitMaskImage: 'url(/tipografia-logo.png)',
+                  maskImage: 'url(/tipografia-logo.png)',
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskPosition: 'center'
+                }}
+              />
+            </div>
           </div>
           <span className="text-magenta-400 text-sm tracking-widest font-medium">
             LOUNGE BAR + GASTRONOMIA + NARGUILE
@@ -498,17 +555,21 @@ export default function Logos() {
               height={56}
               className="object-contain"
             />
-            <span
-              className="font-bold tracking-wider bg-gradient-to-r from-magenta-400 to-cyan-400 bg-clip-text text-transparent"
-              style={{
-                fontFamily: "'Bebas Neue', 'Oswald', sans-serif",
-                fontSize: '56px',
-                letterSpacing: '0.08em',
-                lineHeight: '1'
-              }}
-            >
-              FLAME
-            </span>
+            <div className="relative" style={{ width: 170, height: 46 }}>
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-magenta-500 via-purple-500 to-cyan-400"
+                style={{
+                  WebkitMaskImage: 'url(/tipografia-logo.png)',
+                  maskImage: 'url(/tipografia-logo.png)',
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain',
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskPosition: 'center'
+                }}
+              />
+            </div>
           </div>
           <span className="text-cyan-400 text-lg tracking-widest font-semibold italic">
             Sinta o Calor
@@ -536,7 +597,7 @@ export default function Logos() {
     <>
       <Head>
         <title>Logos | FLAME - Identidade Visual</title>
-        <meta name="description" content="Galeria de logos e variacoes da identidade visual do FLAME Lounge Bar. Tipografia Bebas Neue, cores magenta e cyan." />
+        <meta name="description" content="Galeria de logos e variacoes da identidade visual do FLAME Lounge Bar. Tipografia Microgramma EF Bold Extended e Besides, cores magenta e cyan." />
       </Head>
 
       <Layout>
@@ -548,19 +609,10 @@ export default function Logos() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-16"
             >
-              <div className="flex items-center justify-center gap-4 mb-6">
-                <Image
-                  src="/logo-flame.png"
-                  alt="FLAME"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
+              {/* Logo Principal com tipografia branca */}
+              <div className="flex items-center justify-center gap-6 mb-8">
+                <FlameLogo size={100} />
               </div>
-              <h1 className="text-5xl md:text-7xl font-black text-white mb-4"
-                  style={{ fontFamily: "'Bebas Neue', 'Oswald', sans-serif", letterSpacing: '0.1em' }}>
-                FLAME
-              </h1>
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
                   Identidade Visual
@@ -569,7 +621,7 @@ export default function Logos() {
               <p className="text-xl text-gray-400 max-w-3xl mx-auto">
                 Diferentes variacoes do logo FLAME para diversos usos e aplicacoes.
                 <br />
-                <span className="text-magenta-400">Tipografia: Bebas Neue</span> | <span className="text-cyan-400">Cores: Magenta + Cyan</span>
+                <span className="text-magenta-400">Tipografia: Microgramma EF + Besides</span> | <span className="text-cyan-400">Cores: Magenta + Cyan</span>
               </p>
             </motion.div>
 
@@ -606,16 +658,16 @@ export default function Logos() {
                   <h4 className="text-cyan-400 font-semibold mb-3">Tipografia</h4>
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-white text-2xl" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>Bebas Neue</span>
-                      <span className="text-gray-500 text-sm">Display / Logo</span>
+                      <span className="text-white text-2xl" style={{ fontFamily: "'Microgramma EF Bold Extended', sans-serif" }}>Microgramma EF</span>
+                      <span className="text-gray-500 text-sm">Logo FLAME</span>
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-white text-lg" style={{ fontFamily: "'Montserrat', sans-serif" }}>Montserrat</span>
-                      <span className="text-gray-500 text-sm">Headings</span>
+                      <span className="text-white text-lg" style={{ fontFamily: "'Besides', sans-serif" }}>Besides</span>
+                      <span className="text-gray-500 text-sm">Subtitulo</span>
                     </div>
                     <div className="flex items-baseline gap-3">
-                      <span className="text-white text-base" style={{ fontFamily: "'Inter', sans-serif" }}>Inter</span>
-                      <span className="text-gray-500 text-sm">Body</span>
+                      <span className="text-white text-base" style={{ fontFamily: "'Montserrat', sans-serif" }}>Montserrat</span>
+                      <span className="text-gray-500 text-sm">Headings / Body</span>
                     </div>
                   </div>
                 </div>
@@ -798,7 +850,7 @@ export default function Logos() {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-magenta-400 mt-1">✕</span>
-                      Trocar a tipografia Bebas Neue por outra fonte
+                      Trocar a tipografia Microgramma/Besides por outra fonte
                     </li>
                   </ul>
                 </div>

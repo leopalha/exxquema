@@ -50,16 +50,16 @@ const mockAuthUsers = {
     id: '3',
     nome: 'Admin FLAME',
     email: 'admin@admin.com',
-    telefone: '(21) 99999-0000',
+    telefone: '(21) 99554-6492',
     role: 'admin',
     ativo: true,
     password: 'admin123'
   },
-  'admin@redlight.com.br': {
+  'admin@flame.com.br': {
     id: '3',
     nome: 'Admin FLAME',
-    email: 'admin@redlight.com.br',
-    telefone: '(21) 99999-0000',
+    email: 'admin@flame.com.br',
+    telefone: '(21) 99554-6492',
     role: 'admin',
     ativo: true,
     password: '123456'
@@ -81,11 +81,11 @@ const mockAuthUsers = {
     role: 'customer',
     ativo: true
   },
-  '21999990000': {
+  '21995546492': {
     id: '3',
     nome: 'Admin SMS',
-    email: 'admin@redlight.com.br',
-    telefone: '(21) 99999-0000',
+    email: 'admin@flame.com.br',
+    telefone: '(21) 99554-6492',
     role: 'admin',
     ativo: true
   }

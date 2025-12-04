@@ -6,6 +6,7 @@ const Product = require('./Product');
 const Table = require('./Table');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
+const InventoryMovement = require('./InventoryMovement');
 
 // Define associations
 const defineAssociations = () => {
@@ -64,14 +65,40 @@ const defineAssociations = () => {
   });
 
   // OrderItem associations
-  OrderItem.belongsTo(Order, { 
-    foreignKey: 'orderId', 
-    as: 'order' 
+  OrderItem.belongsTo(Order, {
+    foreignKey: 'orderId',
+    as: 'order'
   });
-  
-  OrderItem.belongsTo(Product, { 
-    foreignKey: 'productId', 
-    as: 'product' 
+
+  OrderItem.belongsTo(Product, {
+    foreignKey: 'productId',
+    as: 'product'
+  });
+
+  // InventoryMovement associations
+  InventoryMovement.belongsTo(Product, {
+    foreignKey: 'productId',
+    as: 'product'
+  });
+
+  InventoryMovement.belongsTo(Order, {
+    foreignKey: 'orderId',
+    as: 'order'
+  });
+
+  InventoryMovement.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
+
+  Product.hasMany(InventoryMovement, {
+    foreignKey: 'productId',
+    as: 'movements'
+  });
+
+  Order.hasMany(InventoryMovement, {
+    foreignKey: 'orderId',
+    as: 'movements'
   });
 };
 
@@ -110,6 +137,9 @@ const createTables = async () => {
     await OrderItem.sync();
     console.log('✅ Tabela order_items criada/atualizada');
 
+    await InventoryMovement.sync();
+    console.log('✅ Tabela inventory_movements criada/atualizada');
+
     return true;
   } catch (error) {
     console.error('❌ Erro ao criar tabelas:', error);
@@ -136,6 +166,7 @@ module.exports = {
   Table,
   Order,
   OrderItem,
+  InventoryMovement,
   syncDatabase,
   createTables,
   dropTables

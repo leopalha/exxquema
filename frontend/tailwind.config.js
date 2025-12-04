@@ -231,7 +231,7 @@ module.exports = {
         'gradient-flame-horizontal': 'linear-gradient(90deg, #FF006E 0%, #B266FF 50%, #00D4FF 100%)',
         'gradient-flame-diagonal': 'linear-gradient(135deg, #FF006E 0%, #B266FF 50%, #00D4FF 100%)',
         'gradient-flame-subtle': 'linear-gradient(180deg, rgba(255,0,110,0.1) 0%, rgba(0,212,255,0.1) 100%)',
-        'gradient-flame-hover': 'linear-gradient(180deg, #FF4D94 0%, #C77DFF 50%, #22D3EE 100%)',
+        'gradient-flame-hover': 'linear-gradient(180deg, #FF4D94 0%, #C77DFF 50%, #00D4FF 100%)',
 
         // Outros gradientes
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -342,7 +342,7 @@ module.exports = {
           boxShadow: '0 0 30px rgba(255, 0, 110, 0.3), 0 0 60px rgba(0, 212, 255, 0.2)',
         },
         '.text-gradient-flame': {
-          background: 'linear-gradient(180deg, #FF006E 0%, #00D4FF 100%)',
+          background: 'linear-gradient(180deg, #FF006E 0%, #B266FF 50%, #00D4FF 100%)',
           '-webkit-background-clip': 'text',
           '-webkit-text-fill-color': 'transparent',
           'background-clip': 'text',
