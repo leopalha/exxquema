@@ -6,6 +6,7 @@ const orderRoutes = require('./orders');
 const tableRoutes = require('./tables');
 const adminRoutes = require('./admin');
 const inventoryRoutes = require('./inventory');
+const staffRoutes = require('./staff');
 
 // Rota de health check
 router.get('/health', (req, res) => {
@@ -33,6 +34,9 @@ router.use('/admin', adminRoutes);
 
 // Rotas de inventário
 router.use('/inventory', inventoryRoutes);
+
+// Rotas de staff
+router.use('/staff', staffRoutes);
 
 // Rota não encontrada
 router.use('*', (req, res) => {
