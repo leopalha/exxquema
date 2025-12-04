@@ -7,6 +7,8 @@ const Table = require('./Table');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
 const InventoryMovement = require('./InventoryMovement');
+const HookahFlavor = require('./HookahFlavor');
+const HookahSession = require('./HookahSession');
 
 // Define associations
 const defineAssociations = () => {
@@ -100,6 +102,27 @@ const defineAssociations = () => {
     foreignKey: 'orderId',
     as: 'movements'
   });
+
+  // HookahSession associations
+  Table.hasMany(HookahSession, {
+    foreignKey: 'mesaId',
+    as: 'hookahSessions'
+  });
+
+  HookahSession.belongsTo(Table, {
+    foreignKey: 'mesaId',
+    as: 'Table'
+  });
+
+  HookahSession.belongsTo(HookahFlavor, {
+    foreignKey: 'flavorId',
+    as: 'HookahFlavor'
+  });
+
+  HookahFlavor.hasMany(HookahSession, {
+    foreignKey: 'flavorId',
+    as: 'sessions'
+  });
 };
 
 // Initialize associations
@@ -140,6 +163,12 @@ const createTables = async () => {
     await InventoryMovement.sync();
     console.log('✅ Tabela inventory_movements criada/atualizada');
 
+    await HookahFlavor.sync();
+    console.log('✅ Tabela hookah_flavors criada/atualizada');
+
+    await HookahSession.sync();
+    console.log('✅ Tabela hookah_sessions criada/atualizada');
+
     return true;
   } catch (error) {
     console.error('❌ Erro ao criar tabelas:', error);
@@ -167,6 +196,8 @@ module.exports = {
   Order,
   OrderItem,
   InventoryMovement,
+  HookahFlavor,
+  HookahSession,
   syncDatabase,
   createTables,
   dropTables
