@@ -9,6 +9,7 @@ const OrderItem = require('./OrderItem');
 const InventoryMovement = require('./InventoryMovement');
 const HookahFlavor = require('./HookahFlavor');
 const HookahSession = require('./HookahSession');
+const Reservation = require('./Reservation');
 
 // Define associations
 const defineAssociations = () => {
@@ -123,6 +124,27 @@ const defineAssociations = () => {
     foreignKey: 'flavorId',
     as: 'sessions'
   });
+
+  // Reservation associations
+  User.hasMany(Reservation, {
+    foreignKey: 'userId',
+    as: 'reservations'
+  });
+
+  Reservation.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
+
+  Table.hasMany(Reservation, {
+    foreignKey: 'tableId',
+    as: 'reservations'
+  });
+
+  Reservation.belongsTo(Table, {
+    foreignKey: 'tableId',
+    as: 'table'
+  });
 };
 
 // Initialize associations
@@ -169,6 +191,9 @@ const createTables = async () => {
     await HookahSession.sync();
     console.log('✅ Tabela hookah_sessions criada/atualizada');
 
+    await Reservation.sync();
+    console.log('✅ Tabela reservations criada/atualizada');
+
     return true;
   } catch (error) {
     console.error('❌ Erro ao criar tabelas:', error);
@@ -198,6 +223,7 @@ module.exports = {
   InventoryMovement,
   HookahFlavor,
   HookahSession,
+  Reservation,
   syncDatabase,
   createTables,
   dropTables
