@@ -106,11 +106,11 @@ export default function Cardapio() {
       <Layout>
         <div className="min-h-screen pt-16 bg-black">
           {/* Header */}
-          <div className="relative bg-gradient-to-r from-magenta-900/50 via-purple-900/50 to-cyan-900/50 py-16 overflow-hidden">
+          <div className="relative py-16 overflow-hidden" style={{ background: 'linear-gradient(to right, rgba(var(--theme-primary-rgb), 0.5), rgba(var(--theme-accent-rgb), 0.5), rgba(var(--theme-secondary-rgb), 0.5))' }}>
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-magenta-500/20 via-transparent to-transparent" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-magenta-500/10 rounded-full blur-3xl" />
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at top, rgba(var(--theme-primary-rgb), 0.2), transparent, transparent)' }} />
+            <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(var(--theme-secondary-rgb), 0.1)' }} />
+            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl" style={{ backgroundColor: 'rgba(var(--theme-primary-rgb), 0.1)' }} />
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <motion.h1
@@ -119,7 +119,7 @@ export default function Cardapio() {
                 transition={{ duration: 0.5 }}
                 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4"
               >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400">
+                <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))' }}>
                   Nosso Cardápio
                 </span>
               </motion.h1>
@@ -148,7 +148,10 @@ export default function Cardapio() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Buscar produtos..."
-                    className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-magenta-500 focus:border-magenta-500"
+                    className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': 'var(--theme-primary)' }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = '#404040'}
                   />
                 </div>
 
@@ -158,21 +161,19 @@ export default function Cardapio() {
                   <div className="flex bg-neutral-800 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-md transition-colors ${
-                        viewMode === 'grid'
-                          ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                          : 'text-neutral-400 hover:text-white'
-                      }`}
+                      className="p-2 rounded-md transition-colors text-white"
+                      style={viewMode === 'grid' ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' } : { color: '#9ca3af' }}
+                      onMouseEnter={(e) => { if (viewMode !== 'grid') e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={(e) => { if (viewMode !== 'grid') e.currentTarget.style.color = '#9ca3af'; }}
                     >
                       <Grid className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`p-2 rounded-md transition-colors ${
-                        viewMode === 'list'
-                          ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                          : 'text-neutral-400 hover:text-white'
-                      }`}
+                      className="p-2 rounded-md transition-colors text-white"
+                      style={viewMode === 'list' ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' } : { color: '#9ca3af' }}
+                      onMouseEnter={(e) => { if (viewMode !== 'list') e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={(e) => { if (viewMode !== 'list') e.currentTarget.style.color = '#9ca3af'; }}
                     >
                       <List className="w-4 h-4" />
                     </button>
@@ -182,7 +183,10 @@ export default function Cardapio() {
                   <select
                     value={sortBy}
                     onChange={(e) => handleSortChange(e.target.value)}
-                    className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-magenta-500"
+                    className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': 'var(--theme-primary)' }}
+                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = '#404040'}
                   >
                     <option value="featured">Destaques</option>
                     <option value="name-asc">Nome A-Z</option>
@@ -200,7 +204,7 @@ export default function Cardapio() {
                     <Filter className="w-4 h-4" />
                     Filtros
                     {(filters.category || filters.isFeatured || filters.minPrice || filters.maxPrice) && (
-                      <span className="w-2 h-2 bg-gradient-to-r from-magenta-500 to-cyan-500 rounded-full"></span>
+                      <span className="w-2 h-2 rounded-full" style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}></span>
                     )}
                   </button>
                 </div>
@@ -210,7 +214,7 @@ export default function Cardapio() {
               {(filters.category || filters.isFeatured || filters.search || filters.minPrice || filters.maxPrice) && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {filters.search && (
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-magenta-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm">
+                    <span className="inline-flex items-center gap-1 text-white px-3 py-1 rounded-full text-sm" style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent))' }}>
                       Busca: "{filters.search}"
                       <button onClick={() => setSearchTerm('')}>
                         <X className="w-3 h-3" />
@@ -218,7 +222,7 @@ export default function Cardapio() {
                     </span>
                   )}
                   {filters.category && (
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-purple-500 to-cyan-500 text-white px-3 py-1 rounded-full text-sm">
+                    <span className="inline-flex items-center gap-1 text-white px-3 py-1 rounded-full text-sm" style={{ background: 'linear-gradient(to right, var(--theme-accent), var(--theme-secondary))' }}>
                       {filters.category}
                       <button onClick={() => handleCategoryFilter('')}>
                         <X className="w-3 h-3" />
@@ -226,7 +230,7 @@ export default function Cardapio() {
                     </span>
                   )}
                   {filters.isFeatured && (
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-cyan-500 to-magenta-500 text-white px-3 py-1 rounded-full text-sm">
+                    <span className="inline-flex items-center gap-1 text-white px-3 py-1 rounded-full text-sm" style={{ background: 'linear-gradient(to right, var(--theme-secondary), var(--theme-primary))' }}>
                       <Star className="w-3 h-3" />
                       Destaques
                       <button onClick={toggleFeaturedFilter}>
@@ -235,7 +239,7 @@ export default function Cardapio() {
                     </span>
                   )}
                   {(filters.minPrice || filters.maxPrice) && (
-                    <span className="inline-flex items-center gap-1 bg-gradient-to-r from-magenta-500 to-cyan-500 text-white px-3 py-1 rounded-full text-sm">
+                    <span className="inline-flex items-center gap-1 text-white px-3 py-1 rounded-full text-sm" style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}>
                       Preço: {filters.minPrice && formatCurrency(filters.minPrice)} - {filters.maxPrice && formatCurrency(filters.maxPrice)}
                       <button onClick={() => filterByPrice(null, null)}>
                         <X className="w-3 h-3" />
@@ -271,11 +275,10 @@ export default function Cardapio() {
                       <div className="space-y-2">
                         <button
                           onClick={() => handleCategoryFilter('')}
-                          className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                            !filters.category
-                              ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                              : 'text-neutral-400 hover:text-white hover:bg-neutral-700'
-                          }`}
+                          className="block w-full text-left px-3 py-2 rounded-lg transition-colors"
+                          style={!filters.category ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' } : { color: '#9ca3af' }}
+                          onMouseEnter={(e) => { if (filters.category) { e.currentTarget.style.color = 'white'; e.currentTarget.style.backgroundColor = '#374151'; } }}
+                          onMouseLeave={(e) => { if (filters.category) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
                         >
                           Todas
                         </button>
@@ -283,11 +286,10 @@ export default function Cardapio() {
                           <button
                             key={category}
                             onClick={() => handleCategoryFilter(category)}
-                            className={`block w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                              filters.category === category
-                                ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                                : 'text-neutral-400 hover:text-white hover:bg-neutral-700'
-                            }`}
+                            className="block w-full text-left px-3 py-2 rounded-lg transition-colors"
+                            style={filters.category === category ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' } : { color: '#9ca3af' }}
+                            onMouseEnter={(e) => { if (filters.category !== category) { e.currentTarget.style.color = 'white'; e.currentTarget.style.backgroundColor = '#374151'; } }}
+                            onMouseLeave={(e) => { if (filters.category !== category) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
                           >
                             {category}
                           </button>
@@ -306,7 +308,10 @@ export default function Cardapio() {
                             value={priceRange.min}
                             onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                             placeholder="R$ 0,00"
-                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-magenta-500"
+                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                            style={{ '--tw-ring-color': 'var(--theme-primary)' }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = '#525252'}
                           />
                         </div>
                         <div>
@@ -316,12 +321,18 @@ export default function Cardapio() {
                             value={priceRange.max}
                             onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                             placeholder="R$ 100,00"
-                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-magenta-500"
+                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                            style={{ '--tw-ring-color': 'var(--theme-primary)' }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = '#525252'}
                           />
                         </div>
                         <button
                           onClick={handlePriceFilter}
-                          className="w-full bg-gradient-to-r from-magenta-500 to-cyan-500 hover:from-magenta-600 hover:to-cyan-600 text-white py-2 px-4 rounded-lg transition-colors shadow-lg shadow-magenta-500/20"
+                          className="w-full text-white py-2 px-4 rounded-lg transition-colors shadow-lg"
+                          style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         >
                           Aplicar
                         </button>
@@ -334,11 +345,10 @@ export default function Cardapio() {
                       <div className="space-y-2">
                         <button
                           onClick={toggleFeaturedFilter}
-                          className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                            filters.isFeatured
-                              ? 'bg-gradient-to-r from-cyan-500 to-magenta-500 text-white'
-                              : 'text-neutral-400 hover:text-white hover:bg-neutral-700'
-                          }`}
+                          className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg transition-colors"
+                          style={filters.isFeatured ? { background: 'linear-gradient(to right, var(--theme-secondary), var(--theme-primary))', color: 'white' } : { color: '#9ca3af' }}
+                          onMouseEnter={(e) => { if (!filters.isFeatured) { e.currentTarget.style.color = 'white'; e.currentTarget.style.backgroundColor = '#374151'; } }}
+                          onMouseLeave={(e) => { if (!filters.isFeatured) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
                         >
                           <Star className="w-4 h-4" />
                           Produtos em Destaque
@@ -409,7 +419,10 @@ export default function Cardapio() {
                     </p>
                     <button
                       onClick={handleClearFilters}
-                      className="bg-gradient-to-r from-magenta-500 to-cyan-500 hover:from-magenta-600 hover:to-cyan-600 text-white px-6 py-3 rounded-lg transition-colors shadow-lg shadow-magenta-500/20"
+                      className="text-white px-6 py-3 rounded-lg transition-colors shadow-lg"
+                      style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
+                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
                       Limpar Filtros
                     </button>
@@ -435,11 +448,10 @@ export default function Cardapio() {
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`px-3 py-2 rounded-lg transition-colors ${
-                          page === pagination.currentPage
-                            ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                            : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
-                        }`}
+                        className="px-3 py-2 rounded-lg transition-colors"
+                        style={page === pagination.currentPage ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' } : { color: '#9ca3af' }}
+                        onMouseEnter={(e) => { if (page !== pagination.currentPage) { e.currentTarget.style.color = 'white'; e.currentTarget.style.backgroundColor = '#262626'; } }}
+                        onMouseLeave={(e) => { if (page !== pagination.currentPage) { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
                       >
                         {page}
                       </button>

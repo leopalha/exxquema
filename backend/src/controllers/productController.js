@@ -1,5 +1,6 @@
 const { Product } = require('../models');
 const { Op } = require('sequelize');
+const InventoryService = require('../services/inventoryService');
 
 class ProductController {
   // Listar todos os produtos (com filtros)
@@ -340,7 +341,7 @@ class ProductController {
   async updateStock(req, res) {
     try {
       const { id } = req.params;
-      const { stock } = req.body;
+      const { stock, reason, notes } = req.body;
 
       const product = await Product.findByPk(id);
 
@@ -358,12 +359,30 @@ class ProductController {
         });
       }
 
-      await product.update({ stock: parseInt(stock) });
+      const newStock = parseInt(stock);
+      const previousStock = product.stock || 0;
+
+      await product.update({ stock: newStock });
+
+      // Registrar movimento de ajuste
+      try {
+        await InventoryService.recordMovement(
+          id,
+          'ajuste',
+          newStock, // Para ajuste, quantity é o novo valor absoluto
+          reason || 'ajuste_inventario',
+          notes || `Ajuste manual de ${previousStock} para ${newStock}`,
+          req.user?.id // ID do usuário autenticado (se disponível)
+        );
+      } catch (inventoryError) {
+        console.error('Erro ao registrar movimento de estoque:', inventoryError);
+        // Não falha a atualização se houver erro no registro
+      }
 
       res.status(200).json({
         success: true,
         message: 'Estoque atualizado com sucesso',
-        data: { 
+        data: {
           product: {
             id: product.id,
             name: product.name,

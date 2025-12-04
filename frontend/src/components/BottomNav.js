@@ -9,12 +9,15 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useCartStore } from '../stores/cartStore';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import { Home, UtensilsCrossed, ShoppingBag, User, ClipboardList } from 'lucide-react';
 
 const BottomNav = () => {
   const router = useRouter();
   const { getTotalItems } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+  const { getPalette } = useThemeStore();
+  const palette = getPalette();
   const totalItems = getTotalItems();
 
   const navItems = [
@@ -76,7 +79,10 @@ const BottomNav = () => {
               {active && (
                 <motion.div
                   layoutId="bottomNavIndicator"
-                  className="absolute -top-0.5 w-12 h-1 bg-gradient-to-r from-magenta-500 to-cyan-500 rounded-full"
+                  className="absolute -top-0.5 w-12 h-1 rounded-full"
+                  style={{
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`
+                  }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />
               )}
@@ -99,7 +105,10 @@ const BottomNav = () => {
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-gradient-to-r from-magenta-500 to-cyan-500 text-white text-xs rounded-full flex items-center justify-center font-medium px-1"
+                    className="absolute -top-2 -right-2 min-w-[18px] h-[18px] text-white text-xs rounded-full flex items-center justify-center font-medium px-1"
+                    style={{
+                      background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`
+                    }}
                   >
                     {item.badge > 99 ? '99+' : item.badge}
                   </motion.span>
@@ -110,8 +119,8 @@ const BottomNav = () => {
                   <svg className="absolute inset-0 w-6 h-6" style={{ pointerEvents: 'none' }}>
                     <defs>
                       <linearGradient id="flameGradientNav" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#FF006E" />
-                        <stop offset="100%" stopColor="#00D4FF" />
+                        <stop offset="0%" stopColor={palette.primary} />
+                        <stop offset="100%" stopColor={palette.secondary} />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -121,10 +130,14 @@ const BottomNav = () => {
               {/* Label */}
               <span
                 className={`text-xs mt-1 font-medium transition-colors ${
-                  active
-                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-magenta-500 to-cyan-500'
-                    : 'text-neutral-500'
+                  active ? '' : 'text-neutral-500'
                 }`}
+                style={active ? {
+                  background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                } : {}}
               >
                 {item.label}
               </span>
@@ -137,8 +150,8 @@ const BottomNav = () => {
       <svg width="0" height="0" className="absolute">
         <defs>
           <linearGradient id="flameGradientNavIcon" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FF006E" />
-            <stop offset="100%" stopColor="#00D4FF" />
+            <stop offset="0%" stopColor={palette.primary} />
+            <stop offset="100%" stopColor={palette.secondary} />
           </linearGradient>
         </defs>
       </svg>

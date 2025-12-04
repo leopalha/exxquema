@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import '../styles/components.css';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import { useThemeStore } from '../stores/themeStore';
 
 import { Inter, Montserrat, Bebas_Neue } from 'next/font/google';
 
@@ -28,10 +29,13 @@ const bebasNeue = Bebas_Neue({
 
 function MyApp({ Component, pageProps }) {
   const [isClient, setIsClient] = useState(false);
+  const applyTheme = useThemeStore((state) => state.applyTheme);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // Aplicar tema salvo ao carregar
+    applyTheme();
+  }, [applyTheme]);
 
   return (
     <div className={`${inter.variable} ${montserrat.variable} ${bebasNeue.variable} font-sans`}>

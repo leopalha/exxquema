@@ -143,17 +143,17 @@ export default function Reservas() {
       <Layout>
         <div className="min-h-screen pt-16 bg-black">
           {/* Header */}
-          <div className="relative bg-gradient-to-r from-magenta-900/50 via-purple-900/50 to-cyan-900/50 py-16 overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-magenta-500/20 via-transparent to-transparent" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-magenta-500/10 rounded-full blur-3xl" />
+          <div className="relative py-16 overflow-hidden" style={{ background: 'linear-gradient(to right, rgba(139, 0, 110, 0.5), rgba(178, 102, 255, 0.5), rgba(0, 212, 255, 0.5))' }}>
+            <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10" style={{ background: 'radial-gradient(circle, var(--theme-secondary), transparent)' }} />
+            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10" style={{ background: 'radial-gradient(circle, var(--theme-primary), transparent)' }} />
 
             <div className="relative max-w-4xl mx-auto px-4 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', duration: 0.5 }}
-                className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-magenta-500 to-cyan-500 rounded-full mb-6"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
+                style={{ background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))' }}
               >
                 <CalendarDays className="w-10 h-10 text-white" />
               </motion.div>
@@ -163,7 +163,11 @@ export default function Reservas() {
                 animate={{ y: 0, opacity: 1 }}
                 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
               >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 via-purple-400 to-cyan-400">
+                <span style={{
+                  background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
                   Reservas
                 </span>
               </motion.h1>
@@ -189,9 +193,13 @@ export default function Reservas() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
+                  style={activeTab === tab.id ? {
+                    background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))',
+                    color: 'white'
+                  } : {}}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                      ? 'text-white'
                       : 'text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -215,17 +223,23 @@ export default function Reservas() {
                   <div className="flex items-center justify-center gap-4 mb-8">
                     {[1, 2, 3].map(s => (
                       <div key={s} className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                          step >= s
-                            ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
-                            : 'bg-neutral-800 text-neutral-500'
-                        }`}>
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            step >= s
+                              ? 'text-white'
+                              : 'bg-neutral-800 text-neutral-500'
+                          }`}
+                          style={step >= s ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' } : {}}
+                        >
                           {step > s ? <Check className="w-5 h-5" /> : s}
                         </div>
                         {s < 3 && (
-                          <div className={`w-16 h-1 mx-2 rounded ${
-                            step > s ? 'bg-gradient-to-r from-magenta-500 to-cyan-500' : 'bg-neutral-800'
-                          }`} />
+                          <div
+                            className={`w-16 h-1 mx-2 rounded ${
+                              step > s ? '' : 'bg-neutral-800'
+                            }`}
+                            style={step > s ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' } : {}}
+                          />
                         )}
                       </div>
                     ))}
@@ -281,11 +295,12 @@ export default function Reservas() {
                                 key={index}
                                 onClick={() => isAvailable && handleDateSelect(day.date)}
                                 disabled={!isAvailable}
+                                style={isSelected ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' } : {}}
                                 className={`p-3 rounded-lg text-center transition-all ${
                                   !day.isCurrentMonth
                                     ? 'text-neutral-700'
                                     : isSelected
-                                      ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white font-bold'
+                                      ? 'font-bold text-white'
                                       : isAvailable
                                         ? 'text-white hover:bg-neutral-800'
                                         : 'text-neutral-600 cursor-not-allowed'
@@ -319,9 +334,10 @@ export default function Reservas() {
                                   key={horario}
                                   onClick={() => isAvailable && setFormData(prev => ({ ...prev, horario }))}
                                   disabled={!isAvailable}
+                                  style={isSelected ? { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' } : {}}
                                   className={`py-3 px-4 rounded-lg font-medium transition-all ${
                                     isSelected
-                                      ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                                      ? 'text-white'
                                       : isAvailable
                                         ? 'bg-neutral-800 text-white hover:bg-neutral-700'
                                         : 'bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
@@ -338,7 +354,12 @@ export default function Reservas() {
                       <button
                         onClick={() => setStep(2)}
                         disabled={!formData.data || !formData.horario}
-                        className="w-full bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 disabled:from-neutral-700 disabled:to-neutral-700 text-white font-semibold py-4 rounded-xl transition-all"
+                        style={
+                          !formData.data || !formData.horario
+                            ? { background: 'linear-gradient(to right, #525252, #525252)' }
+                            : { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }
+                        }
+                        className="w-full text-white font-semibold py-4 rounded-xl transition-all hover:opacity-90"
                       >
                         Continuar
                       </button>
@@ -369,7 +390,14 @@ export default function Reservas() {
                           >
                             -
                           </button>
-                          <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 to-cyan-400 w-20 text-center">
+                          <span
+                            className="text-4xl font-bold w-20 text-center"
+                            style={{
+                              background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent'
+                            }}
+                          >
                             {formData.pessoas}
                           </span>
                           <button
@@ -392,9 +420,13 @@ export default function Reservas() {
                             <button
                               key={tipo.id}
                               onClick={() => setFormData(prev => ({ ...prev, tipoMesa: tipo.id }))}
+                              style={formData.tipoMesa === tipo.id ? {
+                                borderColor: 'var(--theme-primary)',
+                                backgroundColor: 'rgba(var(--theme-primary-rgb, 255, 0, 110), 0.1)'
+                              } : {}}
                               className={`p-4 rounded-xl border-2 transition-all text-left ${
                                 formData.tipoMesa === tipo.id
-                                  ? 'border-magenta-500 bg-magenta-500/10'
+                                  ? ''
                                   : 'border-neutral-700 hover:border-neutral-600'
                               }`}
                             >
@@ -431,9 +463,13 @@ export default function Reservas() {
                                 ...prev,
                                 ocasiao: prev.ocasiao === ocasiao ? '' : ocasiao
                               }))}
+                              style={formData.ocasiao === ocasiao ? {
+                                background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))',
+                                color: 'white'
+                              } : {}}
                               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                                 formData.ocasiao === ocasiao
-                                  ? 'bg-gradient-to-r from-magenta-500 to-cyan-500 text-white'
+                                  ? 'text-white'
                                   : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
                               }`}
                             >
@@ -452,7 +488,8 @@ export default function Reservas() {
                         </button>
                         <button
                           onClick={() => setStep(3)}
-                          className="flex-1 bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 text-white font-semibold py-4 rounded-xl transition-all"
+                          style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
+                          className="flex-1 text-white font-semibold py-4 rounded-xl transition-all hover:opacity-90"
                         >
                           Continuar
                         </button>
@@ -543,7 +580,12 @@ export default function Reservas() {
                         <button
                           onClick={handleSubmit}
                           disabled={loading || !formData.nome || !formData.telefone}
-                          className="flex-1 bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 disabled:from-neutral-700 disabled:to-neutral-700 text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                          style={
+                            loading || !formData.nome || !formData.telefone
+                              ? { background: 'linear-gradient(to right, #525252, #525252)' }
+                              : { background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }
+                          }
+                          className="flex-1 text-white font-semibold py-4 rounded-xl transition-all hover:opacity-90 flex items-center justify-center gap-2"
                         >
                           {loading ? (
                             <>
@@ -578,7 +620,8 @@ export default function Reservas() {
                       <p className="text-neutral-400 mb-6">Faca sua primeira reserva agora!</p>
                       <button
                         onClick={() => setActiveTab('nova')}
-                        className="bg-gradient-to-r from-magenta-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-xl"
+                        style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
+                        className="text-white font-semibold py-3 px-6 rounded-xl transition-all hover:opacity-90"
                       >
                         Fazer Reserva
                       </button>

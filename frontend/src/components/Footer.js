@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from 'lucide-react';
 import { frasesFooter } from '../data/frases';
 import FlameLogo from './Logo';
+import { useThemeStore } from '../stores/themeStore';
 
 const Footer = () => {
+  const { getPalette } = useThemeStore();
+  const palette = getPalette();
   const currentYear = new Date().getFullYear();
   const [fraseIndex, setFraseIndex] = useState(0);
 
@@ -64,22 +67,22 @@ const Footer = () => {
 
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-sm text-neutral-400">
-                <MapPin className="w-4 h-4 text-magenta-400 flex-shrink-0" />
+                <MapPin className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
                 <span>Rua Arnaldo Quintela 19, Botafogo - RJ</span>
               </div>
 
               <div className="flex items-center space-x-3 text-sm text-neutral-400">
-                <Phone className="w-4 h-4 text-magenta-400 flex-shrink-0" />
-                <span>(21) 99999-9999</span>
+                <Phone className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
+                <span>(21) 99554-6492</span>
               </div>
 
               <div className="flex items-center space-x-3 text-sm text-neutral-400">
-                <Mail className="w-4 h-4 text-magenta-400 flex-shrink-0" />
+                <Mail className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
                 <span>contato@flame.com.br</span>
               </div>
 
               <div className="flex items-start space-x-3 text-sm text-neutral-400">
-                <Clock className="w-4 h-4 text-magenta-400 flex-shrink-0 mt-0.5" />
+                <Clock className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0 mt-0.5`} />
                 <div>
                   <div>Dom-Qui: 16h as 02h</div>
                   <div>Sex-Sab: 16h as 03h</div>
@@ -96,7 +99,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-neutral-400 hover:text-magenta-400 text-sm transition-colors"
+                    className="text-neutral-400 hover:text-white text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -113,7 +116,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-neutral-400 hover:text-magenta-400 text-sm transition-colors"
+                    className="text-neutral-400 hover:text-white text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -133,7 +136,7 @@ const Footer = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-neutral-800 hover:bg-gradient-to-br hover:from-magenta-500 hover:to-cyan-500 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white transition-all duration-200 shadow-lg hover:shadow-magenta-500/30"
+                  className="w-10 h-10 bg-neutral-800 hover:bg-[var(--theme-primary)] rounded-lg flex items-center justify-center text-neutral-400 hover:text-white transition-all duration-200 shadow-lg"
                   aria-label={social.name}
                 >
                   <social.icon className="w-5 h-5" />
@@ -149,9 +152,11 @@ const Footer = () => {
                 <input
                   type="email"
                   placeholder="Seu e-mail"
-                  className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-l-lg text-white text-sm focus:outline-none focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500"
+                  className="flex-1 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-l-lg text-white text-sm focus:outline-none focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)]"
                 />
-                <button className="px-4 py-2 bg-gradient-to-r from-magenta-500 to-cyan-500 hover:from-magenta-600 hover:to-cyan-600 text-white rounded-r-lg text-sm font-medium transition-all shadow-lg shadow-magenta-500/30">
+                <button className="px-4 py-2 text-white rounded-r-lg text-sm font-medium transition-all shadow-lg hover:opacity-90" style={{
+                  background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))'
+                }}>
                   OK
                 </button>
               </div>
@@ -169,7 +174,7 @@ const Footer = () => {
             <div className="flex items-center space-x-6 text-sm text-neutral-400">
               <span className="flex items-center gap-1">
                 Desenvolvido com
-                <span className="text-magenta-400">love</span>
+                <span className={palette.textPrimary}>love</span>
                 para o FLAME
               </span>
             </div>

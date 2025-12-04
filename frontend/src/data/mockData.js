@@ -1348,7 +1348,7 @@ export const mockUsers = [
     id: '1',
     nome: 'Admin FLAME',
     email: 'admin@flame.com.br',
-    telefone: '21999999999',
+    telefone: '21995546492',
     role: 'admin',
     ativo: true,
     createdAt: '2024-01-01T00:00:00.000Z'

@@ -4,13 +4,15 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../stores/authStore';
+import { useReviewStore, REVIEW_CATEGORIES } from '../../stores/reviewStore';
 import { Star, ThumbsUp, Send, CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Avaliacao() {
   const router = useRouter();
   const { pedidoId } = router.query;
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const { createReview, canReviewOrder } = useReviewStore();
 
   const [npsScore, setNpsScore] = useState(null);
   const [ratings, setRatings] = useState({
@@ -47,29 +49,46 @@ export default function Avaliacao() {
 
   const handleSubmit = async () => {
     if (npsScore === null) {
-      toast.error('Por favor, dê uma nota de 0 a 10');
+      toast.error('Por favor, de uma nota de 0 a 10');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Calcular rating geral (media das categorias ou NPS convertido)
+      const categoryRatings = Object.values(ratings).filter(r => r > 0);
+      const avgRating = categoryRatings.length > 0
+        ? Math.round(categoryRatings.reduce((a, b) => a + b, 0) / categoryRatings.length)
+        : Math.round((npsScore / 10) * 5);
 
-      // Here you would send to API:
-      // await api.post(`/orders/${pedidoId}/review`, { npsScore, ratings, comment });
+      // Mapear categorias para o formato do store
+      const categories = {};
+      if (ratings.quality > 0) categories.drinks = ratings.quality;
+      if (ratings.speed > 0) categories.atendimento = ratings.speed;
+      if (ratings.ambience > 0) categories.ambiente = ratings.ambience;
+      if (ratings.price > 0) categories.comida = ratings.price;
 
-      setSubmitted(true);
-      toast.success('Obrigado pela sua avaliação!');
+      const result = await createReview({
+        orderId: pedidoId,
+        userId: user?.id || 'guest',
+        userName: user?.nome || 'Cliente',
+        rating: avgRating || 5,
+        comment: comment || 'Otima experiencia!',
+        categories
+      });
 
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        router.push('/cardapio');
-      }, 3000);
+      if (result.success) {
+        setSubmitted(true);
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          router.push('/avaliacoes');
+        }, 3000);
+      }
     } catch (error) {
-      console.error('Erro ao enviar avaliação:', error);
-      toast.error('Erro ao enviar avaliação');
+      console.error('Erro ao enviar avaliacao:', error);
+      toast.error('Erro ao enviar avaliacao');
     } finally {
       setIsSubmitting(false);
     }

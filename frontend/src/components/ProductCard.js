@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Plus, Minus, Star, Clock, Wind } from 'lucide-react';
 import { useCartStore } from '../stores/cartStore';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore } from '../stores/themeStore';
 import { formatCurrency } from '../utils/format';
 import { toast } from 'react-hot-toast';
 
@@ -12,6 +13,8 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
   const [isExpanded, setIsExpanded] = useState(false);
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+  const { getPalette } = useThemeStore();
+  const palette = getPalette();
 
   // Check if product is narguile type
   const isNarguile = product.tipo === 'narguile' || product.category === 'Narguile' || (product.tags && product.tags.includes('narguile'));
@@ -50,7 +53,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
     return (
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="bg-neutral-800 rounded-lg p-4 border border-neutral-700 hover:border-magenta-500 transition-colors"
+        className="bg-neutral-800 rounded-lg p-4 border border-neutral-700 hover:border-[var(--theme-primary)]/50 transition-colors"
       >
         <div className="flex items-center space-x-4">
           <div className="relative w-16 h-16 flex-shrink-0">
@@ -82,7 +85,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
                     {formatCurrency(product.price)}
                   </span>
                 )}
-                <span className="font-bold text-magenta-400 text-sm">
+                <span className={`font-bold ${palette.textPrimary} text-sm`}>
                   {formatCurrency(discountedPrice)}
                 </span>
               </div>
@@ -90,7 +93,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
               {showActions && (
                 <button
                   onClick={handleAddToCart}
-                  className="bg-gradient-to-r from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700 text-white p-1.5 rounded-lg transition-colors"
+                  className="bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 text-white p-1.5 rounded-lg transition-colors"
                 >
                   <Plus className="w-3 h-3" />
                 </button>
@@ -106,7 +109,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
-      className="bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 hover:border-magenta-500/50 transition-all group"
+      className={`bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 hover:border-[var(--theme-primary)]/50 transition-all group`}
     >
       {/* Product Image */}
       <div
@@ -123,7 +126,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             />
             {onImageClick && (
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <span className="text-white font-semibold bg-gradient-to-r from-magenta-500 to-cyan-500 px-4 py-2 rounded-lg shadow-lg text-sm">
+                <span className={`text-white font-semibold bg-gradient-to-r ${palette.gradient} px-4 py-2 rounded-lg shadow-lg text-sm`}>
                   Clique para ampliar
                 </span>
               </div>
@@ -138,18 +141,18 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col space-y-2">
           {isNarguile && (
-            <span className="bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+            <span className="bg-gradient-to-r from-[var(--theme-primary)] via-[var(--theme-accent)] to-[var(--theme-secondary)] text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
               <Wind className="w-3 h-3" />
               Narguile
             </span>
           )}
           {product.isFeatured && (
-            <span className="bg-gradient-to-r from-magenta-500 to-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            <span className={`bg-gradient-to-r ${palette.gradient} text-white text-xs font-bold px-2 py-1 rounded-full`}>
               Destaque
             </span>
           )}
           {hasDiscount && (
-            <span className="bg-gradient-to-r from-cyan-500 to-magenta-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            <span className={`bg-gradient-to-r ${palette.gradient} text-white text-xs font-bold px-2 py-1 rounded-full`}>
               -{product.discount}%
             </span>
           )}
@@ -192,7 +195,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
         {product.description && product.description.length > 150 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-magenta-400 text-xs font-medium mb-4 hover:text-magenta-300 transition-colors"
+            className={`${palette.textPrimary} text-xs font-medium mb-4 hover:opacity-80 transition-colors`}
           >
             {isExpanded ? 'Ver menos' : 'Ver mais'}
           </button>
@@ -207,7 +210,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
                   key={star}
                   className={`w-4 h-4 ${
                     star <= product.rating
-                      ? 'text-cyan-400 fill-current'
+                      ? `${palette.textSecondary} fill-current`
                       : 'text-neutral-600'
                   }`}
                 />
@@ -227,7 +230,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
                 {formatCurrency(product.price)}
               </span>
             )}
-            <span className="font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-magenta-400 to-cyan-400">
+            <span className={`font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r ${palette.gradient}`}>
               {formatCurrency(discountedPrice)}
             </span>
           </div>
@@ -237,10 +240,10 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             <div className="text-right">
               <span className={`text-xs font-medium ${
                 product.stock > 10
-                  ? 'text-cyan-400'
+                  ? palette.textSecondary
                   : product.stock > 0
                     ? 'text-yellow-400'
-                    : 'text-magenta-400'
+                    : palette.textPrimary
               }`}>
                 {product.stock > 0
                   ? `${product.stock} em estoque`
@@ -279,11 +282,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             <button
               onClick={handleAddToCart}
               disabled={product.hasStock && product.stock < quantity}
-              className={`flex-1 bg-gradient-to-r ${
-                isNarguile
-                  ? 'from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700'
-                  : 'from-magenta-600 to-cyan-600 hover:from-magenta-700 hover:to-cyan-700'
-              } disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg shadow-magenta-500/20 hover:shadow-magenta-500/40 flex items-center justify-center gap-2`}
+              className="flex-1 bg-gradient-to-r from-[var(--theme-primary)] via-[var(--theme-accent)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {isNarguile && <Wind className="w-4 h-4" />}
               {isNarguile ? 'Personalizar' : 'Adicionar'}

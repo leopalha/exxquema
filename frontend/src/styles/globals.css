@@ -10,6 +10,17 @@
 
 /* CSS Variables - FLAME Color Palette */
 :root {
+  /* Theme Colors (dinâmicos - alterados via JavaScript) */
+  --theme-primary: #FF006E;
+  --theme-secondary: #00D4FF;
+  --theme-accent: #B266FF;
+  --theme-primary-dark: rgba(255, 0, 110, 0.3);
+
+  /* RGB values for transparency support */
+  --theme-primary-rgb: 255, 0, 110;
+  --theme-secondary-rgb: 0, 212, 255;
+  --theme-accent-rgb: 178, 102, 255;
+
   /* Primary - FLAME Gradient Colors */
   --flame-magenta: #FF006E;
   --flame-pink: #FF4D94;
@@ -276,7 +287,7 @@ button:disabled {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, var(--flame-pink) 0%, var(--flame-purple) 50%, #22D3EE 100%);
+  background: linear-gradient(180deg, var(--flame-pink) 0%, var(--flame-purple) 50%, var(--flame-cyan) 100%);
   opacity: 0;
   transition: opacity var(--transition-base);
   z-index: -1;
@@ -616,4 +627,214 @@ input::placeholder, textarea::placeholder {
   border-right-color: var(--flame-cyan);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   THEME SYSTEM - Dynamic CSS Variables
+   ============================================ */
+
+/* Gradient using theme colors */
+.bg-theme-gradient {
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-accent) 50%, var(--theme-secondary) 100%);
+}
+
+.bg-theme-gradient-horizontal {
+  background: linear-gradient(90deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+}
+
+.bg-theme-gradient-via {
+  background: linear-gradient(90deg, var(--theme-primary) 0%, var(--theme-accent) 50%, var(--theme-secondary) 100%);
+}
+
+/* Background solid colors using theme */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--theme-secondary);
+}
+
+.bg-theme-accent {
+  background-color: var(--theme-accent);
+}
+
+/* Text colors using theme */
+.text-theme-primary {
+  color: var(--theme-primary);
+}
+
+.text-theme-secondary {
+  color: var(--theme-secondary);
+}
+
+.text-theme-accent {
+  color: var(--theme-accent);
+}
+
+/* Text gradient using theme */
+.text-theme-gradient {
+  background: linear-gradient(90deg, var(--theme-primary) 0%, var(--theme-accent) 50%, var(--theme-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Border using theme */
+.border-theme-primary {
+  border-color: var(--theme-primary);
+}
+
+.border-theme-secondary {
+  border-color: var(--theme-secondary);
+}
+
+/* Shadow/Glow using theme */
+.shadow-theme-primary {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+}
+
+.shadow-theme-glow {
+  box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary) 30%, transparent),
+              0 0 60px color-mix(in srgb, var(--theme-secondary) 20%, transparent);
+}
+
+/* Button with theme colors */
+.btn-theme {
+  background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-base);
+}
+
+.btn-theme:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), 0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+}
+
+/* Ring/Border gradient using theme */
+.ring-theme {
+  border: 2px solid transparent;
+  background: linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+              linear-gradient(135deg, var(--theme-primary), var(--theme-accent), var(--theme-secondary)) border-box;
+}
+
+/* Scrollbar with theme colors */
+.scrollbar-theme::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+}
+
+/* ============================================
+   THEME UTILITY CLASSES (opt-in)
+   Use estas classes para aplicar cores do tema
+   em elementos específicos
+   ============================================ */
+
+/* Focus visible usa cor do tema */
+:focus-visible {
+  outline-color: var(--theme-primary);
+}
+
+/* Selection usa cor do tema */
+::selection {
+  background-color: var(--theme-primary);
+}
+
+::-moz-selection {
+  background-color: var(--theme-primary);
+}
+
+/* Scrollbar global usa cores do tema */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--theme-secondary) 0%, var(--theme-primary) 100%);
+  box-shadow: 0 0 10px var(--theme-primary);
+}
+
+/* Input focus usa cor do tema */
+input:focus, textarea:focus, select:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 20%, transparent);
+}
+
+/* Badge FLAME usa tema */
+.badge-flame {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+}
+
+/* Divider usa tema */
+.divider-flame {
+  background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+}
+
+/* Ring animation usa tema */
+.ring-flame {
+  border-top-color: var(--theme-primary);
+  border-right-color: var(--theme-secondary);
+}
+
+/* Button Primary usa tema */
+.btn-primary {
+  background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-accent) 50%, var(--theme-secondary) 100%);
+}
+
+.btn-primary::before {
+  background: linear-gradient(180deg, var(--theme-secondary) 0%, var(--theme-accent) 50%, var(--theme-primary) 100%);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-xl), 0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+}
+
+/* Button Secondary usa tema */
+.btn-secondary {
+  color: var(--theme-primary);
+  border-color: var(--theme-primary);
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+}
+
+/* Card hover usa tema */
+.card:hover {
+  border-color: color-mix(in srgb, var(--theme-primary) 30%, transparent);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 20px color-mix(in srgb, var(--theme-primary) 10%, transparent);
+}
+
+/* Text gradient FLAME usa tema */
+.text-gradient-flame {
+  background: linear-gradient(180deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Flame glow usa tema */
+.flame-glow {
+  box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary) 30%, transparent),
+              0 0 60px color-mix(in srgb, var(--theme-secondary) 20%, transparent);
+}
+
+/* Animate flame glow usa tema */
+@keyframes flameGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 40px color-mix(in srgb, var(--theme-secondary) 60%, transparent);
+  }
+}
+
+/* Background body glow usa tema */
+body::before {
+  background-image:
+    radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--theme-primary) 8%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--theme-secondary) 8%, transparent) 0%, transparent 50%);
 }
