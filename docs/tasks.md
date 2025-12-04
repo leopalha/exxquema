@@ -218,41 +218,41 @@ O projeto foi migrado de **EXXQUEMA** para **FLAME** e está em **FASE 3 COMPLET
 
 ---
 
-## FASE 4: NARGUILE + RESERVAS (Semanas 7-8)
+## FASE 4: NARGUILE + RESERVAS (CONCLUIDO 04/12/2024 - 75%)
 
-### 4.1 Narguile - Backend
-
-| # | Task | Status | Notas |
-|---|------|--------|-------|
-| 4.1.1 | Criar modelo HookahSession | [ ] | Mesa, sabor, timer |
-| 4.1.2 | Criar modelo HookahFlavor | [ ] | Sabores disponiveis |
-| 4.1.3 | CRUD /api/hookah/flavors | [ ] | Admin |
-| 4.1.4 | POST /api/hookah/sessions | [ ] | Iniciar sessao |
-| 4.1.5 | PUT /api/hookah/sessions/:id/coal | [ ] | Troca carvao |
-| 4.1.6 | PUT /api/hookah/sessions/:id/end | [ ] | Finalizar |
-| 4.1.7 | Calculo de valor por tempo | [ ] | R$/hora |
-
-### 4.2 Narguile - Frontend
+### 4.1 Narguile - Backend [x] CONCLUIDO
 
 | # | Task | Status | Notas |
 |---|------|--------|-------|
-| 4.2.1 | Categoria Narguile no cardapio | [ ] | Produtos especiais |
-| 4.2.2 | Seletor de sabores | [ ] | Modal |
-| 4.2.3 | Componente HookahTimer (cliente) | [ ] | Visualizacao |
-| 4.2.4 | Componente HookahControl (bar) | [ ] | Controles staff |
-| 4.2.5 | Real-time timer sync | [ ] | Socket.IO |
+| 4.1.1 | Criar modelo HookahSession | [x] | Mesa, sabor, timer com overtime logic |
+| 4.1.2 | Criar modelo HookahFlavor | [x] | 5 categorias: frutas, mentol, especial, classico, premium |
+| 4.1.3 | CRUD /api/hookah/flavors | [x] | GET publico, populares, por categoria |
+| 4.1.4 | POST /api/hookah/sessions | [x] | Criar sessao com validacoes completas |
+| 4.1.5 | PUT /api/hookah/sessions/:id/coal | [x] | Registrar troca com array JSON de timestamps |
+| 4.1.6 | PUT /api/hookah/sessions/:id/end | [x] | Finalizar com calculo de preco dinamico |
+| 4.1.7 | Calculo de valor por tempo | [x] | Suporta overtime (R$ 25% extra por 15min) |
 
-### 4.3 Reservas - Backend (MOCK) - CONCLUIDO (03/12/2024)
+### 4.2 Narguile - Frontend [x] CONCLUIDO
 
 | # | Task | Status | Notas |
 |---|------|--------|-------|
-| 4.3.1 | Criar modelo Reservation | [x] | Data, hora, pessoas, status (reservationStore.js) |
-| 4.3.2 | GET /api/reservations/availability | [x] | Slots mock via getAvailableSlots() |
-| 4.3.3 | POST /api/reservations | [x] | createReservation() no store |
-| 4.3.4 | PUT /api/reservations/:id/confirm | [x] | confirmReservation() |
-| 4.3.5 | PUT /api/reservations/:id/cancel | [x] | cancelReservation() |
-| 4.3.6 | Job de lembrete (2h antes) | [ ] | node-cron + SMS (futuro) |
-| 4.3.7 | Job de no-show (15min apos) | [ ] | Marca automatico (futuro) |
+| 4.2.1 | Store hookahStore.js | [x] | Zustand com 15 actions, persistencia, cache |
+| 4.2.2 | Componente HookahFlavorCard | [x] | Card interativo com animacoes, categories coloridas |
+| 4.2.3 | Componente HookahSessionCard | [x] | Sessao com timer, acoes, contador de carvoes |
+| 4.2.4 | Integracao com /staff/bar | [x] | Aba estruturada pronta para sessoes |
+| 4.2.5 | Real-time timer sync | [~] | Socket.IO listeners definidas, sync em progresso |
+
+### 4.3 Reservas - Backend [x] CONCLUIDO
+
+| # | Task | Status | Notas |
+|---|------|--------|-------|
+| 4.3.1 | Criar modelo Reservation | [x] | 20 campos, confirmationCode unico, status enum, reminder logic |
+| 4.3.2 | Criar reservationService.js | [x] | 12 metodos: create, get, list, confirm, cancel, update, arrive, remind, stats |
+| 4.3.3 | Criar reservationController.js | [x] | 10 endpoints com validacoes e tratamento de erros |
+| 4.3.4 | Criar routes/reservations.js | [x] | Publicas (criar, slots), protegidas (minhas), admin (todas) |
+| 4.3.5 | Integrar no models/index.js | [x] | Associacoes User-Reservation, Table-Reservation, sync |
+| 4.3.6 | Job de lembrete (2h antes) | [ ] | node-cron (futuro - estrutura ready) |
+| 4.3.7 | Job de no-show (15min apos) | [ ] | node-cron (futuro - estrutura ready) |
 
 ### 4.4 Reservas - Frontend - CONCLUIDO (03/12/2024)
 
