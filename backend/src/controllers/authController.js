@@ -1122,6 +1122,43 @@ class AuthController {
       });
     }
   }
+
+  /**
+   * DEBUG: Ver código SMS de um usuário (REMOVER EM PRODUÇÃO)
+   */
+  async debugSMSCode(req, res) {
+    try {
+      const { celular } = req.params;
+
+      const user = await User.findOne({
+        where: { celular },
+        attributes: ['id', 'nome', 'celular', 'smsCode', 'smsCodeExpiry']
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuário não encontrado'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          celular: user.celular,
+          smsCode: user.smsCode,
+          smsCodeExpiry: user.smsCodeExpiry,
+          isExpired: user.smsCodeExpiry < new Date()
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao buscar código SMS:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar código SMS'
+      });
+    }
+  }
 }
 
 module.exports = new AuthController();

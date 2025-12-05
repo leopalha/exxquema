@@ -129,4 +129,11 @@ router.post('/verify-reset-code', authController.verifyResetCode);
  */
 router.post('/reset-password', authController.resetPassword);
 
+/**
+ * @route   GET /api/auth/debug-sms/:celular
+ * @desc    DEBUG: Ver código SMS (REMOVER EM PRODUÇÃO)
+ * @access  Public (temporário)
+ */
+router.get('/debug-sms/:celular', authController.debugSMSCode);
+
 module.exports = router;
