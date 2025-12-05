@@ -7,22 +7,28 @@ class AuthController {
   // Cadastro de usuário - Etapa 1: Dados básicos
   async register(req, res) {
     try {
-      const { nome, cpf, email, celular } = req.body;
+      const { nome, cpf, email, celular, password } = req.body;
 
       // Verificar se já existe usuário com CPF, email ou celular
+      const whereConditions = [
+        { email },
+        { celular }
+      ];
+
+      // Adicionar CPF na verificação apenas se fornecido
+      if (cpf) {
+        whereConditions.push({ cpf });
+      }
+
       const existingUser = await User.findOne({
         where: {
-          [Op.or]: [
-            { cpf },
-            { email },
-            { celular }
-          ]
+          [Op.or]: whereConditions
         }
       });
 
       if (existingUser) {
         let field = 'dados';
-        if (existingUser.cpf === cpf) field = 'CPF';
+        if (cpf && existingUser.cpf === cpf) field = 'CPF';
         else if (existingUser.email === email) field = 'E-mail';
         else if (existingUser.celular === celular) field = 'Celular';
 
@@ -42,6 +48,7 @@ class AuthController {
         cpf,
         email,
         celular,
+        password, // Senha será hashada automaticamente pelo hook beforeCreate do modelo
         smsCode,
         smsCodeExpiry,
         smsAttempts: 0,
@@ -442,13 +449,225 @@ class AuthController {
     try {
       // Em uma implementação mais robusta, você manteria uma blacklist de tokens
       // Por ora, o logout é apenas no frontend (remover token)
-      
+
       res.status(200).json({
         success: true,
         message: 'Logout realizado com sucesso'
       });
     } catch (error) {
       console.error('Erro no logout:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  // Solicitar recuperação de senha (envia código SMS)
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email é obrigatório'
+        });
+      }
+
+      const user = await User.findOne({
+        where: { email: email.toLowerCase(), isActive: true }
+      });
+
+      // Sempre retornar sucesso para não revelar se email existe
+      if (!user) {
+        return res.status(200).json({
+          success: true,
+          message: 'Se o email estiver cadastrado, você receberá um código SMS'
+        });
+      }
+
+      // Gerar código de reset (6 dígitos para maior segurança)
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const resetCodeExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+      // Salvar código no usuário (reutilizando campos SMS)
+      await user.update({
+        smsCode: resetCode,
+        smsCodeExpiry: resetCodeExpiry,
+        smsAttempts: 0
+      });
+
+      // Enviar SMS com código de reset
+      const smsResult = await smsService.sendPasswordResetCode(user.celular, resetCode);
+
+      if (!smsResult.success) {
+        console.error('Erro ao enviar SMS de reset:', smsResult.error);
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Se o email estiver cadastrado, você receberá um código SMS',
+        data: {
+          // Em produção, não enviar celular ofuscado
+          hint: user.celular ? `****${user.celular.slice(-4)}` : null
+        }
+      });
+    } catch (error) {
+      console.error('Erro no forgot password:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  // Verificar código de reset
+  async verifyResetCode(req, res) {
+    try {
+      const { email, code } = req.body;
+
+      if (!email || !code) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email e código são obrigatórios'
+        });
+      }
+
+      const user = await User.findOne({
+        where: { email: email.toLowerCase(), isActive: true }
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: 'Código inválido ou expirado'
+        });
+      }
+
+      // Verificar se código expirou
+      if (!user.smsCodeExpiry || new Date() > user.smsCodeExpiry) {
+        return res.status(400).json({
+          success: false,
+          message: 'Código expirado. Solicite um novo código.'
+        });
+      }
+
+      // Verificar tentativas
+      if (user.smsAttempts >= 5) {
+        return res.status(429).json({
+          success: false,
+          message: 'Muitas tentativas. Aguarde 15 minutos ou solicite novo código.'
+        });
+      }
+
+      // Verificar código
+      if (user.smsCode !== code) {
+        await user.update({
+          smsAttempts: user.smsAttempts + 1
+        });
+
+        return res.status(400).json({
+          success: false,
+          message: 'Código incorreto'
+        });
+      }
+
+      // Código válido - gerar token temporário para reset
+      const crypto = require('crypto');
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetTokenExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+
+      // Salvar token temporário (reutilizando smsCode)
+      await user.update({
+        smsCode: resetToken,
+        smsCodeExpiry: resetTokenExpiry,
+        smsAttempts: 0
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Código verificado com sucesso',
+        data: {
+          resetToken
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao verificar código de reset:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  // Redefinir senha
+  async resetPassword(req, res) {
+    try {
+      const { email, resetToken, newPassword } = req.body;
+
+      if (!email || !resetToken || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email, token e nova senha são obrigatórios'
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'A senha deve ter pelo menos 6 caracteres'
+        });
+      }
+
+      const user = await User.findOne({
+        where: { email: email.toLowerCase(), isActive: true }
+      });
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token inválido ou expirado'
+        });
+      }
+
+      // Verificar token
+      if (!user.smsCode || user.smsCode !== resetToken) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token inválido ou expirado'
+        });
+      }
+
+      // Verificar se token expirou
+      if (!user.smsCodeExpiry || new Date() > user.smsCodeExpiry) {
+        return res.status(400).json({
+          success: false,
+          message: 'Token expirado. Inicie o processo novamente.'
+        });
+      }
+
+      // Atualizar senha
+      await user.update({
+        password: newPassword,
+        smsCode: null,
+        smsCodeExpiry: null,
+        smsAttempts: 0
+      });
+
+      // Gerar novo token de login
+      const token = generateToken(user.id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Senha redefinida com sucesso!',
+        data: {
+          user: user.toJSON(),
+          token
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao redefinir senha:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor'

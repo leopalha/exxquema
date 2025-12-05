@@ -16,9 +16,9 @@ class SMSService {
     }
   }
 
-  // Gerar código SMS de 4 dígitos
+  // Gerar código SMS de 6 dígitos
   generateSMSCode() {
-    return Math.floor(1000 + Math.random() * 9000).toString();
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   // Enviar código de verificação via SMS
@@ -37,7 +37,7 @@ class SMSService {
       // Formatar número para padrão internacional (+5521999999999)
       const formattedPhone = this.formatPhoneNumber(phoneNumber);
 
-      const message = `Exxquema: Seu código de verificação é: ${code}. Válido por 5 minutos. Não compartilhe este código.`;
+      const message = `FLAME: Seu código de verificação é: ${code}. Válido por 5 minutos. Não compartilhe este código.`;
 
       const result = await this.client.messages.create({
         body: message,
@@ -68,7 +68,7 @@ class SMSService {
     try {
       const formattedPhone = this.formatPhoneNumber(phoneNumber);
       
-      const message = `Olá ${userName}! Bem-vindo ao Exxquema! 🟠 Sua conta foi criada com sucesso. Aproveite nossa experiência única!`;
+      const message = `Olá ${userName}! Bem-vindo ao FLAME! 🟠 Sua conta foi criada com sucesso. Aproveite nossa experiência única!`;
       
       const result = await this.client.messages.create({
         body: message,
@@ -94,7 +94,7 @@ class SMSService {
     try {
       const formattedPhone = this.formatPhoneNumber(phoneNumber);
       
-      const message = `Exxquema: Pedido #${orderNumber} confirmado! ✅ Tempo estimado: ${estimatedTime} min. Acompanhe em tempo real na plataforma.`;
+      const message = `FLAME: Pedido #${orderNumber} confirmado! ✅ Tempo estimado: ${estimatedTime} min. Acompanhe em tempo real na plataforma.`;
       
       const result = await this.client.messages.create({
         body: message,
@@ -119,9 +119,9 @@ class SMSService {
   async sendOrderReady(phoneNumber, orderNumber) {
     try {
       const formattedPhone = this.formatPhoneNumber(phoneNumber);
-      
-      const message = `Exxquema: Seu pedido #${orderNumber} está pronto! 🍸 Nosso atendente já está levando para sua mesa.`;
-      
+
+      const message = `FLAME: Seu pedido #${orderNumber} está pronto! 🍸 Nosso atendente já está levando para sua mesa.`;
+
       const result = await this.client.messages.create({
         body: message,
         from: this.fromNumber,
@@ -134,6 +134,81 @@ class SMSService {
       };
     } catch (error) {
       console.error('Erro ao enviar SMS pedido pronto:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Enviar código de recuperação de senha
+  async sendPasswordResetCode(phoneNumber, code) {
+    try {
+      // Em modo desenvolvimento sem Twilio, apenas logar o código
+      if (!this.enabled) {
+        console.log(`📱 [DEV MODE] SMS para ${phoneNumber}: Código de recuperação: ${code}`);
+        return {
+          success: true,
+          sid: 'dev-mode-' + Date.now(),
+          message: 'SMS simulado em modo desenvolvimento'
+        };
+      }
+
+      const formattedPhone = this.formatPhoneNumber(phoneNumber);
+
+      const message = `FLAME: Seu código para recuperar a senha é: ${code}. Válido por 15 minutos. Não compartilhe este código.`;
+
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: formattedPhone
+      });
+
+      console.log(`SMS de reset enviado com sucesso: ${result.sid}`);
+
+      return {
+        success: true,
+        messageSid: result.sid,
+        status: result.status
+      };
+    } catch (error) {
+      console.error('Erro ao enviar SMS de recuperação:', error);
+
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'SMS_ERROR'
+      };
+    }
+  }
+
+  // Chamar cliente (atendente solicita presença)
+  async sendCallCustomer(phoneNumber, tableNumber, message = null) {
+    try {
+      if (!this.enabled) {
+        console.log(`📱 [DEV MODE] SMS para ${phoneNumber}: Chamando cliente na mesa ${tableNumber}`);
+        return {
+          success: true,
+          sid: 'dev-mode-' + Date.now(),
+          message: 'SMS simulado em modo desenvolvimento'
+        };
+      }
+
+      const formattedPhone = this.formatPhoneNumber(phoneNumber);
+      const customMessage = message || `FLAME: Solicitamos sua presença na mesa ${tableNumber}. Nosso atendente está aguardando.`;
+
+      const result = await this.client.messages.create({
+        body: customMessage,
+        from: this.fromNumber,
+        to: formattedPhone
+      });
+
+      return {
+        success: true,
+        messageSid: result.sid
+      };
+    } catch (error) {
+      console.error('Erro ao enviar SMS para chamar cliente:', error);
       return {
         success: false,
         error: error.message
