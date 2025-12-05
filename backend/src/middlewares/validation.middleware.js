@@ -27,8 +27,9 @@ const validateUserRegistration = [
     .withMessage('Nome deve ter entre 2 e 100 caracteres')
     .matches(/^[A-Za-zÀ-ÿ\s]+$/)
     .withMessage('Nome deve conter apenas letras e espaços'),
-    
+
   body('cpf')
+    .optional({ nullable: true, checkFalsy: true })
     .matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)
     .withMessage('CPF deve estar no formato 000.000.000-00')
     .custom((value) => {
@@ -39,16 +40,20 @@ const validateUserRegistration = [
       }
       return true;
     }),
-    
+
   body('email')
     .isEmail()
     .withMessage('Email deve ter formato válido')
     .normalizeEmail(),
-    
+
   body('celular')
     .matches(/^\(\d{2}\) \d{4,5}-\d{4}$/)
     .withMessage('Celular deve estar no formato (00) 00000-0000'),
-    
+
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Senha deve ter pelo menos 6 caracteres'),
+
   handleValidationErrors
 ];
 
@@ -75,11 +80,11 @@ const validateSMSCode = [
   body('celular')
     .matches(/^\(\d{2}\) \d{4,5}-\d{4}$/)
     .withMessage('Celular deve estar no formato (00) 00000-0000'),
-    
+
   body('code')
-    .matches(/^\d{4}$/)
-    .withMessage('Código deve ter 4 dígitos'),
-    
+    .matches(/^\d{6}$/)
+    .withMessage('Código deve ter 6 dígitos'),
+
   handleValidationErrors
 ];
 
