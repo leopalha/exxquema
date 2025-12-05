@@ -337,6 +337,122 @@ router.post('/phone-format/update-single', async (req, res) => {
   }
 });
 
+// Delete user by ID (for cleaning duplicates)
+router.delete('/phone-format/delete-user/:userId', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+    const { userId } = req.params;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({ success: false, message: 'Chave inválida' });
+    }
+
+    // Get user info first
+    const [user] = await sequelize.query(
+      `SELECT id, nome, email, celular FROM "users" WHERE "id" = $1`,
+      { bind: [userId] }
+    );
+
+    if (user.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    // Delete user
+    await sequelize.query(
+      `DELETE FROM "users" WHERE "id" = $1`,
+      { bind: [userId], type: sequelize.QueryTypes.DELETE }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Usuário deletado com sucesso',
+      deletedUser: user[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Check for duplicate phone numbers
+router.get('/phone-format/check-duplicate/:celular', async (req, res) => {
+  try {
+    const celular = decodeURIComponent(req.params.celular);
+    const [users] = await sequelize.query(
+      `SELECT id, nome, email, celular FROM "users" WHERE "celular" = $1`,
+      { bind: [celular] }
+    );
+
+    res.status(200).json({
+      success: true,
+      exists: users.length > 0,
+      user: users[0] || null
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Debug: Update single user with detailed error
+router.post('/phone-format/debug-update', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+    const { userId, newCelular } = req.body;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({ success: false, message: 'Chave inválida' });
+    }
+
+    // Check if new number already exists
+    const [existing] = await sequelize.query(
+      `SELECT id, nome, celular FROM "users" WHERE "celular" = $1 AND "id" != $2`,
+      { bind: [newCelular, userId] }
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Número já existe',
+        conflictingUser: existing[0]
+      });
+    }
+
+    // Try direct SQL update
+    const result = await sequelize.query(
+      `UPDATE "users" SET "celular" = $1, "updatedAt" = NOW() WHERE "id" = $2`,
+      { bind: [newCelular, userId], type: sequelize.QueryTypes.UPDATE }
+    );
+
+    // Get updated user
+    const [updated] = await sequelize.query(
+      `SELECT id, nome, celular FROM "users" WHERE "id" = $1`,
+      { bind: [userId] }
+    );
+
+    res.status(200).json({
+      success: true,
+      result,
+      user: updated[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      name: error.name,
+      original: error.original ? error.original.message : null,
+      stack: error.stack
+    });
+  }
+});
+
 // Migration using pg client directly (bypassing Sequelize completely)
 router.post('/phone-format/direct', async (req, res) => {
   try {
