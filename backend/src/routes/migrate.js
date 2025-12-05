@@ -532,4 +532,196 @@ router.post('/phone-format/direct', async (req, res) => {
   }
 });
 
+// Create admin user Leonardo directly via SQL
+router.post('/create-admin-user', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chave de migração inválida'
+      });
+    }
+
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('Leo@2024', 12);
+
+    // Check if user exists
+    const [existing] = await sequelize.query(
+      `SELECT id FROM "users" WHERE LOWER(email) = LOWER('leonardo.palha@gmail.com')`
+    );
+
+    if (existing.length > 0) {
+      // Update existing user
+      await sequelize.query(
+        `UPDATE "users" SET
+          "password" = $1,
+          "role" = 'admin',
+          "isActive" = true,
+          "phoneVerified" = true,
+          "celular" = '+5521995354010',
+          "updatedAt" = NOW()
+        WHERE LOWER(email) = LOWER('leonardo.palha@gmail.com')`,
+        { bind: [hashedPassword] }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Usuário admin atualizado com sucesso',
+        action: 'updated'
+      });
+    }
+
+    // Create new user
+    const { v4: uuidv4 } = require('uuid');
+    const userId = uuidv4();
+
+    await sequelize.query(
+      `INSERT INTO "users" (id, nome, email, celular, password, role, "isActive", "phoneVerified", "createdAt", "updatedAt")
+       VALUES ($1, 'Leonardo Palha', 'leonardo.palha@gmail.com', '+5521995354010', $2, 'admin', true, true, NOW(), NOW())`,
+      { bind: [userId, hashedPassword] }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Usuário admin criado com sucesso',
+      action: 'created',
+      userId
+    });
+  } catch (error) {
+    console.error('Erro ao criar admin:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Add profileComplete column to users table
+router.post('/add-profile-complete', async (req, res) => {
+  try {
+    // Check if column exists
+    const [results] = await sequelize.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'profileComplete';
+    `);
+
+    if (results.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'Coluna profileComplete já existe',
+        alreadyMigrated: true
+      });
+    }
+
+    // Add column
+    await sequelize.query(`
+      ALTER TABLE "users"
+      ADD COLUMN "profileComplete" BOOLEAN DEFAULT false NOT NULL;
+    `);
+
+    // Set existing users with email as profileComplete = true
+    await sequelize.query(`
+      UPDATE "users" SET "profileComplete" = true WHERE "email" IS NOT NULL AND "nome" IS NOT NULL;
+    `);
+
+    res.status(200).json({
+      success: true,
+      message: 'Coluna profileComplete adicionada com sucesso',
+      migrated: true
+    });
+  } catch (error) {
+    console.error('Erro na migração:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
+// Check user status by email
+router.get('/user-status/:email', async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email);
+    const [users] = await sequelize.query(
+      `SELECT id, nome, email, celular, role, "phoneVerified", "isActive",
+       CASE WHEN password IS NOT NULL THEN true ELSE false END as "hasPassword"
+       FROM "users" WHERE LOWER(email) = LOWER($1)`,
+      { bind: [email] }
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado',
+        email
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: users[0]
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Reset user password
+router.post('/reset-user-password', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+    const { email, newPassword } = req.body;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chave de migração inválida'
+      });
+    }
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'email e newPassword são obrigatórios'
+      });
+    }
+
+    // Hash the password using bcrypt
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password directly
+    const [results, metadata] = await sequelize.query(
+      `UPDATE "users" SET "password" = $1, "updatedAt" = NOW() WHERE LOWER(email) = LOWER($2) RETURNING id, nome, email`,
+      { bind: [hashedPassword, email] }
+    );
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Senha atualizada com sucesso',
+      user: results[0]
+    });
+  } catch (error) {
+    console.error('Erro ao resetar senha:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
