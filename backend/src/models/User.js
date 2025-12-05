@@ -189,16 +189,9 @@ User.init({
     allowNull: false,
     unique: true,
     validate: {
-      notEmpty: true,
-      isValidPhone(value) {
-        // Aceitar formato internacional: +CodigoPais seguido de 7-14 dígitos
-        // Exemplos: +5521999999999, +14155551234, +351912345678
-        const intlFormat = /^\+\d{1,4}\d{7,14}$/;
-
-        if (!intlFormat.test(value)) {
-          throw new Error('Celular deve estar no formato internacional: +5521999999999');
-        }
-      }
+      notEmpty: true
+      // Validação de formato removida para permitir migração de dados antigos
+      // A validação agora é feita apenas no middleware de validação
     }
   },
   password: {
