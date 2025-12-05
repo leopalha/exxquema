@@ -1,0 +1,57 @@
+# ============================================
+# DEPOIS DE TER A URL DO BACKEND, EXECUTE ISTO:
+# ============================================
+
+# 1. Entre na pasta do frontend
+cd D:\flame\frontend
+
+# 2. Faça login no Vercel (vai abrir o navegador)
+vercel login
+
+# 3. Link ou crie o projeto
+vercel link
+
+# 4. Configure as variáveis de ambiente
+# IMPORTANTE: Substitua "SUA_URL_BACKEND" pela URL que você pegou no Railway!
+
+# Exemplo: se sua URL backend é https://flame-backend.up.railway.app
+# então as variáveis ficam:
+# NEXT_PUBLIC_API_URL=https://flame-backend.up.railway.app/api
+# NEXT_PUBLIC_SOCKET_URL=https://flame-backend.up.railway.app
+
+# EXECUTE UM POR VEZ:
+
+# API URL
+vercel env add NEXT_PUBLIC_API_URL production
+# Quando pedir o valor, cole: https://SUA_URL_BACKEND/api
+
+# Socket URL
+vercel env add NEXT_PUBLIC_SOCKET_URL production
+# Quando pedir o valor, cole: https://SUA_URL_BACKEND
+
+# Stripe Public Key (use a mesma que configurou no Railway)
+vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
+# Quando pedir o valor, cole: pk_test_...
+
+# VAPID Public Key
+vercel env add NEXT_PUBLIC_VAPID_PUBLIC_KEY production
+# Quando pedir o valor, cole: (configurado no Railway)
+
+# 5. Faça o deploy do frontend
+vercel --prod
+
+# 6. ANOTE A URL DO FRONTEND que aparecer!
+
+# ============================================
+# PASSO FINAL: ATUALIZAR FRONTEND_URL NO RAILWAY
+# ============================================
+
+# Volte para a pasta do backend
+cd D:\flame\backend
+
+# Atualize a variável FRONTEND_URL com a URL do Vercel
+railway variables set FRONTEND_URL=https://SUA_URL_VERCEL_AQUI
+
+# ============================================
+# PRONTO! SEU APP ESTÁ NO AR! 🔥
+# ============================================

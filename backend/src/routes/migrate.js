@@ -259,4 +259,161 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// List users with old phone format
+router.get('/phone-format/list', async (req, res) => {
+  try {
+    const [users] = await sequelize.query(`
+      SELECT id, nome, email, celular FROM "users"
+      WHERE "celular" LIKE '(%' OR "celular" NOT LIKE '+%';
+    `);
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      users: users
+    });
+  } catch (error) {
+    console.error('Erro ao listar usuários:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao listar usuários',
+      error: error.message
+    });
+  }
+});
+
+// Direct SQL migration - update specific user phone
+router.post('/phone-format/update-single', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+    const { userId, newCelular } = req.body;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chave de migração inválida'
+      });
+    }
+
+    if (!userId || !newCelular) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId e newCelular são obrigatórios'
+      });
+    }
+
+    // Use raw SQL with transaction
+    const transaction = await sequelize.transaction();
+    try {
+      await sequelize.query(
+        `UPDATE "users" SET "celular" = '${newCelular}' WHERE "id" = '${userId}'`,
+        { transaction, type: sequelize.QueryTypes.UPDATE }
+      );
+
+      await transaction.commit();
+
+      // Verify
+      const [updated] = await sequelize.query(
+        `SELECT id, nome, email, celular FROM "users" WHERE "id" = '${userId}'`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Celular atualizado com sucesso',
+        user: updated[0]
+      });
+    } catch (txError) {
+      await transaction.rollback();
+      throw txError;
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar celular:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao atualizar celular',
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+// Migration using pg client directly (bypassing Sequelize completely)
+router.post('/phone-format/direct', async (req, res) => {
+  try {
+    const secretKey = req.headers['x-migrate-key'] || req.body.secretKey;
+
+    if (secretKey !== 'FLAME2024MIGRATE') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chave de migração inválida'
+      });
+    }
+
+    // Get database connection pool directly
+    const pool = sequelize.connectionManager.pool;
+
+    // Get users with old format
+    const [usersToUpdate] = await sequelize.query(`
+      SELECT id, celular FROM "users" WHERE "celular" LIKE '(%';
+    `);
+
+    if (usersToUpdate.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'Nenhum número para converter',
+        count: 0
+      });
+    }
+
+    const results = [];
+    const errors = [];
+
+    for (const user of usersToUpdate) {
+      try {
+        // Extract only numbers from the phone
+        const numbersOnly = user.celular.replace(/\D/g, '');
+        const newCelular = '+55' + numbersOnly;
+
+        // Execute raw SQL directly
+        await sequelize.query(
+          `UPDATE "users" SET "celular" = $1 WHERE "id" = $2::uuid`,
+          {
+            bind: [newCelular, user.id],
+            type: sequelize.QueryTypes.UPDATE,
+            raw: true
+          }
+        );
+
+        results.push({
+          id: user.id,
+          oldCelular: user.celular,
+          newCelular,
+          success: true
+        });
+      } catch (userError) {
+        errors.push({
+          id: user.id,
+          oldCelular: user.celular,
+          error: userError.message
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: errors.length === 0,
+      message: `${results.length} números convertidos, ${errors.length} erros`,
+      results,
+      errors
+    });
+  } catch (error) {
+    console.error('Erro na migração direta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao migrar formato de telefone',
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 module.exports = router;

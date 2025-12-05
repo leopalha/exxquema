@@ -535,25 +535,27 @@ toast.success('Item adicionado', {
 
 ---
 
-### PointsDisplay
+### CashbackDisplay
 
 ```jsx
-// components/customer/PointsDisplay.js
+// components/customer/CashbackDisplay.js
 
 /**
- * Display de pontos do usuário
- * 
- * @param {number} balance - Saldo de pontos
+ * Display de cashback do usuário
+ *
+ * @param {number} balance - Saldo de cashback (R$)
  * @param {string} tier - Tier atual
- * @param {number} nextTierPoints - Pontos para próximo tier
+ * @param {number} totalSpent - Total gasto (R$)
+ * @param {number} nextTierAmount - Valor para próximo tier (R$)
  * @param {boolean} compact - Versão compacta
  */
 
 // Uso:
-<PointsDisplay
-  balance={340}
+<CashbackDisplay
+  balance={34.00}
   tier="silver"
-  nextTierPoints={160}
+  totalSpent={4840}
+  nextTierAmount={5000}
 />
 ```
 
@@ -936,20 +938,23 @@ await createOrder({
 
 ---
 
-### usePoints
+### useCashback
 
 ```jsx
-// hooks/usePoints.js
+// hooks/useCashback.js
 
 /**
- * Hook do programa de pontos
- * 
- * @returns {Object} { balance, tier, history, rewards, redeem }
+ * Hook do programa de cashback
+ *
+ * @returns {Object} { balance, tier, tierBenefits, history, nextTierInfo }
  */
 
-const { balance, tier, rewards, redeem } = usePoints()
+const { balance, tier, tierBenefits, nextTierInfo } = useCashback()
 
-await redeem(rewardId)
+// Balance: saldo disponível em R$
+// Tier: bronze, silver, gold, platinum
+// TierBenefits: { name, cashbackRate, perks[] }
+// NextTierInfo: { currentTier, nextTier, requiredSpent, remaining, progress }
 ```
 
 ---

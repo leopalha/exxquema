@@ -63,7 +63,7 @@
 | Acompanhamento | Status em tempo real | P0 |
 | Histórico | Pedidos anteriores | P1 |
 | Avaliação | Avaliar pedido | P2 |
-| Pontos | Ver saldo, trocar | P1 |
+| Cashback | Ver saldo, usar desconto | P1 |
 | Perfil | Dados, preferências | P1 |
 
 #### Fluxo Principal (Mesa)
@@ -81,7 +81,7 @@ Checkout → Confirma mesa → Pagamento
     ↓
 Pedido criado → Tracking em tempo real
     ↓
-Pedido entregue → Avaliar (opcional) → Pontos creditados
+Pedido entregue → Avaliar (opcional) → Cashback creditado
 ```
 
 #### Fluxo Balcão
@@ -232,7 +232,7 @@ Cliente
 ├── cpf
 ├── data_nascimento
 ├── data_cadastro
-├── pontos_saldo
+├── cashback_saldo (R$)
 ├── tier (bronze, silver, gold, platinum)
 ├── preferencias
 │   ├── sabor_narguilé_favorito
@@ -269,60 +269,66 @@ Cliente
 
 ---
 
-### 2.5 MÓDULO FIDELIDADE (PONTOS)
+### 2.5 MÓDULO FIDELIDADE (CASHBACK)
+
+#### Sistema de Cashback
+
+O sistema de fidelidade funciona com **cashback em dinheiro (R$)** ao invés de pontos abstratos. O cliente acumula automaticamente uma porcentagem de cada compra como crédito que pode ser usado em pedidos futuros.
+
+**Por que Cashback > Pontos:**
+- ✅ **Valor transparente**: Cliente vê R$ real, não precisa converter
+- ✅ **Automático**: Sem necessidade de trocar pontos manualmente
+- ✅ **Motivador**: Desconto direto é mais atrativo
+- ✅ **Simplicidade**: Uma única métrica (R$) ao invés de pontos + recompensas
 
 #### Regras de Acúmulo
 
-| Ação | Pontos |
-|------|--------|
-| R$1 gasto | 1 ponto |
-| Cadastro | 50 pontos bônus |
-| Aniversário | 100 pontos bônus |
-| Indicação | 50 pontos (quem indica) |
-| Avaliação | 10 pontos |
+| Ação | Cashback |
+|------|----------|
+| Compra | % do valor baseado no tier |
+| Cadastro | R$ 10,00 bônus |
+| Aniversário | Baseado no tier |
+| Indicação | R$ 15,00 (quem indica) |
+| Avaliação | R$ 2,00 |
 
-#### Tiers
+#### Tiers (baseados em Total Gasto)
 
-| Tier | Requisito | Multiplicador | Benefícios |
-|------|-----------|---------------|------------|
-| Bronze | 0 pontos | 1x | Padrão |
-| Silver | 500 pontos | 1.2x | +20% pontos |
-| Gold | 2000 pontos | 1.5x | +50% pontos, reserva priority |
-| Platinum | 5000 pontos | 2x | +100% pontos, mesa VIP, drink cortesia/mês |
+| Tier | Requisito (gasto total) | Cashback | Benefícios |
+|------|-------------------------|----------|------------|
+| Bronze | R$ 0 - R$ 999 | 2% | Cashback padrão |
+| Silver | R$ 1.000 - R$ 4.999 | 5% | +Prioridade em reservas, +R$ 50 no aniversário |
+| Gold | R$ 5.000 - R$ 9.999 | 8% | +Mesa reservada, +R$ 100 no aniversário, +1 drink cortesia/mês |
+| Platinum | R$ 10.000+ | 10% | +Mesa VIP, +R$ 200 no aniversário, +2 drinks cortesia/mês, +Eventos exclusivos |
 
-#### Resgate
+**Progressão Automática**: O tier é calculado automaticamente baseado no totalSpent (total gasto histórico). Quando o cliente atinge o threshold de um novo tier, é promovido automaticamente.
 
-| Recompensa | Custo |
-|------------|-------|
-| Drink básico | 100 pontos |
-| Drink premium | 200 pontos |
-| Porção | 150 pontos |
-| 30min narguilé | 250 pontos |
-| R$10 desconto | 100 pontos |
-| R$50 desconto | 450 pontos |
+#### Uso do Cashback
+
+O cashback acumulado pode ser usado como desconto em qualquer pedido:
+- Aplicado automaticamente no checkout (cliente escolhe quanto usar)
+- Pode cobrir até 50% do valor do pedido
+- Não expira enquanto o cliente estiver ativo (compra nos últimos 12 meses)
+- Saldo visível em tempo real no app
 
 #### Modelo de Dados
 
 ```
-PontosTransacao
+CashbackHistory
 ├── id
 ├── cliente_id
-├── tipo (credito, debito)
-├── quantidade
-├── motivo (compra, bonus, resgate, expiracao)
-├── referencia_id
-├── data
-├── expira_em (12 meses)
-
-Recompensa
-├── id
-├── nome
+├── pedido_id (se aplicável)
+├── valor (R$) - positivo = ganho, negativo = uso
+├── tipo (earned, redeemed, expired, bonus, adjustment)
 ├── descricao
-├── custo_pontos
-├── tipo (produto, desconto, experiencia)
-├── produto_id (se aplicável)
-├── valor_desconto (se aplicável)
-├── ativo
+├── saldo_antes (R$)
+├── saldo_depois (R$)
+├── data
+├── expira_em (opcional)
+
+User
+├── cashback_saldo (R$) - saldo atual disponível
+├── tier (bronze, silver, gold, platinum) - calculado de totalSpent
+├── totalSpent (R$) - total gasto histórico
 ```
 
 ---
@@ -638,10 +644,10 @@ RECEITA BRUTA
 - [ ] Calendário
 
 ### Fase 5: CRM & Fidelidade (Semanas 9-10)
-- [ ] Módulo CRM
-- [ ] Sistema de pontos
-- [ ] Tiers
-- [ ] Resgates
+- [x] Módulo CRM
+- [x] Sistema de cashback
+- [x] Tiers baseados em gasto total
+- [x] Uso automático de cashback
 
 ### Fase 6: Financeiro (Semanas 11-12)
 - [ ] Módulo caixa
@@ -658,7 +664,7 @@ RECEITA BRUTA
 | Tempo médio pedido | < 2 minutos |
 | Erro de estoque | < 5% |
 | NPS staff | > 70 |
-| Clientes com pontos | > 60% |
+| Clientes com cashback | > 60% |
 
 ---
 
