@@ -172,9 +172,13 @@ class OrderController {
       // NOTIFICAÇÕES IMEDIATAS
       // ========================================
 
+      console.log(`🔔 [NOTIFICAÇÃO] Enviando notificações para pedido #${order.orderNumber}`);
+
       // 1. WebSocket: Notificar cozinha/bar/atendentes
       try {
+        console.log(`📡 [WEBSOCKET] Notificando sobre pedido #${order.orderNumber}...`);
         socketService.notifyNewOrder(completeOrder);
+        console.log(`✅ [WEBSOCKET] Notificação enviada com sucesso!`);
       } catch (socketError) {
         console.error('⚠️ Erro ao notificar via WebSocket:', socketError);
       }
