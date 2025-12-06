@@ -42,23 +42,21 @@ export default function PainelBar() {
   const { playNewOrder, playSuccess, playUrgent } = useNotificationSound();
   const [activeTab, setActiveTab] = useState('drinks'); // 'drinks' | 'hookah'
 
-  // DEBUG: Forçar log visível
-  if (typeof window !== 'undefined') {
+  useEffect(() => {
+    console.warn('🚨 [BAR] useEffect EXECUTADO - VERSÃO CORRIGIDA!');
+
+    // DEBUG: Verificar estado
     window.BAR_DEBUG = {
       componentLoaded: true,
       isAuthenticated,
       user: user?.nome,
       timestamp: new Date().toISOString()
     };
-    console.warn('🚨 [BAR] Componente carregado!', window.BAR_DEBUG);
-  }
+    console.warn('🚨 [BAR] Estado do componente:', window.BAR_DEBUG);
 
-  useEffect(() => {
-    console.warn('🚨 [BAR] useEffect EXECUTADO!');
-
-    // Verificar token diretamente do localStorage ao invés de isAuthenticated
+    // Verificar token diretamente do localStorage
     const token = localStorage.getItem('token');
-    console.warn('[BAR] Token encontrado:', token ? 'SIM ✅' : 'NÃO ❌');
+    console.warn('[BAR] Token encontrado:', token ? `SIM ✅ (${token.substring(0, 20)}...)` : 'NÃO ❌');
 
     if (!token) {
       console.warn('[BAR] ❌ Sem token, redirecionando para login...');
@@ -67,7 +65,7 @@ export default function PainelBar() {
       return;
     }
 
-    console.warn('[BAR] ✅ Token presente, continuando...');
+    console.warn('[BAR] ✅ Token presente, continuando com setup...');
 
     // Carregar dashboard inicial
     const loadDashboard = async () => {
