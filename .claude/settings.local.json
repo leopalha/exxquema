@@ -117,7 +117,15 @@
       "Bash(while read file)",
       "Bash(sort:*)",
       "Bash(del \"src\\pages\\filosofia.js\")",
-      "Bash(del \"src\\data\\filosofia.js\")"
+      "Bash(del \"src\\data\\filosofia.js\")",
+      "Bash(del:*)",
+      "Bash(timeout 60 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend healthy!\"\"; break; fi; echo \"\"⏳ Aguardando deploy... ($SECONDS segundos)\"\"; sleep 5; done')",
+      "Bash(timeout 90 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend online e saudável!\"\"; break; fi; echo \"\"⏳ Aguardando deploy... ($SECONDS segundos)\"\"; sleep 5; done')",
+      "Bash(timeout 120 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend ONLINE e funcionando!\"\"; curl -s https://backend-production-28c3.up.railway.app/health | python -m json.tool; break; fi; echo \"\"⏳ Aguardando deploy... ($SECONDS segundos)\"\"; sleep 5; done')",
+      "Bash(timeout 90 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend online!\"\"; break; fi; echo \"\"⏳ Aguardando... ($SECONDS seg)\"\"; sleep 5; done')",
+      "Bash(timeout 120 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend ONLINE!\"\"; break; fi; echo \"\"⏳ Aguardando deploy... ($SECONDS seg)\"\"; sleep 5; done')",
+      "Bash(timeout 90 bash:*)",
+      "Bash(timeout 120 bash -c 'while true; do status=$(curl -s https://backend-production-28c3.up.railway.app/health 2>/dev/null | grep -o \"\"ok\"\" || echo \"\"waiting\"\"); if [ \"\"$status\"\" = \"\"ok\"\" ]; then echo \"\"✅ Backend ONLINE com debug logs!\"\"; curl -s https://backend-production-28c3.up.railway.app/health | python -m json.tool; break; fi; echo \"\"⏳ Aguardando deploy... ($SECONDS seg)\"\"; sleep 5; done')"
     ],
     "deny": [],
     "ask": []

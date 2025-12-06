@@ -118,9 +118,24 @@ async function migrateProducts() {
       console.log(`   ❌ Erros: ${errors}`);
       console.log(`   📦 Total processado: ${total}`);
       console.log(`${'='.repeat(50)}\n`);
+
+      // DEBUG: Mostrar detalhes dos erros
+      if (errors > 0) {
+        console.log('\n🔍 DETALHES DOS ERROS:\n');
+        const errorDetails = response.data.data.results?.filter(r => !r.success) || [];
+        errorDetails.slice(0, 5).forEach((err, i) => {
+          console.log(`${i + 1}. ${err.name}: ${err.error}`);
+        });
+        if (errorDetails.length > 5) {
+          console.log(`... e mais ${errorDetails.length - 5} erros\n`);
+        }
+      }
     }
   } catch (error) {
-    console.error('\n❌ Erro ao migrar produtos:', error.response?.data?.message || error.message);
+    console.error('\n❌ Erro ao migrar produtos:');
+    console.error('Status:', error.response?.status);
+    console.error('Message:', error.response?.data?.message || error.message);
+    console.error('Data:', JSON.stringify(error.response?.data, null, 2));
     process.exit(1);
   }
 }

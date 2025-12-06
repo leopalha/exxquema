@@ -191,7 +191,8 @@ class SocketService {
 
     if (orderData.items && orderData.items.length > 0) {
       orderData.items.forEach(item => {
-        const category = item.productCategory?.toLowerCase() || '';
+        // Buscar categoria do produto (suporta ambos os formatos por compatibilidade)
+        const category = (item.product?.category || item.productCategory || '').toLowerCase();
 
         if (category.includes('bebida') || category.includes('drink')) {
           drinkItems.push(item);

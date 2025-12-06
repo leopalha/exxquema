@@ -123,7 +123,12 @@ class OrderController {
         include: [
           {
             model: OrderItem,
-            as: 'items'
+            as: 'items',
+            include: [{
+              model: Product,
+              as: 'product',
+              attributes: ['id', 'name', 'category', 'price']
+            }]
           },
           {
             model: User,
