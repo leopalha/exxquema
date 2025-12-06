@@ -199,7 +199,10 @@ export default function PhoneInput({
         <div className="relative" ref={dropdownRef}>
           <button
             type="button"
-            onClick={() => !disabled && setIsOpen(!isOpen)}
+            onClick={() => {
+              console.log('[PhoneInput] Botão clicado. isOpen atual:', isOpen);
+              !disabled && setIsOpen(!isOpen);
+            }}
             disabled={disabled}
             className="flex items-center gap-2 px-3 py-3 bg-neutral-700 hover:bg-neutral-600 transition-colors border-r border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -210,7 +213,7 @@ export default function PhoneInput({
 
           {/* Dropdown de Países */}
           {isOpen && (
-            <div className="absolute top-full left-0 mt-1 w-72 max-h-80 bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-0 mt-1 w-72 max-h-80 bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl overflow-hidden" style={{ zIndex: 9999 }}>
               {/* Campo de Busca */}
               <div className="p-2 border-b border-neutral-700">
                 <div className="relative">
