@@ -176,15 +176,15 @@ export default function Reservas() {
               background: 'linear-gradient(to right, rgba(249, 115, 22, 0.3), rgba(251, 191, 36, 0.3))'
             }}
           >
-            <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10 bg-orange-500" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10 bg-amber-500" />
+            <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl opacity-10 bg-[var(--theme-primary)]" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10 bg-[var(--theme-secondary)]" />
 
             <div className="relative max-w-6xl mx-auto px-4 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', duration: 0.5 }}
-                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 bg-gradient-to-br from-orange-500 to-amber-500"
+                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 bg-gradient-to-br from-[var(--theme-primary)] to-[var(--theme-secondary)]"
               >
                 <CalendarIcon className="w-10 h-10 text-white" />
               </motion.div>
@@ -192,7 +192,7 @@ export default function Reservas() {
               <motion.h1
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 bg-clip-text text-transparent"
+                className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--theme-primary)] via-[var(--theme-accent)] to-orange-500 bg-clip-text text-transparent"
               >
                 Reservas
               </motion.h1>
@@ -220,7 +220,7 @@ export default function Reservas() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-all ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                      ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800'
                   }`}
                 >
@@ -253,7 +253,7 @@ export default function Reservas() {
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                               currentStep >= step
-                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white'
+                                ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
                                 : 'bg-gray-800 text-gray-500'
                             }`}
                           >
@@ -270,7 +270,7 @@ export default function Reservas() {
                             <div
                               className={`w-12 md:w-24 h-1 mx-2 rounded transition-all ${
                                 currentStep > step
-                                  ? 'bg-gradient-to-r from-orange-500 to-amber-500'
+                                  ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)]'
                                   : 'bg-gray-800'
                               }`}
                             />
@@ -369,7 +369,7 @@ export default function Reservas() {
                         <div className="bg-gray-800/50 rounded-xl p-6 mb-6">
                           <p className="text-sm text-gray-400 mb-2">Código de Confirmação</p>
                           <div className="flex items-center justify-center gap-3">
-                            <span className="text-3xl font-mono font-bold text-orange-400 tracking-wider">
+                            <span className="text-3xl font-mono font-bold text-[var(--theme-primary)] tracking-wider">
                               {confirmedReservation.confirmationCode}
                             </span>
                             <button
@@ -389,7 +389,7 @@ export default function Reservas() {
                         {/* Detalhes da reserva */}
                         <div className="bg-gray-800/30 rounded-xl p-5 mb-6 text-left space-y-3">
                           <div className="flex items-center gap-3">
-                            <CalendarIcon size={18} className="text-orange-400" />
+                            <CalendarIcon size={18} className="text-[var(--theme-primary)]" />
                             <span className="text-gray-300">
                               {new Date(confirmedReservation.reservationDate).toLocaleDateString('pt-BR', {
                                 weekday: 'long',
@@ -400,7 +400,7 @@ export default function Reservas() {
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Clock size={18} className="text-orange-400" />
+                            <Clock size={18} className="text-[var(--theme-primary)]" />
                             <span className="text-gray-300">
                               {new Date(confirmedReservation.reservationDate).toLocaleTimeString('pt-BR', {
                                 hour: '2-digit',
@@ -409,14 +409,14 @@ export default function Reservas() {
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Users size={18} className="text-orange-400" />
+                            <Users size={18} className="text-[var(--theme-primary)]" />
                             <span className="text-gray-300">
                               {confirmedReservation.partySize} pessoa{confirmedReservation.partySize > 1 ? 's' : ''}
                             </span>
                           </div>
                           {confirmedReservation.specialRequests && (
                             <div className="flex items-start gap-3">
-                              <MapPin size={18} className="text-orange-400 mt-0.5" />
+                              <MapPin size={18} className="text-[var(--theme-primary)] mt-0.5" />
                               <span className="text-gray-300">{confirmedReservation.specialRequests}</span>
                             </div>
                           )}
@@ -429,8 +429,8 @@ export default function Reservas() {
                         </div>
 
                         {/* Localização */}
-                        <div className="bg-orange-500/10 rounded-xl p-4 mb-6">
-                          <p className="text-orange-400 font-semibold mb-1">
+                        <div className="bg-[var(--theme-primary)]/10 rounded-xl p-4 mb-6">
+                          <p className="text-[var(--theme-primary)] font-semibold mb-1">
                             FLAME Lounge Bar
                           </p>
                           <p className="text-gray-400 text-sm">
@@ -448,7 +448,7 @@ export default function Reservas() {
                           </button>
                           <button
                             onClick={handleNewReservation}
-                            className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold hover:opacity-90 transition-opacity"
+                            className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white font-semibold hover:opacity-90 transition-opacity"
                           >
                             Nova Reserva
                           </button>
@@ -484,7 +484,7 @@ export default function Reservas() {
                       <p className="text-gray-400 mb-6">Faça sua primeira reserva agora!</p>
                       <button
                         onClick={() => setActiveTab('nova')}
-                        className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold py-3 px-8 rounded-xl hover:opacity-90 transition-opacity"
+                        className="bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white font-semibold py-3 px-8 rounded-xl hover:opacity-90 transition-opacity"
                       >
                         Fazer Reserva
                       </button>
@@ -494,14 +494,14 @@ export default function Reservas() {
                       {upcomingReservations.map((reservation) => (
                         <div
                           key={reservation.id}
-                          className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-orange-500/30 shadow-lg"
+                          className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-[var(--theme-primary)]/30 shadow-lg"
                         >
                           <div className="flex items-start justify-between mb-4">
                             <div>
                               <p className="text-xl font-bold text-white mb-1">
                                 {formatDate(reservation.reservationDate)}
                               </p>
-                              <div className="flex items-center gap-2 text-orange-400 font-semibold">
+                              <div className="flex items-center gap-2 text-[var(--theme-primary)] font-semibold">
                                 <Clock size={16} />
                                 {reservation.reservationTime}
                               </div>
@@ -527,7 +527,7 @@ export default function Reservas() {
                           {reservation.confirmationCode && (
                             <div className="bg-gray-800/50 rounded-lg p-3 mb-4">
                               <p className="text-xs text-gray-500 mb-1">Código de confirmação</p>
-                              <p className="text-lg font-mono font-bold text-orange-400">
+                              <p className="text-lg font-mono font-bold text-[var(--theme-primary)]">
                                 {reservation.confirmationCode}
                               </p>
                             </div>
@@ -592,7 +592,7 @@ export default function Reservas() {
                   exit={{ opacity: 0, y: -20 }}
                   className="max-w-md mx-auto"
                 >
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-8 border border-orange-500/30">
+                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-8 border border-[var(--theme-primary)]/30">
                     <h2 className="text-2xl font-bold text-white mb-6 text-center">
                       Buscar Reserva
                     </h2>
@@ -606,7 +606,7 @@ export default function Reservas() {
                         value={confirmationCode}
                         onChange={(e) => setConfirmationCode(e.target.value.toUpperCase())}
                         placeholder="Ex: A1B2C3D4E5F6"
-                        className="w-full px-4 py-3 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-orange-500 text-white font-mono text-center text-lg placeholder-gray-600 transition-colors"
+                        className="w-full px-4 py-3 rounded-lg bg-gray-800 border-2 border-gray-700 focus:border-[var(--theme-primary)] text-white font-mono text-center text-lg placeholder-gray-600 transition-colors"
                         maxLength={12}
                       />
 
@@ -616,7 +616,7 @@ export default function Reservas() {
                         className={`w-full py-3 rounded-lg font-semibold transition-all ${
                           loading || confirmationCode.length < 12
                             ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90'
+                            : 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white hover:opacity-90'
                         }`}
                       >
                         {loading ? 'Buscando...' : 'Buscar Reserva'}
@@ -635,7 +635,7 @@ export default function Reservas() {
                             <p className="text-white font-bold">
                               {formatDate(currentReservation.reservationDate)}
                             </p>
-                            <p className="text-orange-400">{currentReservation.reservationTime}</p>
+                            <p className="text-[var(--theme-primary)]">{currentReservation.reservationTime}</p>
                           </div>
                           {getStatusBadge(currentReservation.status)}
                         </div>

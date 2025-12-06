@@ -66,16 +66,19 @@ export default function Checkout() {
     loading
   } = useOrderStore();
 
-  // Redirecionar se não autenticado ou carrinho vazio
+  // Redirecionar se não autenticado, perfil incompleto ou carrinho vazio
   useEffect(() => {
     if (!isAuthenticated) {
       toast.error('Faça login para finalizar o pedido');
       router.push('/login?redirect=/checkout');
+    } else if (user && !user.profileComplete) {
+      toast.error('Complete seu cadastro para fazer pedidos');
+      router.push('/complete-profile');
     } else if (items.length === 0 && !orderComplete) {
       toast.error('Seu carrinho está vazio');
       router.push('/cardapio');
     }
-  }, [isAuthenticated, items.length, orderComplete, router]);
+  }, [isAuthenticated, user, items.length, orderComplete, router]);
 
   // Calculos
   const subtotal = getSubtotal();

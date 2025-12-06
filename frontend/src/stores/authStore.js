@@ -663,6 +663,7 @@ const useAuthStore = create(
           console.log('📝 COMPLETE PROFILE:', {
             nome: profileData.nome,
             email: profileData.email,
+            cpf: profileData.cpf ? `***${profileData.cpf.slice(-4)}` : '(não informado)',
             hasPassword: !!profileData.password
           });
 

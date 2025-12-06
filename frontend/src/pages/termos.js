@@ -30,9 +30,9 @@ export default function Termos() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-orange-500"
+                className="w-20 h-20 bg-[var(--theme-primary)]/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-[var(--theme-primary)]"
               >
-                <FileText className="w-10 h-10 text-orange-400" />
+                <FileText className="w-10 h-10 text-[var(--theme-primary)]" />
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -47,7 +47,7 @@ export default function Termos() {
             <div className="prose prose-invert prose-red max-w-none">
               <div className="bg-gray-900 border border-gray-700 rounded-xl p-8 mb-6">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-orange-400" />
+                  <Shield className="w-6 h-6 text-[var(--theme-primary)]" />
                   1. Aceitação dos Termos
                 </h2>
                 <p className="text-gray-300 leading-relaxed mb-4">
@@ -103,7 +103,7 @@ export default function Termos() {
 
               <div className="bg-gray-900 border border-gray-700 rounded-xl p-8 mb-6">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                  <Lock className="w-6 h-6 text-orange-400" />
+                  <Lock className="w-6 h-6 text-[var(--theme-primary)]" />
                   4. Política de Privacidade
                 </h2>
                 <div className="text-gray-300 leading-relaxed space-y-4">
@@ -181,7 +181,7 @@ export default function Termos() {
               </p>
               <Link
                 href="/"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
+                className="bg-[var(--theme-primary)] hover:opacity-90 text-white px-8 py-3 rounded-lg font-semibold transition-colors inline-block"
               >
                 Voltar para Início
               </Link>

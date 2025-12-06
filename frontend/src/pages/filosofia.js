@@ -47,11 +47,11 @@ export default function Filosofia() {
           {/* Hero Section */}
           <motion.section
             variants={itemVariants}
-            className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-[#8B3A3A] to-black overflow-hidden"
+            className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-neutral-900 to-black overflow-hidden"
           >
             <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-20 left-20 w-32 h-32 bg-[#FF006E] rounded-full blur-3xl animate-pulse" />
-              <div className="absolute bottom-40 right-20 w-48 h-48 bg-[#E30613] rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+              <div className="absolute top-20 left-20 w-32 h-32 bg-[var(--theme-primary)] rounded-full blur-3xl animate-pulse" />
+              <div className="absolute bottom-40 right-20 w-48 h-48 bg-[var(--theme-secondary)] rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
             </div>
 
             <div className="relative z-10 max-w-5xl mx-auto px-4 text-center py-20">
@@ -61,8 +61,8 @@ export default function Filosofia() {
                 transition={{ duration: 0.8 }}
                 className="mb-8"
               >
-                <div className="inline-block bg-[#E30613]/20 border border-[#E30613] px-6 py-2 rounded-full mb-6">
-                  <span className="text-[#E30613] font-semibold">
+                <div className="inline-block bg-[var(--theme-primary)]/20 border border-[var(--theme-primary)] px-6 py-2 rounded-full mb-6">
+                  <span className="text-[var(--theme-primary)] font-semibold">
                     5 Pilares de Identidade
                   </span>
                 </div>
@@ -108,11 +108,11 @@ export default function Filosofia() {
                 {pilares.map((pilar, index) => {
                   const Icon = pilarIcons[pilar.icone];
                   const corClass = {
-                    'golden-hour': 'from-[#D4AF37]/20 border-[#D4AF37]',
-                    'neon-pink': 'from-[#FF006E]/20 border-[#FF006E]',
-                    'primary': 'from-[#E30613]/20 border-[#E30613]',
-                    'brick-red': 'from-[#8B3A3A]/20 border-[#8B3A3A]',
-                    'canal-water': 'from-[#1C3A3A]/20 border-[#1C3A3A]',
+                    'golden-hour': 'from-[var(--theme-accent)]/20 border-[var(--theme-accent)]',
+                    'neon-pink': 'from-[var(--theme-primary)]/20 border-[var(--theme-primary)]',
+                    'primary': 'from-[var(--theme-primary)]/20 border-[var(--theme-primary)]',
+                    'brick-red': 'from-[var(--theme-secondary)]/20 border-[var(--theme-secondary)]',
+                    'canal-water': 'from-[var(--theme-secondary)]/20 border-[var(--theme-secondary)]',
                   }[pilar.cor];
 
                   return (
@@ -137,7 +137,7 @@ export default function Filosofia() {
                         </div>
                       </div>
 
-                      <p className="text-[#D4AF37] text-lg font-semibold mb-4">
+                      <p className="text-[var(--theme-accent)] text-lg font-semibold mb-4">
                         {pilar.subtitulo}
                       </p>
 
@@ -148,7 +148,7 @@ export default function Filosofia() {
                       <div className="space-y-2">
                         {pilar.valores.map((valor, vIndex) => (
                           <div key={vIndex} className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-[#E30613] rounded-full" />
+                            <div className="w-1.5 h-1.5 bg-[var(--theme-primary)] rounded-full" />
                             <span className="text-gray-300 text-sm">{valor}</span>
                           </div>
                         ))}
@@ -183,7 +183,7 @@ export default function Filosofia() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.2 }}
-                    className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#262626] rounded-xl p-6 hover:border-[#E30613] transition-all"
+                    className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#262626] rounded-xl p-6 hover:border-[var(--theme-primary)] transition-all"
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
@@ -193,9 +193,9 @@ export default function Filosofia() {
                         <p className="text-sm text-gray-500">{arquetipo.nome}</p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full ${
-                        arquetipo.tipo === 'Primário' ? 'bg-[#E30613]/20 text-[#E30613]' :
-                        arquetipo.tipo === 'Secundário' ? 'bg-[#D4AF37]/20 text-[#D4AF37]' :
-                        'bg-[#1C3A3A] text-gray-400'
+                        arquetipo.tipo === 'Primário' ? 'bg-[var(--theme-primary)]/20 text-[var(--theme-primary)]' :
+                        arquetipo.tipo === 'Secundário' ? 'bg-[var(--theme-accent)]/20 text-[var(--theme-accent)]' :
+                        'bg-[var(--theme-secondary)]/20 text-gray-400'
                       }`}>
                         {arquetipo.tipo}
                       </span>
@@ -208,7 +208,7 @@ export default function Filosofia() {
                     <div className="space-y-2">
                       {arquetipo.caracteristicas.map((carac, cIndex) => (
                         <div key={cIndex} className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-[#E30613] rounded-full" />
+                          <div className="w-1 h-1 bg-[var(--theme-primary)] rounded-full" />
                           <span className="text-gray-300 text-sm">{carac}</span>
                         </div>
                       ))}
@@ -229,7 +229,7 @@ export default function Filosofia() {
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
                   {manifesto.titulo}
                 </h2>
-                <p className="text-xl text-[#D4AF37]">
+                <p className="text-xl text-[var(--theme-accent)]">
                   {manifesto.subtitulo}
                 </p>
               </div>
@@ -244,14 +244,14 @@ export default function Filosofia() {
                     transition={{ duration: 0.6, delay: index * 0.2 }}
                     className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#262626] rounded-xl p-8"
                   >
-                    <h3 className="text-2xl font-bold text-white mb-6 border-b border-[#E30613] pb-3">
+                    <h3 className="text-2xl font-bold text-white mb-6 border-b border-[var(--theme-primary)] pb-3">
                       {secao.titulo}
                     </h3>
 
                     <ul className="space-y-3">
                       {secao.itens.map((item, iIndex) => (
                         <li key={iIndex} className="flex items-start gap-3">
-                          <span className="text-[#E30613] mt-1">✓</span>
+                          <span className="text-[var(--theme-primary)] mt-1">✓</span>
                           <span className="text-gray-300">{item}</span>
                         </li>
                       ))}
@@ -285,9 +285,9 @@ export default function Filosofia() {
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#262626] rounded-lg p-6 hover:border-[#D4AF37] transition-all"
+                    className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#262626] rounded-lg p-6 hover:border-[var(--theme-accent)] transition-all"
                   >
-                    <h3 className="text-xl font-bold text-[#D4AF37] mb-3">
+                    <h3 className="text-xl font-bold text-[var(--theme-accent)] mb-3">
                       {valor.valor}
                     </h3>
                     <p className="text-gray-400 text-sm leading-relaxed">
@@ -302,7 +302,7 @@ export default function Filosofia() {
           {/* CTA Final */}
           <motion.section
             variants={itemVariants}
-            className="py-20 bg-gradient-to-br from-[#E30613] via-[#B30510] to-black"
+            className="py-20 bg-gradient-to-br from-[var(--theme-primary)] via-[var(--theme-accent)] to-black"
           >
             <div className="max-w-4xl mx-auto px-4 text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
@@ -315,7 +315,7 @@ export default function Filosofia() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/historia"
-                  className="bg-white text-[#E30613] hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                  className="bg-white text-black hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
                 >
                   Nossa História
                 </Link>
