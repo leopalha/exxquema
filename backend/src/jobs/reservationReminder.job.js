@@ -25,8 +25,8 @@ async function sendReservationReminders() {
     const reservations = await Reservation.findAll({
       where: {
         status: 'confirmed',
-        reminderSent: false,
-        date: {
+        reminderSentAt: null,
+        reservationDate: {
           [Op.gte]: now.toISOString().split('T')[0],
           [Op.lte]: now.toISOString().split('T')[0]
         }
@@ -40,7 +40,7 @@ async function sendReservationReminders() {
 
     // Filtrar reservas dentro da janela de 2h
     const reservationsToRemind = reservations.filter(r => {
-      const reservationDateTime = new Date(`${r.date}T${r.time}`);
+      const reservationDateTime = new Date(`${r.reservationDate}T${r.time}`);
       return reservationDateTime >= twoHoursLater && reservationDateTime < twoHoursAndHalfLater;
     });
 
@@ -54,13 +54,13 @@ async function sendReservationReminders() {
         const user = reservation.user;
         if (!user) continue;
 
-        const message = `Olá ${user.nome}! Lembrete: sua reserva no FLAME para ${reservation.guests} pessoas está marcada para hoje às ${reservation.time}. Código: ${reservation.confirmationCode}`;
+        const message = `Olá ${user.nome}! Lembrete: sua reserva no FLAME para ${reservation.partySize} pessoas está marcada para hoje às ${reservation.time}. Código: ${reservation.confirmationCode}`;
 
         // Enviar Push Notification
         try {
           await pushService.sendToUser(user.id, {
             title: '🔔 Lembrete de Reserva - FLAME',
-            body: `Sua reserva para ${reservation.guests} pessoas é hoje às ${reservation.time}`,
+            body: `Sua reserva para ${reservation.partySize} pessoas é hoje às ${reservation.time}`,
             icon: '/icons/icon-192x192.png',
             tag: `reservation-${reservation.id}`,
             data: {
@@ -83,7 +83,7 @@ async function sendReservationReminders() {
         }
 
         // Marcar lembrete como enviado
-        await reservation.update({ reminderSent: true });
+        await reservation.update({ reminderSentAt: new Date() });
         sentCount++;
 
         console.log(`[RESERVATION-REMINDER] Lembrete enviado para ${user.nome} - Reserva ${reservation.confirmationCode}`);

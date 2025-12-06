@@ -25,13 +25,13 @@ async function checkNoShows() {
     const reservations = await Reservation.findAll({
       where: {
         status: 'confirmed',
-        date: today
+        reservationDate: today
       }
     });
 
     // Filtrar reservas que já passaram 15 minutos do horário
     const noShowReservations = reservations.filter(r => {
-      const reservationDateTime = new Date(`${r.date}T${r.time}`);
+      const reservationDateTime = new Date(`${r.reservationDate}T${r.time}`);
       return reservationDateTime < fifteenMinutesAgo;
     });
 
@@ -43,7 +43,7 @@ async function checkNoShows() {
       try {
         await reservation.update({
           status: 'no_show',
-          notes: (reservation.notes || '') + `\n[Sistema] Marcado como no-show automaticamente em ${now.toISOString()}`
+          guestNotes: (reservation.guestNotes || '') + `\n[Sistema] Marcado como no-show automaticamente em ${now.toISOString()}`
         });
         markedCount++;
 

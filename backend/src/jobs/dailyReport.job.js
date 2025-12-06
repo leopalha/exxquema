@@ -42,7 +42,7 @@ async function generateDailyReport() {
     // Métricas de reservas
     const reservations = await Reservation.findAll({
       where: {
-        date: yesterday.toISOString().split('T')[0]
+        reservationDate: yesterday.toISOString().split('T')[0]
       }
     });
 

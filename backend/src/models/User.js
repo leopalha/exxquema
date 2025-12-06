@@ -271,6 +271,27 @@ User.init({
     type: DataTypes.DATE,
     allowNull: true
   },
+  // Google OAuth Fields
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+    comment: 'ID único do Google OAuth'
+  },
+  googleProfilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'URL da foto de perfil do Google'
+  },
+  authProvider: {
+    type: DataTypes.TEXT,
+    defaultValue: 'local',
+    allowNull: false,
+    validate: {
+      isIn: [['local', 'google']]
+    },
+    comment: 'Provedor de autenticação utilizado'
+  },
   // Cashback System
   cashbackBalance: {
     type: DataTypes.DECIMAL(10, 2),

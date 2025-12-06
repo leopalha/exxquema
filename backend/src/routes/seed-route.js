@@ -24,7 +24,7 @@ router.post('/seed-users', async (req, res) => {
 
     const results = [];
     for (const userData of usersData) {
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      // NÃO fazer hash manual - o hook beforeSave do modelo fará automaticamente
       const [user, created] = await User.findOrCreate({
         where: { email: userData.email },
         defaults: {
@@ -32,11 +32,12 @@ router.post('/seed-users', async (req, res) => {
           email: userData.email,
           celular: userData.celular,
           cpf: userData.cpf,
-          password: hashedPassword,
+          password: userData.password, // Hook beforeSave fará o hash
           role: userData.role,
           isActive: true,
           emailVerified: true,
           phoneVerified: true,
+          profileComplete: true,
           totalOrders: 0,
           totalSpent: 0,
           cashbackBalance: userData.role === 'cliente' ? 50 : 0,
@@ -154,6 +155,90 @@ router.post('/reset-users', async (req, res) => {
     res.json({ success: true, message: 'Users reset successfully', data: results });
   } catch (error) {
     console.error('Reset error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Fix passwords endpoint - atualiza APENAS a senha dos usuários de teste (SEM deletar)
+router.post('/fix-passwords', async (req, res) => {
+  const secretKey = req.headers['x-seed-key'] || req.body.secretKey;
+  if (secretKey !== 'FLAME2024SEED') {
+    return res.status(403).json({ success: false, message: 'Chave inválida' });
+  }
+
+  try {
+    const usersToFix = [
+      { email: 'admin@flamelounge.com.br', password: 'admin123' },
+      { email: 'gerente@flamelounge.com.br', password: 'gerente123' },
+      { email: 'cozinha@flamelounge.com.br', password: 'cozinha123' },
+      { email: 'bar@flamelounge.com.br', password: 'bar123' },
+      { email: 'atendente@flamelounge.com.br', password: 'atendente123' },
+      { email: 'caixa@flamelounge.com.br', password: 'caixa123' },
+      { email: 'cliente@flamelounge.com.br', password: 'cliente123' }
+    ];
+
+    const results = [];
+    for (const { email, password } of usersToFix) {
+      const user = await User.findOne({ where: { email } });
+      if (user) {
+        // Atualizar senha diretamente - o hook beforeSave fará o hash
+        user.password = password;
+        user.profileComplete = true;
+        await user.save();
+        results.push({ email, updated: true });
+      } else {
+        results.push({ email, updated: false, reason: 'User not found' });
+      }
+    }
+
+    res.json({ success: true, message: 'Passwords fixed', data: results });
+  } catch (error) {
+    console.error('Fix passwords error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Seed products endpoint - produtos básicos para começar
+router.post('/seed-products', async (req, res) => {
+  const secretKey = req.headers['x-seed-key'] || req.body.secretKey;
+  if (secretKey !== 'FLAME2024SEED') {
+    return res.status(403).json({ success: false, message: 'Chave inválida' });
+  }
+
+  try {
+    const { Product } = require('../models');
+
+    // Produtos essenciais para teste
+    const products = [
+      { name: 'Caipirinha Clássica', description: 'Cachaça, limão e açúcar', price: 28.00, category: 'bebidas_alcoolicas', subcategory: 'Drinks', stock: 50, hasStock: true, isActive: true, isFeatured: true, preparationTime: 5 },
+      { name: 'Gin Tônica', description: 'Gin premium e tônica Fever-Tree', price: 38.00, category: 'bebidas_alcoolicas', subcategory: 'Drinks', stock: 50, hasStock: true, isActive: true, isFeatured: true, preparationTime: 5 },
+      { name: 'Mojito', description: 'Rum, hortelã, limão e açúcar', price: 32.00, category: 'bebidas_alcoolicas', subcategory: 'Drinks', stock: 50, hasStock: true, isActive: true, preparationTime: 5 },
+      { name: 'Cerveja Heineken', description: 'Cerveja premium 330ml', price: 12.00, category: 'bebidas_alcoolicas', subcategory: 'Cervejas', stock: 100, hasStock: true, isActive: true, preparationTime: 1 },
+      { name: 'Batata Rústica', description: 'Batatas com bacon e queijo', price: 32.00, category: 'petiscos', subcategory: 'Petiscos', stock: 30, hasStock: true, isActive: true, preparationTime: 15 },
+      { name: 'Hambúrguer FLAME', description: 'Burger artesanal 200g', price: 42.00, category: 'pratos_principais', subcategory: 'Burgers', stock: 20, hasStock: true, isActive: true, preparationTime: 25 },
+      { name: 'Coca-Cola', description: 'Refrigerante 350ml', price: 7.00, category: 'bebidas_nao_alcoolicas', subcategory: 'Refrigerantes', stock: 200, hasStock: true, isActive: true, preparationTime: 1 },
+      { name: 'Água Mineral', description: 'Água sem gás 500ml', price: 5.00, category: 'bebidas_nao_alcoolicas', subcategory: 'Água', stock: 200, hasStock: true, isActive: true, preparationTime: 1 }
+    ];
+
+    const results = [];
+    for (const p of products) {
+      const [product, created] = await Product.findOrCreate({
+        where: { name: p.name },
+        defaults: p
+      });
+      results.push({ name: p.name, created });
+    }
+
+    const createdCount = results.filter(r => r.created).length;
+    const existingCount = results.length - createdCount;
+
+    res.json({
+      success: true,
+      message: `${createdCount} produtos criados, ${existingCount} já existiam`,
+      data: { created: createdCount, existing: existingCount, total: results.length }
+    });
+  } catch (error) {
+    console.error('Seed products error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

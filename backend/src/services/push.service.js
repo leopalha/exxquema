@@ -304,7 +304,7 @@ class PushService {
 
     const notification = {
       title: 'Lembrete de Reserva',
-      body: `Sua reserva é em ${hoursUntil}h - ${reservation.date} às ${reservation.time}`,
+      body: `Sua reserva é em ${hoursUntil}h - ${reservation.reservationDate} às ${reservation.time}`,
       icon: '/icons/icon-192x192.png',
       tag: `reservation-reminder-${reservation.id}`,
       data: {

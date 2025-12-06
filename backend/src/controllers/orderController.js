@@ -168,10 +168,42 @@ class OrderController {
         }
       }
 
+      // ========================================
+      // NOTIFICAÇÕES IMEDIATAS
+      // ========================================
+
+      // 1. WebSocket: Notificar cozinha/bar/atendentes
+      try {
+        socketService.notifyNewOrder(completeOrder);
+      } catch (socketError) {
+        console.error('⚠️ Erro ao notificar via WebSocket:', socketError);
+      }
+
+      // 2. Push Notification: Notificar funcionários
+      try {
+        await pushService.notifyNewOrder(completeOrder);
+      } catch (pushError) {
+        console.error('⚠️ Erro ao enviar push notification:', pushError);
+        // Não falha pedido se push der erro
+      }
+
+      // 3. SMS: Enviar confirmação (se pagamento cash)
+      if (paymentMethod === 'cash') {
+        try {
+          await smsService.sendOrderConfirmation(
+            req.user.celular,
+            order.orderNumber,
+            order.estimatedTime
+          );
+        } catch (smsError) {
+          console.error('⚠️ Erro ao enviar SMS:', smsError);
+        }
+      }
+
       res.status(201).json({
         success: true,
         message: 'Pedido criado com sucesso',
-        data: { 
+        data: {
           order: completeOrder,
           paymentClientSecret: paymentMethod !== 'cash' ? paymentResult.clientSecret : null
         }
@@ -305,6 +337,9 @@ class OrderController {
         });
       }
 
+      // Verificar se já foi notificado (evitar duplicação)
+      const wasPending = order.status === 'pending';
+
       // Atualizar status do pedido
       await order.update({
         status: 'confirmed',
@@ -330,22 +365,31 @@ class OrderController {
         ]
       });
 
-      // Notificar cozinha e atendentes via WebSocket
-      socketService.notifyNewOrder(completeOrder);
+      // Só notifica via WebSocket/Push se ainda estava pending (evita duplicação)
+      if (wasPending) {
+        try {
+          socketService.notifyNewOrder(completeOrder);
+        } catch (socketError) {
+          console.error('⚠️ Erro ao notificar via WebSocket:', socketError);
+        }
 
-      // Notificar cozinha via Push
-      try {
-        await pushService.notifyNewOrder(completeOrder);
-      } catch (pushError) {
-        console.error('Erro ao enviar push para cozinha:', pushError);
+        try {
+          await pushService.notifyNewOrder(completeOrder);
+        } catch (pushError) {
+          console.error('⚠️ Erro ao enviar push notification:', pushError);
+        }
       }
 
-      // Enviar SMS de confirmação
-      await smsService.sendOrderConfirmation(
-        completeOrder.customer.celular,
-        completeOrder.orderNumber,
-        completeOrder.estimatedTime
-      );
+      // SMS sempre envia (confirmação de pagamento)
+      try {
+        await smsService.sendOrderConfirmation(
+          completeOrder.customer.celular,
+          completeOrder.orderNumber,
+          completeOrder.estimatedTime
+        );
+      } catch (smsError) {
+        console.error('⚠️ Erro ao enviar SMS:', smsError);
+      }
 
       res.status(200).json({
         success: true,
