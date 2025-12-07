@@ -463,25 +463,487 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51SVcch...
 
 ---
 
-## PRÓXIMAS SPRINTS SUGERIDAS
+## 📋 ROADMAP DE SPRINTS (31-40)
 
-### SPRINT 31 - FICHA TÉCNICA INTEGRADA (Pendente)
-- [ ] Modal de ficha técnica na página de produtos
-- [ ] Vinculação produto ↔ insumos com quantidades
-- [ ] Cálculo automático de custo por produto
-- [ ] Alertas de falta de insumos para produto
+> **Análise baseada em**: PRD v3.4.0, User Flows v3.4.0, ANALISE_PRD_VS_SISTEMA.md
+> **Critério de priorização**: P0 (Bloqueador) → P1 (Importante) → P2 (Melhoria)
 
-### SPRINT 32 - RELATÓRIOS AVANÇADOS (Pendente)
-- [ ] Relatórios CMV com gráficos (Chart.js)
-- [ ] Dashboard de vendas por período
-- [ ] Análise de produtos mais vendidos
-- [ ] Exportação para Excel/PDF
+---
 
-### SPRINT 33 - ALERTAS PUSH AUTOMÁTICOS (Pendente)
-- [ ] Push de estoque baixo para gerente
-- [ ] Push de pedido pronto para cliente
-- [ ] Push de reserva confirmada
-- [ ] Configurações de preferências de notificação
+### SPRINT 31 - FICHA TÉCNICA INTEGRADA (P1)
+
+**Objetivo**: Integrar ficha técnica à gestão de produtos para controle preciso de CMV
+
+**Prioridade**: P1 (Controle de custos)
+**Estimativa**: 1-2 dias
+**Dependências**: Sprint 26-27 (backend de insumos já implementado)
+
+#### Tarefas:
+1. [ ] **Modal de Ficha Técnica no Produto**
+   - Abrir via botão "Ficha Técnica" no card do produto
+   - Listar insumos vinculados com quantidades
+   - Permitir adicionar/remover/editar insumos
+   - Arquivo: `frontend/src/pages/admin/products.js`
+
+2. [ ] **Cálculo de Custo Automático**
+   - Somar custo de todos insumos da ficha
+   - Exibir custo unitário e margem de lucro
+   - Arquivo: `backend/src/services/ingredient.service.js`
+
+3. [ ] **Indicador Visual de Disponibilidade**
+   - Badge vermelho se algum insumo está sem estoque
+   - Badge amarelo se algum insumo está baixo
+   - Arquivo: `frontend/src/components/ProductCard.js`
+
+4. [ ] **Validação na Criação de Pedido**
+   - Verificar disponibilidade de insumos antes de aceitar pedido
+   - Alertar cliente se produto indisponível
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── services/ingredient.service.js (novo método: getProductCost)
+├── controllers/ingredientController.js (já existe)
+└── routes/ingredients.js (já existe)
+
+Frontend:
+├── pages/admin/products.js (adicionar modal)
+├── components/RecipeModal.js (NOVO)
+└── stores/ingredientStore.js (já existe)
+```
+
+#### Critérios de Aceitação:
+- [ ] Admin pode vincular insumos a qualquer produto
+- [ ] Custo do produto é calculado automaticamente
+- [ ] Produtos sem insumos suficientes aparecem como "indisponível"
+
+---
+
+### SPRINT 32 - RELATÓRIOS CMV E GRÁFICOS (P2)
+
+**Objetivo**: Dashboard visual de CMV, margem e análise de vendas
+
+**Prioridade**: P2 (Gestão financeira)
+**Estimativa**: 2-3 dias
+**Dependências**: Sprint 31 (custos de produtos)
+
+#### Tarefas:
+1. [ ] **Instalar Biblioteca de Gráficos**
+   - Adicionar Recharts ou Chart.js ao frontend
+   - Arquivo: `frontend/package.json`
+
+2. [ ] **Dashboard CMV**
+   - Gráfico de barras: CMV por categoria
+   - Gráfico de linha: CMV ao longo do tempo
+   - Tabela: Top 10 produtos por custo
+   - Arquivo: `frontend/src/pages/admin/reports.js`
+
+3. [ ] **Relatório de Margem**
+   - Calcular margem = (preço - custo) / preço
+   - Destacar produtos com margem baixa (<30%)
+   - Sugestões de reajuste de preço
+   - Arquivo: `backend/src/controllers/report.controller.js`
+
+4. [ ] **Exportação para Excel/PDF**
+   - Botão "Exportar" em cada relatório
+   - Usar xlsx e jspdf
+   - Arquivo: `frontend/src/utils/export.js` (NOVO)
+
+5. [ ] **Análise ABC de Produtos**
+   - Classificar produtos: A (80% receita), B (15%), C (5%)
+   - Visualização em gráfico de Pareto
+   - Arquivo: `backend/src/services/report.service.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── controllers/report.controller.js (novos endpoints)
+├── services/report.service.js (novas análises)
+└── routes/report.routes.js (novas rotas)
+
+Frontend:
+├── pages/admin/reports.js (refatorar)
+├── components/charts/CMVChart.js (NOVO)
+├── components/charts/MarginChart.js (NOVO)
+├── components/charts/ABCChart.js (NOVO)
+└── utils/export.js (NOVO)
+```
+
+#### Critérios de Aceitação:
+- [ ] Dashboard mostra CMV mensal com gráfico
+- [ ] Margem de cada produto visível
+- [ ] Exportação funciona para Excel e PDF
+
+---
+
+### SPRINT 33 - ALERTAS PUSH AUTOMÁTICOS (P1)
+
+**Objetivo**: Push notifications automáticas para eventos críticos
+
+**Prioridade**: P1 (Operação em tempo real)
+**Estimativa**: 1-2 dias
+**Dependências**: Sprint 28 (push service ativo)
+
+#### Tarefas:
+1. [ ] **Push de Estoque Baixo**
+   - Enviar para gerente/admin quando produto atinge minStock
+   - Agendar job diário às 8h
+   - Arquivo: `backend/src/jobs/stockAlert.job.js`
+
+2. [ ] **Push de Pedido Pronto**
+   - Enviar para cliente quando status = 'ready'
+   - Incluir número do pedido e mesa
+   - Arquivo: `backend/src/services/push.service.js`
+
+3. [ ] **Push de Reserva Confirmada**
+   - Enviar para cliente quando admin confirma
+   - Incluir data, hora e código
+   - Arquivo: `backend/src/controllers/reservationController.js`
+
+4. [ ] **Push de Pedido Entregue + Avaliar**
+   - Enviar quando status = 'delivered'
+   - Link para avaliação com bônus R$2
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+5. [ ] **Configuração de Preferências**
+   - Tela para usuário ativar/desativar tipos de push
+   - Salvar em User.pushPreferences (JSON)
+   - Arquivo: `frontend/src/pages/perfil.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── services/push.service.js (adicionar métodos)
+├── jobs/stockAlert.job.js (NOVO)
+├── models/User.js (campo pushPreferences)
+└── controllers (adicionar chamadas push)
+
+Frontend:
+├── pages/perfil.js (seção de notificações)
+└── hooks/usePWA.js (já configurado)
+```
+
+#### Critérios de Aceitação:
+- [ ] Gerente recebe push de estoque baixo
+- [ ] Cliente recebe push quando pedido fica pronto
+- [ ] Usuário pode desativar notificações específicas
+
+---
+
+### SPRINT 34 - CADASTRO DE FORNECEDORES (P2)
+
+**Objetivo**: Gerenciar fornecedores de insumos
+
+**Prioridade**: P2 (Gestão de compras)
+**Estimativa**: 1-2 dias
+**Dependências**: Sprint 26 (model Ingredient)
+
+#### Tarefas:
+1. [ ] **Model Supplier**
+   - Campos: name, cnpj, email, phone, address, notes
+   - Relação: Supplier hasMany Ingredients
+   - Arquivo: `backend/src/models/Supplier.js` (NOVO)
+
+2. [ ] **CRUD de Fornecedores**
+   - Listar, criar, editar, desativar
+   - Arquivo: `backend/src/controllers/supplier.controller.js` (NOVO)
+
+3. [ ] **Página Admin de Fornecedores**
+   - Listagem com busca
+   - Modal de criação/edição
+   - Arquivo: `frontend/src/pages/admin/fornecedores.js` (NOVO)
+
+4. [ ] **Vincular Insumo a Fornecedor**
+   - Dropdown de fornecedor no cadastro de insumo
+   - Histórico de compras por fornecedor
+   - Arquivo: `frontend/src/pages/admin/insumos.js`
+
+5. [ ] **Relatório de Compras por Fornecedor**
+   - Total comprado por período
+   - Arquivo: `backend/src/services/report.service.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── models/Supplier.js (NOVO)
+├── models/Ingredient.js (adicionar supplierId)
+├── controllers/supplier.controller.js (NOVO)
+├── routes/supplier.routes.js (NOVO)
+└── server.js (registrar rota)
+
+Frontend:
+├── pages/admin/fornecedores.js (NOVO)
+├── pages/admin/insumos.js (atualizar)
+└── stores/supplierStore.js (NOVO)
+```
+
+#### Critérios de Aceitação:
+- [ ] CRUD completo de fornecedores
+- [ ] Insumos vinculados a fornecedores
+- [ ] Relatório de compras por fornecedor
+
+---
+
+### SPRINT 35 - AUTOMAÇÕES CRM (P2)
+
+**Objetivo**: Automações de marketing e fidelização
+
+**Prioridade**: P2 (Marketing automatizado)
+**Estimativa**: 2 dias
+**Dependências**: Sprint 29 (bônus implementados)
+
+#### Tarefas:
+1. [ ] **Notificação de Upgrade de Tier**
+   - Quando cliente atinge novo tier, enviar SMS + Push
+   - Incluir novos benefícios
+   - Arquivo: `backend/src/models/User.js` (afterUpdate hook)
+
+2. [ ] **Campanha Automática de Inativos**
+   - Job semanal para clientes >30 dias sem pedido
+   - Enviar SMS com cupom de 10%
+   - Arquivo: `backend/src/jobs/inactiveCustomers.job.js` (NOVO)
+
+3. [ ] **Lembrete de Cashback Expirando**
+   - Notificar 7 dias antes da expiração
+   - SMS + Push
+   - Arquivo: `backend/src/jobs/cashbackExpiry.job.js`
+
+4. [ ] **Mensagem de Boas-Vindas Personalizada**
+   - Após primeiro pedido entregue
+   - Explicar sistema de cashback
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+5. [ ] **Dashboard de Automações**
+   - Listar automações ativas
+   - Histórico de envios
+   - Arquivo: `frontend/src/pages/admin/campanhas.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── jobs/inactiveCustomers.job.js (NOVO)
+├── jobs/cashbackExpiry.job.js (atualizar)
+├── models/User.js (hooks)
+└── services/sms.service.js (novos templates)
+
+Frontend:
+├── pages/admin/campanhas.js (atualizar)
+└── components/AutomationCard.js (NOVO)
+```
+
+#### Critérios de Aceitação:
+- [ ] Cliente recebe notificação ao subir de tier
+- [ ] Inativos recebem mensagem automática
+- [ ] Admin vê histórico de automações
+
+---
+
+### SPRINT 36 - JOB NO-SHOW E RESERVAS (P2)
+
+**Objetivo**: Automatizar marcação de no-show e melhorar reservas
+
+**Prioridade**: P2 (Operação de reservas)
+**Estimativa**: 1 dia
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Job de No-Show Automático**
+   - Executar a cada 15 min
+   - Marcar reservas não confirmadas como no_show
+   - Arquivo: `backend/src/jobs/noShow.job.js` (NOVO)
+
+2. [ ] **Penalização por No-Show**
+   - Bloquear reservas após 3 no-shows
+   - Flag `reservationBlocked` no User
+   - Arquivo: `backend/src/models/User.js`
+
+3. [ ] **Histórico de No-Shows**
+   - Visível no CRM do cliente
+   - Contador de no-shows
+   - Arquivo: `frontend/src/pages/admin/clientes.js`
+
+4. [ ] **Lembrete 2h Antes**
+   - WhatsApp automático
+   - Confirmar presença via link
+   - Arquivo: `backend/src/services/whatsapp.service.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── jobs/noShow.job.js (NOVO)
+├── models/User.js (campo noShowCount, reservationBlocked)
+├── services/reservationService.js (atualizar markNoShows)
+└── services/whatsapp.service.js (lembrete)
+
+Frontend:
+├── pages/admin/clientes.js (mostrar no-shows)
+└── pages/admin/reservas.js (indicador visual)
+```
+
+---
+
+### SPRINT 37 - MELHORIAS DASHBOARD ADMIN (P2)
+
+**Objetivo**: Dashboard mais completo e informativo
+
+**Prioridade**: P2 (UX Admin)
+**Estimativa**: 2 dias
+**Dependências**: Sprints anteriores
+
+#### Tarefas:
+1. [ ] **Widgets Configuráveis**
+   - Arrastar e soltar widgets
+   - Salvar layout em localStorage
+   - Arquivo: `frontend/src/pages/admin/index.js`
+
+2. [ ] **Métricas em Tempo Real**
+   - Faturamento do dia (atualiza via Socket)
+   - Pedidos ativos
+   - Mesas ocupadas
+   - Arquivo: `frontend/src/components/DashboardWidget.js`
+
+3. [ ] **Comparativo com Período Anterior**
+   - % crescimento vs ontem/semana passada
+   - Gráfico de tendência
+   - Arquivo: `backend/src/controllers/adminController.js`
+
+4. [ ] **Alertas no Dashboard**
+   - Pedidos atrasados (>20min)
+   - Estoque crítico
+   - Reservas do dia
+   - Arquivo: `frontend/src/components/AlertsWidget.js` (NOVO)
+
+---
+
+### SPRINT 38 - QR CODE DINÂMICO E HAPPY HOUR (P2)
+
+**Objetivo**: QR codes por mesa e configuração de happy hour
+
+**Prioridade**: P2 (Marketing/Operação)
+**Estimativa**: 1-2 dias
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Geração de QR Code por Mesa**
+   - Gerar automaticamente ao criar mesa
+   - Download em PNG/SVG
+   - Arquivo: `backend/src/controllers/tableController.js`
+
+2. [ ] **Configuração de Happy Hour**
+   - Definir horários e % desconto
+   - Categorias participantes
+   - Arquivo: `backend/src/models/Settings.js`
+
+3. [ ] **Aplicação Automática de Desconto**
+   - Verificar horário no checkout
+   - Aplicar desconto aos produtos elegíveis
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+4. [ ] **Banner de Happy Hour**
+   - Exibir no cardápio durante o período
+   - Countdown para fim
+   - Arquivo: `frontend/src/pages/cardapio.js`
+
+---
+
+### SPRINT 39 - VENDA MANUAL NO CAIXA (P2)
+
+**Objetivo**: Permitir registro de vendas sem pedido no app
+
+**Prioridade**: P2 (Operação)
+**Estimativa**: 1 dia
+**Dependências**: Sprint caixa já implementado
+
+#### Tarefas:
+1. [ ] **Modal de Venda Rápida**
+   - Selecionar produtos do cardápio
+   - Informar forma de pagamento
+   - Arquivo: `frontend/src/pages/staff/caixa.js`
+
+2. [ ] **Criar Pedido Manual**
+   - Endpoint para pedido sem usuário
+   - Flag `isManualSale = true`
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+3. [ ] **Relatório de Vendas Manuais**
+   - Separar vendas app vs manuais
+   - Arquivo: `backend/src/services/report.service.js`
+
+---
+
+### SPRINT 40 - TESTES E2E E DOCUMENTAÇÃO (P1)
+
+**Objetivo**: Garantir qualidade e documentar sistema
+
+**Prioridade**: P1 (Qualidade)
+**Estimativa**: 2-3 dias
+**Dependências**: Todas as sprints anteriores
+
+#### Tarefas:
+1. [ ] **Testes E2E Completos**
+   - Fluxo cliente: login → pedido → avaliação
+   - Fluxo staff: cozinha → bar → atendente
+   - Fluxo admin: produtos → estoque → relatórios
+   - Arquivo: `frontend/cypress/e2e/`
+
+2. [ ] **Atualizar PRD Final**
+   - Marcar todas features como ✅
+   - Remover seções de "não implementado"
+   - Arquivo: `docs/03_PRD.md`
+
+3. [ ] **Atualizar User Flows**
+   - Adicionar fluxos das novas features
+   - Diagramas atualizados
+   - Arquivo: `docs/04_USER_FLOWS.md`
+
+4. [ ] **README de Deploy**
+   - Instruções completas de setup
+   - Variáveis de ambiente
+   - Arquivo: `docs/DEPLOY.md` (NOVO)
+
+---
+
+## 📊 RESUMO DO ROADMAP
+
+| Sprint | Nome | Prioridade | Estimativa | Status |
+|--------|------|------------|------------|--------|
+| 31 | Ficha Técnica Integrada | P1 | 1-2 dias | Pendente |
+| 32 | Relatórios CMV e Gráficos | P2 | 2-3 dias | Pendente |
+| 33 | Alertas Push Automáticos | P1 | 1-2 dias | Pendente |
+| 34 | Cadastro de Fornecedores | P2 | 1-2 dias | Pendente |
+| 35 | Automações CRM | P2 | 2 dias | Pendente |
+| 36 | Job No-Show e Reservas | P2 | 1 dia | Pendente |
+| 37 | Melhorias Dashboard Admin | P2 | 2 dias | Pendente |
+| 38 | QR Code e Happy Hour | P2 | 1-2 dias | Pendente |
+| 39 | Venda Manual no Caixa | P2 | 1 dia | Pendente |
+| 40 | Testes E2E e Documentação | P1 | 2-3 dias | Pendente |
+
+**Total estimado**: 15-22 dias de desenvolvimento
+
+---
+
+## 🎯 ORDEM DE EXECUÇÃO SUGERIDA
+
+**Fase 1 - Essenciais (Sprints 31, 33)**
+- Ficha técnica + Alertas push
+- Completa gestão de estoque e operação em tempo real
+
+**Fase 2 - Análise (Sprints 32, 37)**
+- Relatórios + Dashboard
+- Visão gerencial completa
+
+**Fase 3 - Automação (Sprints 35, 36)**
+- CRM + No-show
+- Marketing automatizado
+
+**Fase 4 - Extras (Sprints 34, 38, 39)**
+- Fornecedores + QR + Venda manual
+- Funcionalidades complementares
+
+**Fase 5 - Qualidade (Sprint 40)**
+- Testes + Documentação
+- Preparação para produção
 
 ---
 

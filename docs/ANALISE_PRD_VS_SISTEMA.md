@@ -1,8 +1,11 @@
 # FLAME - ANÁLISE COMPARATIVA PRD vs SISTEMA REAL
 
 **Data da Análise**: 07/12/2024
-**Versão**: 1.0
+**Versão**: 2.0 (Atualizada após Sprints 23-30)
 **Objetivo**: Mapear divergências entre documentação (PRD/User Flows) e implementação real
+
+> **NOTA**: Este documento foi atualizado após conclusão das Sprints 23-30.
+> Muitas divergências críticas foram resolvidas. Veja seção 6 para status atualizado.
 
 ---
 
@@ -416,32 +419,46 @@ Frontend:
 
 ---
 
-## 6. DIVERGÊNCIAS CRÍTICAS (RESUMO)
+## 6. DIVERGÊNCIAS CRÍTICAS (RESUMO) - ATUALIZADO
 
-### Prioridade P0 (Bloqueadores)
+> **Status após Sprints 23-30**: Maioria das divergências P0 e P1 foram resolvidas!
 
-| # | Problema | PRD | Sistema | Impacto |
-|---|----------|-----|---------|---------|
-| 1 | **Fluxo de Pedidos** | Transições controladas por role | Qualquer um muda qualquer status | Operação incorreta |
-| 2 | **Narguilé no lugar errado** | Atendente controla | Bar controla | Fluxo operacional errado |
-| 3 | **Uso de Cashback** | Usar até 50% no checkout | NÃO implementado | Feature crítica faltando |
+### Prioridade P0 (Bloqueadores) - ✅ RESOLVIDOS
 
-### Prioridade P1 (Importantes)
+| # | Problema | PRD | Sistema | Status |
+|---|----------|-----|---------|--------|
+| 1 | **Fluxo de Pedidos** | Transições controladas por role | ✅ Sprint 23 - Status machine implementada | ✅ RESOLVIDO |
+| 2 | **Narguilé no lugar errado** | Atendente controla | ✅ Sprint 23 - Migrado para atendente | ✅ RESOLVIDO |
+| 3 | **Uso de Cashback** | Usar até 50% no checkout | ✅ Sprint 24 - Implementado com slider | ✅ RESOLVIDO |
 
-| # | Problema | PRD | Sistema | Impacto |
-|---|----------|-----|---------|---------|
-| 4 | **Notificação do Atendente** | Recebe TODOS pedidos novos | Não recebe notificação | Atendente não sabe o que vem |
-| 5 | **Google OAuth** | Implementado | Faltam credenciais | Cadastro incompleto |
-| 6 | **Bônus automáticos** | Cadastro, aniversário, etc | Manual via Admin | Fidelização limitada |
-| 7 | **Push Notifications** | Alertas em tempo real | Service existe mas não ativo | UX degradada |
+### Prioridade P1 (Importantes) - ✅ MAIORIA RESOLVIDA
 
-### Prioridade P2 (Melhorias)
+| # | Problema | PRD | Sistema | Status |
+|---|----------|-----|---------|--------|
+| 4 | **Notificação do Atendente** | Recebe TODOS pedidos novos | ✅ Sprint 23 - Socket.IO configurado | ✅ RESOLVIDO |
+| 5 | **Google OAuth** | Implementado | ⚠️ Código pronto, credenciais pendentes | ⚠️ PENDENTE |
+| 6 | **Bônus automáticos** | Cadastro, aniversário, etc | ✅ Sprint 25/29 - Jobs implementados | ✅ RESOLVIDO |
+| 7 | **Push Notifications** | Alertas em tempo real | ✅ Sprint 28 - Service Worker ativo | ✅ RESOLVIDO |
 
-| # | Problema | PRD | Sistema | Impacto |
-|---|----------|-----|---------|---------|
-| 8 | **No-show automático** | Marca após 15min | Método existe, job não agendado | Manual |
-| 9 | **Ficha Técnica** | Insumos por produto | Não implementado | CMV impreciso |
-| 10 | **Job de expiração cashback** | 90 dias | Configurado, precisa validar | Saldos podem não expirar |
+### Prioridade P2 (Melhorias) - PARCIALMENTE RESOLVIDOS
+
+| # | Problema | PRD | Sistema | Status |
+|---|----------|-----|---------|--------|
+| 8 | **No-show automático** | Marca após 15min | ⏳ Sprint 36 planejada | ⏳ PENDENTE |
+| 9 | **Ficha Técnica** | Insumos por produto | ✅ Sprint 26-27 - Backend completo, ⏳ Sprint 31 - UI | ✅ PARCIAL |
+| 10 | **Job de expiração cashback** | 90 dias | ✅ Job configurado e rodando | ✅ RESOLVIDO |
+
+### Novas Features Implementadas (Sprints 23-30)
+
+| Sprint | Feature | Status |
+|--------|---------|--------|
+| 23 | Status Machine + Notificações + QR Code | ✅ |
+| 24 | Cashback no Checkout | ✅ |
+| 25 | Bônus Automáticos (Cadastro + Aniversário) | ✅ |
+| 26-27 | Ficha Técnica/Insumos (Backend + Frontend) | ✅ |
+| 28 | Push Notifications Ativo | ✅ |
+| 29 | Sistema de Indicação + Bônus Avaliação | ✅ |
+| 30 | Upload de Imagens + Gestão de Estoque | ✅ |
 
 ---
 
