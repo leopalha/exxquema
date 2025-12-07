@@ -193,7 +193,7 @@ export default function Register() {
         <meta name="description" content="Crie sua conta no FLAME Lounge Bar" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-900 to-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-[var(--theme-primary)] rounded-full blur-3xl" />
@@ -208,7 +208,7 @@ export default function Register() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center space-x-3 text-white hover:text-magenta-400 transition-colors">
+            <Link href="/" className="inline-flex items-center space-x-3 text-white hover:text-red-400 transition-colors">
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </Link>
@@ -217,26 +217,26 @@ export default function Register() {
               <div className="mx-auto mb-6 flex items-center justify-center">
                 <FlameLogo size={120} supreme={true} />
               </div>
-              <p className="text-neutral-400 mt-2 text-lg">Crie sua conta</p>
+              <p className="text-gray-400 mt-2 text-lg">Crie sua conta</p>
             </div>
           </div>
 
           {/* Registration Form */}
           <motion.div
             variants={formVariants}
-            className="bg-neutral-900 rounded-2xl p-8 border border-neutral-800 shadow-2xl"
+            className="bg-gray-900 rounded-2xl p-8 border border-gray-800 shadow-2xl"
           >
             {!isCodeStep ? (
               <>
                 <form onSubmit={(e) => { e.preventDefault(); registerForm.handleSubmit(handleRegister); }}>
                   {/* Nome */}
                   <div className="mb-4">
-                    <label htmlFor="nome" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="nome" className="block text-sm font-medium text-gray-300 mb-2">
                       Nome Completo
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-neutral-400" />
+                        <User className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="nome"
@@ -245,26 +245,26 @@ export default function Register() {
                         onChange={(e) => registerForm.setValue('nome', e.target.value)}
                         onBlur={() => registerForm.setFieldTouched('nome')}
                         placeholder="Seu nome completo"
-                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                           registerForm.isFieldInvalid('nome')
-                            ? 'border-magenta-500 focus:ring-magenta-500'
-                            : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-600 focus:ring-0'
                         }`}
                       />
                     </div>
                     {registerForm.isFieldInvalid('nome') && (
-                      <p className="mt-2 text-sm text-magenta-400">{registerForm.errors.nome}</p>
+                      <p className="mt-2 text-sm text-red-400">{registerForm.errors.nome}</p>
                     )}
                   </div>
 
                   {/* Email */}
                   <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                       Email
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Mail className="h-5 w-5 text-neutral-400" />
+                        <Mail className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         id="email"
@@ -273,15 +273,15 @@ export default function Register() {
                         onChange={(e) => registerForm.setValue('email', e.target.value)}
                         onBlur={() => registerForm.setFieldTouched('email')}
                         placeholder="seu@email.com"
-                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                           registerForm.isFieldInvalid('email')
-                            ? 'border-magenta-500 focus:ring-magenta-500'
-                            : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-600 focus:ring-0'
                         }`}
                       />
                     </div>
                     {registerForm.isFieldInvalid('email') && (
-                      <p className="mt-2 text-sm text-magenta-400">{registerForm.errors.email}</p>
+                      <p className="mt-2 text-sm text-red-400">{registerForm.errors.email}</p>
                     )}
                   </div>
 
@@ -298,7 +298,7 @@ export default function Register() {
 
                   {/* Senha */}
                   <div className="mb-4">
-                    <label htmlFor="password" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                       Senha
                     </label>
                     <div className="relative">
@@ -309,28 +309,28 @@ export default function Register() {
                         onChange={(e) => registerForm.setValue('password', e.target.value)}
                         onBlur={() => registerForm.setFieldTouched('password')}
                         placeholder="Mínimo 6 caracteres"
-                        className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                        className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                           registerForm.isFieldInvalid('password')
-                            ? 'border-magenta-500 focus:ring-magenta-500'
-                            : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-600 focus:ring-0'
                         }`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-white"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                     {registerForm.isFieldInvalid('password') && (
-                      <p className="mt-2 text-sm text-magenta-400">{registerForm.errors.password}</p>
+                      <p className="mt-2 text-sm text-red-400">{registerForm.errors.password}</p>
                     )}
                   </div>
 
                   {/* Confirmar Senha */}
                   <div className="mb-6">
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                       Confirmar Senha
                     </label>
                     <div className="relative">
@@ -341,22 +341,22 @@ export default function Register() {
                         onChange={(e) => registerForm.setValue('confirmPassword', e.target.value)}
                         onBlur={() => registerForm.setFieldTouched('confirmPassword')}
                         placeholder="Digite a senha novamente"
-                        className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                        className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                           registerForm.isFieldInvalid('confirmPassword')
-                            ? 'border-magenta-500 focus:ring-magenta-500'
-                            : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-600 focus:ring-0'
                         }`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-white"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white"
                       >
                         {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                     {registerForm.isFieldInvalid('confirmPassword') && (
-                      <p className="mt-2 text-sm text-magenta-400">{registerForm.errors.confirmPassword}</p>
+                      <p className="mt-2 text-sm text-red-400">{registerForm.errors.confirmPassword}</p>
                     )}
                   </div>
 
@@ -373,34 +373,34 @@ export default function Register() {
                         />
                         <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
                           registerForm.values.acceptTerms
-                            ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] border-magenta-500'
-                            : 'border-neutral-600 bg-neutral-800'
+                            ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] border-[var(--theme-primary)]'
+                            : 'border-gray-600 bg-gray-800'
                         }`}>
                           {registerForm.values.acceptTerms && (
                             <Check className="w-3 h-3 text-white" />
                           )}
                         </div>
                       </div>
-                      <div className="text-sm text-neutral-400">
+                      <div className="text-sm text-gray-400">
                         Eu concordo com os{' '}
-                        <Link href="/termos" className="text-magenta-400 hover:text-cyan-400">
+                        <Link href="/termos" className="text-red-400 hover:text-white">
                           Termos de Uso
                         </Link>{' '}
                         e{' '}
-                        <Link href="/privacidade" className="text-magenta-400 hover:text-cyan-400">
+                        <Link href="/privacidade" className="text-red-400 hover:text-white">
                           Política de Privacidade
                         </Link>
                       </div>
                     </label>
                     {registerForm.isFieldInvalid('acceptTerms') && (
-                      <p className="mt-2 text-sm text-magenta-400">{registerForm.errors.acceptTerms}</p>
+                      <p className="mt-2 text-sm text-red-400">{registerForm.errors.acceptTerms}</p>
                     )}
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:from-magenta-600 hover:to-cyan-600 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                    className="w-full bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
                   >
                     {isLoading ? <LoadingSpinner size="small" color="white" /> : 'Criar Conta'}
                   </button>
@@ -408,9 +408,9 @@ export default function Register() {
 
                 {/* Divider */}
                 <div className="mt-8 mb-8 flex items-center">
-                  <div className="flex-1 border-t border-neutral-700"></div>
-                  <span className="px-4 text-neutral-500 text-sm">ou</span>
-                  <div className="flex-1 border-t border-neutral-700"></div>
+                  <div className="flex-1 border-t border-gray-700"></div>
+                  <span className="px-4 text-gray-500 text-sm">ou</span>
+                  <div className="flex-1 border-t border-gray-700"></div>
                 </div>
 
                 {/* Google Login Button */}
@@ -427,7 +427,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-8 text-center">
-                  <Link href="/login" className="text-magenta-400 hover:text-cyan-400 font-medium">
+                  <Link href="/login" className="text-red-400 hover:text-white font-medium">
                     Já tem uma conta? Entre aqui
                   </Link>
                 </div>
@@ -440,7 +440,7 @@ export default function Register() {
                     <Phone className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-2xl font-bold text-white mb-2">Código Enviado!</h2>
-                  <p className="text-neutral-400 mb-2">
+                  <p className="text-gray-400 mb-2">
                     Para finalizar seu cadastro, digite o código de 6 dígitos enviado para
                   </p>
                   <p className="text-white font-medium">{formatDisplayPhone(registeredUser?.celular || '')}</p>
@@ -448,7 +448,7 @@ export default function Register() {
 
                 <form onSubmit={(e) => { e.preventDefault(); codeForm.handleSubmit(handleCodeVerification); }}>
                   <div className="mb-6">
-                    <label htmlFor="codigo" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="codigo" className="block text-sm font-medium text-gray-300 mb-2">
                       Código de Verificação
                     </label>
                     <input
@@ -459,14 +459,14 @@ export default function Register() {
                       onBlur={() => codeForm.setFieldTouched('codigo')}
                       placeholder="000000"
                       maxLength={6}
-                      className={`block w-full px-3 py-3 border rounded-lg bg-neutral-800 text-white text-center text-2xl font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                      className={`block w-full px-3 py-3 border rounded-lg bg-gray-800 text-white text-center text-2xl font-mono tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                         codeForm.isFieldInvalid('codigo')
-                          ? 'border-magenta-500 focus:ring-magenta-500'
-                          : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-gray-600 focus:ring-0'
                       }`}
                     />
                     {codeForm.isFieldInvalid('codigo') && (
-                      <p className="mt-2 text-sm text-magenta-400 text-center">{codeForm.errors.codigo}</p>
+                      <p className="mt-2 text-sm text-red-400 text-center">{codeForm.errors.codigo}</p>
                     )}
                   </div>
 
@@ -474,7 +474,7 @@ export default function Register() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:from-magenta-600 hover:to-cyan-600 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
+                      className="w-full bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center"
                     >
                       {isLoading ? <LoadingSpinner size="small" color="white" /> : 'Finalizar Cadastro'}
                     </button>
@@ -482,7 +482,7 @@ export default function Register() {
                     <button
                       type="button"
                       onClick={goBackToRegister}
-                      className="w-full bg-transparent border border-neutral-600 hover:border-neutral-500 text-neutral-300 hover:text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                      className="w-full bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-medium py-3 px-6 rounded-lg transition-colors"
                     >
                       Voltar
                     </button>
@@ -494,7 +494,7 @@ export default function Register() {
                     type="button"
                     onClick={resendCode}
                     disabled={isLoading}
-                    className="text-neutral-400 hover:text-white text-sm disabled:opacity-50"
+                    className="text-gray-400 hover:text-white text-sm disabled:opacity-50"
                   >
                     Não recebeu o código? Reenviar
                   </button>
@@ -504,7 +504,7 @@ export default function Register() {
           </motion.div>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-neutral-500 text-sm">
+          <div className="mt-8 text-center text-gray-500 text-sm">
             <p>FLAME Lounge Bar - Botafogo, RJ</p>
           </div>
         </motion.div>

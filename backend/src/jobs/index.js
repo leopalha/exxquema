@@ -11,6 +11,8 @@ const reservationReminderJob = require('./reservationReminder.job');
 const noShowJob = require('./noShow.job');
 const cashbackExpiryJob = require('./cashbackExpiry.job');
 const dailyReportJob = require('./dailyReport.job');
+const welcomeBonusJob = require('./welcomeBonus.job');
+const birthdayBonusJob = require('./birthdayBonus.job');
 
 // Lista de todos os jobs
 const jobs = [
@@ -18,7 +20,9 @@ const jobs = [
   reservationReminderJob,
   noShowJob,
   cashbackExpiryJob,
-  dailyReportJob
+  dailyReportJob,
+  welcomeBonusJob,
+  birthdayBonusJob
 ];
 
 // Armazenar referências dos jobs ativos
@@ -182,7 +186,9 @@ function getJobDescription(jobName) {
     reservationReminder: 'Envia lembretes 2h antes da reserva (a cada 30min)',
     noShow: 'Marca reservas como no-show após 15min (a cada 15min)',
     cashbackExpiry: 'Expira cashback após 90 dias de inatividade (diário 00h)',
-    dailyReport: 'Gera relatório do dia anterior (diário 06h)'
+    dailyReport: 'Gera relatório do dia anterior (diário 06h)',
+    welcomeBonus: 'Bônus R$10 para novos cadastros completos (a cada hora)',
+    birthdayBonus: 'Bônus de aniversário baseado no tier (diário 08h)'
   };
   return descriptions[jobName] || 'Sem descrição';
 }

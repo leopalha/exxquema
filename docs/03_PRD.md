@@ -2,10 +2,28 @@
 
 ## VISÃO GERAL
 
-**Produto:** FLAME - Plataforma Digital Integrada  
-**Versão:** 3.0.0  
-**Tipo:** PWA (Progressive Web App) Full-Stack  
+**Produto:** FLAME - Plataforma Digital Integrada
+**Versão:** 3.3.0
+**Última Atualização:** 07/12/2024
+**Auditoria Completa:** Todos os módulos mapeados
+**Tipo:** PWA (Progressive Web App) Full-Stack
 **Objetivo:** Ecossistema completo que conecta clientes, funcionários e gestão em tempo real
+
+### URLs de Produção
+- **Frontend:** https://flame-lounge.vercel.app
+- **Backend API:** https://backend-production-28c3.up.railway.app/api
+
+### Estatísticas do Sistema
+| Categoria | Quantidade |
+|-----------|------------|
+| Models (Backend) | 15 |
+| Controllers | 15 |
+| Rotas/Endpoints | ~100+ |
+| Services | 14 |
+| Páginas (Frontend) | 48 |
+| Componentes | 45 |
+| Stores (Zustand) | 16 |
+| Hooks Customizados | 20+ |
 
 ---
 
@@ -48,28 +66,28 @@
 
 #### Funcionalidades
 
-| Feature | Descrição | Prioridade |
-|---------|-----------|------------|
-| Cadastro | Registro com telefone + SMS, email/senha ou Google OAuth | P0 |
-| Login | SMS OTP, email/senha ou Google OAuth | P0 |
-| Cardápio Digital | Browse, busca, filtros | P0 |
-| Carrinho | Adicionar, remover, editar | P0 |
-| Mesa via QR | Scan QR = mesa auto | P0 |
-| Pedido Mesa | Pedir estando na mesa | P0 |
-| Pedido Balcão | Retirada no balcão | P0 |
-| Reserva Mesa | Agendar mesa antecipada | P1 |
-| Narguilé | Solicitar, escolher sabor | P1 |
-| Pagamento | Cartão, PIX, Dinheiro | P0 |
-| Acompanhamento | Status em tempo real | P0 |
-| Histórico | Pedidos anteriores | P1 |
-| Avaliação | Avaliar pedido | P2 |
-| Cashback | Ver saldo, usar desconto | P1 |
-| Perfil | Dados, preferências | P1 |
+| Feature | Descrição | Prioridade | Status | Componentes |
+|---------|-----------|------------|--------|-------------|
+| Cadastro | Registro com telefone + SMS, email/senha ou Google OAuth | P0 | ✅ | `authController`, `authStore`, `/register` |
+| Login | SMS OTP, email/senha ou Google OAuth | P0 | ✅ | `authController`, `authStore`, `/login` |
+| Cardápio Digital | Browse, busca, filtros | P0 | ✅ | `productController`, `productStore`, `/cardapio` |
+| Carrinho | Adicionar, remover, editar | P0 | ✅ | `cartStore`, `CartItem.js`, `/checkout` |
+| Mesa via QR | Scan QR → acesso rápido ao site (mesa sugerida) | P0 | ✅ | `/qr/[mesaId]`, `tableController` |
+| Pedido Mesa | Pedir estando na mesa | P0 | ✅ | `orderController`, `orderStore` |
+| Pedido Balcão | Retirada no balcão | P0 | ✅ | `tableId = null` no pedido |
+| Reserva Mesa | Agendar mesa antecipada | P1 | ✅ | `reservationController`, `reservationStore`, `/reservas` |
+| Narguilé | Solicitar, escolher sabor | P1 | ✅ | `hookahController`, `hookahStore` |
+| Pagamento | Cartão, PIX, Dinheiro | P0 | ✅ | `payment.controller`, `payment.service` (Stripe) |
+| Acompanhamento | Status em tempo real | P0 | ✅ | `socket.service`, `socket.js`, `/pedido/[id]` |
+| Histórico | Pedidos anteriores | P1 | ✅ | `orderController.getUserOrders()`, `/pedidos` |
+| Avaliação | Avaliar pedido | P2 | ✅ | `orderController.rateOrder()`, `/avaliacao/[id]` |
+| Cashback | Ver saldo, ~~usar desconto~~ | P1 | ⚠️ | `cashbackStore`, `/cashback` - **USO NÃO IMPLEMENTADO** |
+| Perfil | Dados, preferências | P1 | ✅ | `authStore.updateProfile()`, `/perfil` |
 
 #### Fluxo Principal (Mesa)
 
 ```
-QR Code Mesa → Site abre → Mesa detectada auto
+QR Code Mesa → Site abre (/qr/{numeroMesa}) → Mesa sugerida (opcional)
     ↓
 Usuário logado? 
     → Sim: Vai para cardápio
@@ -77,7 +95,7 @@ Usuário logado?
     ↓
 Cardápio → Adiciona itens → Carrinho
     ↓
-Checkout → Confirma mesa → Pagamento
+Checkout → Seleciona/Confirma mesa → Pagamento
     ↓
 Pedido criado → Tracking em tempo real
     ↓
@@ -100,133 +118,576 @@ Notificação "Pedido Pronto" → Retira no balcão
 
 ---
 
-### 2.1.1 AUTENTICAÇÃO E CADASTRO
+### 2.1.1 MODELO DE USUÁRIO (User.js)
 
-#### Métodos de Autenticação Suportados
+#### Campos Completos do Modelo
 
-O sistema oferece **3 métodos de autenticação** para máxima flexibilidade:
+O modelo User é a entidade central do sistema. Abaixo está o mapeamento **COMPLETO** de todos os campos:
 
-| Método | Descrição | Campos Obrigatórios | profileComplete | Uso Recomendado |
-|--------|-----------|---------------------|-----------------|-----------------|
-| **Cadastro Tradicional** | Email + Senha + Celular + SMS | nome, email, celular, senha | ✅ true após SMS | Clientes que preferem cadastro completo |
-| **Cadastro por Telefone** | Apenas Celular + SMS | celular | ❌ false | Cadastro rápido, completar depois |
-| **Google OAuth 2.0** | Login com conta Google | email, nome (do Google) | ✅ true automático | Experiência mais rápida e segura |
+| Campo | Tipo | Obrigatório | Default | Descrição |
+|-------|------|-------------|---------|-----------|
+| `id` | UUID | ✅ | auto | Identificador único |
+| `nome` | STRING(100) | ✅ | - | Nome completo (2-100 chars) |
+| `email` | STRING | ❌ | null | Email único (pode ser null para cadastro por celular) |
+| `celular` | STRING(20) | ✅ | - | Celular único formato +55XXXXXXXXXXX |
+| `cpf` | STRING(14) | ❌ | null | CPF formato 000.000.000-00 (opcional) |
+| `password` | STRING | ❌ | null | Hash bcrypt (pode ser null para SMS-only) |
+| `role` | ENUM | ✅ | 'cliente' | Papel: cliente, atendente, cozinha, bar, caixa, gerente, admin |
+| `isActive` | BOOLEAN | ✅ | true | Conta ativa |
+| `emailVerified` | BOOLEAN | ✅ | false | Email verificado |
+| `phoneVerified` | BOOLEAN | ✅ | false | Celular verificado via SMS |
+| `profileComplete` | BOOLEAN | ✅ | false | Perfil completo (nome + email) |
+| `smsCode` | STRING(6) | ❌ | null | Código OTP atual |
+| `smsAttempts` | INTEGER | ✅ | 0 | Tentativas de verificação |
+| `smsCodeExpiry` | DATE | ❌ | null | Expiração do código (5 min) |
+| `lastLogin` | DATE | ❌ | null | Última data de login |
+| `googleId` | STRING | ❌ | null | ID único Google OAuth |
+| `googleProfilePicture` | STRING | ❌ | null | URL foto perfil Google |
+| `authProvider` | ENUM | ✅ | 'local' | Provedor: 'local' ou 'google' |
+| `totalOrders` | INTEGER | ✅ | 0 | Total de pedidos (CRM) |
+| `totalSpent` | DECIMAL(10,2) | ✅ | 0 | Total gasto R$ (CRM) |
+| `lastVisit` | DATE | ❌ | null | Última visita (CRM) |
+| `lastOrderDate` | DATE | ❌ | null | Último pedido (CRM) |
+| `cashbackBalance` | DECIMAL(10,2) | ✅ | 0 | Saldo cashback R$ |
+| `loyaltyTier` | ENUM | ✅ | 'bronze' | Tier: bronze, silver, gold, platinum |
 
-#### Fluxo de Autenticação Completo
+#### Métodos do Modelo User
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  TELA DE LOGIN/CADASTRO                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Opção 1: [Entrar com Google] ────────┐                    │
-│                                        │                    │
-│  Opção 2: Cadastro Completo           │                    │
-│  ├─ Nome                               │                    │
-│  ├─ Email                              ├──► Backend        │
-│  ├─ Celular                            │    Valida         │
-│  └─ Senha                              │    Cria User      │
-│                                        │    Envia SMS      │
-│  Opção 3: Cadastro Rápido (só celular)│                    │
-│  └─ Celular ───────────────────────────┘                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-                       │
-                       ▼
-            ┌──────────────────┐
-            │  SMS Verificação │  (Exceto Google)
-            └──────────────────┘
-                       │
-                       ▼
-            ┌──────────────────┐
-            │ profileComplete? │
-            └──────────────────┘
-                       │
-            ┌──────────┴──────────┐
-            │                     │
-      ✅ true              ❌ false
- (Google / Tradicional)   (Phone-only)
-            │                     │
-            ▼                     ▼
-     ┌──────────┐        ┌────────────────┐
-     │   Home   │        │ Complete-Profile│
-     └──────────┘        └────────────────┘
-                                  │
-                         Nome + Email + Senha?
-                                  │
-                                  ▼
-                         profileComplete = true
-                                  │
-                                  ▼
-                            ┌──────────┐
-                            │   Home   │
-                            └──────────┘
-```
-
-#### Regras de Validação
-
-**Cadastro Tradicional:**
-- Nome: Mínimo 2 caracteres, máximo 100
-- Email: Formato válido
-- Celular: Formato internacional (+5521XXXXXXXXX)
-- Senha: Mínimo 6 caracteres
-- SMS: Código 6 dígitos, válido 5 minutos, máximo 3 tentativas
-
-**Cadastro por Telefone:**
-- Celular: Formato internacional obrigatório
-- Nome temporário: "Usuário XXXX" (últimos 4 dígitos)
-- Email: null (será preenchido no complete-profile)
-- profileComplete: false até completar dados
-
-**Google OAuth 2.0:**
-- Validação de token ID no backend
-- Email e nome extraídos do perfil Google
-- profileComplete: true automaticamente
-- Celular: opcional (pode adicionar depois)
-
-#### Sistema de profileComplete
-
-O campo `profileComplete` controla o acesso a funcionalidades críticas:
-
-| profileComplete | Pode fazer Pedidos | Pode fazer Reservas | Comportamento |
-|-----------------|-------------------|---------------------|---------------|
-| ✅ true | ✅ | ✅ | Acesso total |
-| ❌ false | ❌ | ❌ | Redireciona /complete-profile |
-
-**Middleware de Proteção:**
-- Endpoint `POST /api/orders` requer profileComplete = true
-- Endpoint `POST /api/reservations` requer profileComplete = true
-- Retorna 403 com redirect para `/complete-profile`
-
-#### Integração com Google OAuth
-
-**Backend:**
-- Biblioteca: `google-auth-library` (oficial)
-- Endpoint: `POST /api/auth/google`
-- Validação: Token ID verificado com API Google
-- Criação: Usuário criado automaticamente no primeiro login
-- Vinculação: Se email já existe, vincula googleId à conta
-
-**Frontend:**
-- SDK: Google Identity Services (CDN nativo)
-- Componente: `<GoogleLoginButton />`
-- Callback: Envia credential JWT para backend
-- Store: Método `googleLogin(credential)` no authStore
-
-**Campos no Modelo User:**
 ```javascript
-googleId: STRING (unique) // ID único do Google
-googleProfilePicture: STRING // URL da foto
-authProvider: ENUM ('local', 'google') // Provedor usado
+// Verificação de senha
+async checkPassword(password) → boolean
+
+// Serialização (remove dados sensíveis)
+toJSON() → { ...user sem password, smsCode, smsAttempts, smsCodeExpiry }
+
+// Verificações de role
+isAdmin() → boolean (role === 'admin')
+isEmployee() → boolean (role in ['admin', 'atendente', 'cozinha'])
+
+// Verificação de perfil completo
+hasCompleteProfile() → boolean
+  // Google: nome + email + googleId
+  // Local/Phone: nome + email + profileComplete
+
+// Sistema de Cashback
+calculateTier() → 'bronze' | 'silver' | 'gold' | 'platinum'
+  // bronze: R$ 0 - 999
+  // silver: R$ 1.000 - 4.999
+  // gold: R$ 5.000 - 9.999
+  // platinum: R$ 10.000+
+
+async updateTier() → newTier | null
+async addCashback(amount, orderId?, description?) → void
+async useCashback(maxAmount, description?) → amountUsed
+getTierBenefits() → { name, cashbackRate, perks[] }
+getNextTierInfo() → { currentTier, nextTier, remaining, progress }
 ```
+
+#### Hooks do Modelo
+
+```javascript
+beforeSave: async (user) => {
+  // 1. Hash password se alterada (bcrypt 12 rounds)
+  // 2. Normalizar email para lowercase + trim
+  // 3. Normalizar nome com trim
+}
+```
+
+---
+
+### 2.1.2 AUTENTICAÇÃO E CADASTRO
+
+#### Métodos de Autenticação Implementados
+
+| Método | Endpoint | Campos Entrada | profileComplete | Estado Final |
+|--------|----------|----------------|-----------------|--------------|
+| **Cadastro Completo** | `POST /auth/register` | nome, email, celular, password | ✅ true | phoneVerified: true após SMS |
+| **Cadastro por Celular** | `POST /auth/register-phone` | celular | ❌ false | nome: "Usuário XXXX" |
+| **Login SMS** | `POST /auth/login-sms` | celular | - | Cria usuário se não existe |
+| **Login Email/Senha** | `POST /auth/login` | email, password | - | lastLogin atualizado |
+| **Google OAuth** | `POST /auth/google` | credential (JWT) | ✅ true | authProvider: 'google' |
+| **Completar Perfil** | `POST /auth/complete-profile` | nome, email, cpf?, password? | ✅ true | profileComplete: true |
+
+#### Endpoints de Autenticação (17 rotas)
+
+```
+POST   /api/auth/register           → Cadastro completo (nome, email, celular, senha)
+POST   /api/auth/register-phone     → Cadastro só celular → perfil incompleto
+POST   /api/auth/verify-sms         → Verificar código SMS (6 dígitos)
+POST   /api/auth/resend-sms         → Reenviar código SMS
+POST   /api/auth/login-sms          → Login SMS → cria usuário se não existe!
+POST   /api/auth/login              → Login email/senha
+POST   /api/auth/google             → OAuth Google
+POST   /api/auth/complete-profile   → Completar perfil (nome, email, cpf?, senha?)
+PUT    /api/auth/profile            → Atualizar perfil (nome, email)
+POST   /api/auth/logout             → Logout
+POST   /api/auth/forgot-password    → Solicitar reset (envia SMS)
+POST   /api/auth/verify-reset-code  → Verificar código reset
+POST   /api/auth/reset-password     → Redefinir senha
+GET    /api/auth/me                 → Dados usuário logado
+DELETE /api/auth/delete-unverified/:email → Debug: deletar não verificado
+GET    /api/auth/debug-sms/:celular → Debug: ver código SMS
+```
+
+#### Fluxo de Cadastro Completo
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         /register                                    │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  [Nome Completo    ]  [Email           ]                    │    │
+│  │  [Celular +55      ]  [Senha           ] [Confirmar Senha ] │    │
+│  │  [ ] Aceito os termos de uso                                │    │
+│  │  [         Criar Conta          ]                           │    │
+│  │  ─────────────── ou ───────────────                         │    │
+│  │  [         Entrar com Google    ]                           │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/register
+                    { nome, email, celular, password }
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Backend:                                                            │
+│  1. Verifica duplicidade (email, celular, cpf)                      │
+│  2. Gera código SMS 6 dígitos                                       │
+│  3. Cria User com profileComplete: true, phoneVerified: false       │
+│  4. Envia SMS via Twilio                                            │
+│  5. Retorna { userId, celular, smsExpiry }                          │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Tela de Verificação SMS                          │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  Código enviado para +55 21 99999-9999                      │    │
+│  │  [  0  ] [  0  ] [  0  ] [  0  ] [  0  ] [  0  ]            │    │
+│  │  [         Verificar Código         ]                       │    │
+│  │  Não recebeu? [Reenviar]                                    │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/verify-sms
+                    { celular, code }
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Backend:                                                            │
+│  1. Verifica código (3 tentativas máx, 5 min expiração)             │
+│  2. Atualiza: phoneVerified: true, smsCode: null                    │
+│  3. Gera JWT token                                                  │
+│  4. Envia SMS de boas-vindas                                        │
+│  5. Retorna { user, token }                                         │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                       Redirect para Home
+                     (profileComplete: true)
+```
+
+#### Fluxo de Cadastro por Celular (Rápido)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         /login (aba SMS)                            │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  [Celular +55 21 99999-9999    ]                            │    │
+│  │  [         Enviar Código         ]                          │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/login-sms
+                    { celular }
+                                │
+                   ┌────────────┴────────────┐
+                   │                         │
+           Usuário EXISTE              Usuário NÃO EXISTE
+                   │                         │
+                   │                         ▼
+                   │             ┌────────────────────────────┐
+                   │             │ Cria User automaticamente: │
+                   │             │ - nome: "Usuário XXXX"     │
+                   │             │ - celular: +55...          │
+                   │             │ - profileComplete: false   │
+                   │             │ - phoneVerified: false     │
+                   │             └────────────────────────────┘
+                   │                         │
+                   └────────────┬────────────┘
+                                │
+                    Envia SMS com código
+                                │
+                                ▼
+                     POST /api/auth/verify-sms
+                                │
+                                ▼
+                   ┌────────────┴────────────┐
+                   │                         │
+           profileComplete: true    profileComplete: false
+                   │                         │
+                   ▼                         ▼
+                Home                /complete-profile
+```
+
+#### Fluxo de Google OAuth
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    /login ou /register                              │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  [  G  Entrar com Google    ]                               │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                    Google Identity Services
+                    (popup de autenticação)
+                                │
+                                ▼
+                    Callback com credential (JWT)
+                                │
+                     POST /api/auth/google
+                    { credential }
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Backend (googleService.verifyToken):                               │
+│  1. Valida JWT com Google API                                       │
+│  2. Extrai: googleId, email, name, picture                          │
+│  3. Busca User por googleId OU email                                │
+│     ├─ NÃO EXISTE: Cria User novo                                   │
+│     │   - googleId, email, nome, googleProfilePicture               │
+│     │   - authProvider: 'google'                                    │
+│     │   - profileComplete: true (Google já tem nome+email)          │
+│     │   - celular: null (não obrigatório)                           │
+│     │                                                               │
+│     └─ EXISTE sem googleId: Vincula conta                           │
+│         - Atualiza: googleId, googleProfilePicture, authProvider    │
+│                                                                      │
+│  4. Gera JWT token                                                  │
+│  5. Retorna { user, token, isNewUser, needsPhone }                  │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                       Redirect para Home
+                 (toast: "Bem-vindo, {nome}!")
+
+           ⚠️ Se needsPhone: true, sugere adicionar celular
+```
+
+#### Fluxo de Completar Perfil
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      /complete-profile                              │
+│  (Usuário já autenticado mas profileComplete: false)               │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  Complete seu Cadastro                                      │    │
+│  │  Para fazer pedidos, precisamos de mais informações         │    │
+│  │                                                             │    │
+│  │  Nome Completo *    [                        ]              │    │
+│  │  Email *            [                        ]              │    │
+│  │  CPF (opcional)     [000.000.000-00         ]              │    │
+│  │  Senha (opcional)   [                        ]              │    │
+│  │                                                             │    │
+│  │  Celular: +55 21 99999-9999 (já verificado)                │    │
+│  │                                                             │    │
+│  │  [         Completar Cadastro       ]                       │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/complete-profile
+                    { nome, email, cpf?, password? }
+                    (Requer: token JWT no header)
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Backend:                                                            │
+│  1. Verifica se profileComplete já é true (erro se sim)             │
+│  2. Verifica duplicidade de email/cpf                               │
+│  3. Atualiza User:                                                  │
+│     - nome, email (lowercase)                                       │
+│     - cpf (se fornecido, formato 000.000.000-00)                    │
+│     - password (se fornecido, min 6 chars, hashado)                 │
+│     - profileComplete: true                                         │
+│     - emailVerified: false (precisa verificar)                      │
+│  4. Retorna { user atualizado }                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                       Redirect para Home
+              (toast: "Perfil completado! Faça seus pedidos")
+```
+
+#### Fluxo de Recuperação de Senha
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      /recuperar-senha                               │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  Recuperar Senha                                            │    │
+│  │  [Email           ]                                         │    │
+│  │  [         Enviar Código         ]                          │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/forgot-password
+                    { email }
+                                │
+                                ▼
+          Backend busca user por email, envia SMS para celular
+          (Se não encontra, retorna sucesso mesmo assim - segurança)
+          Código 6 dígitos, 15 min expiração, 5 tentativas
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Tela de Verificação:                                               │
+│  "Código enviado para ****-9999"                                    │
+│  [Código 6 dígitos    ]                                             │
+│  [         Verificar         ]                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/verify-reset-code
+                    { email, code }
+                                │
+                                ▼
+          Código válido → Gera resetToken (32 bytes hex, 10 min)
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  Tela de Nova Senha:                                                │
+│  [Nova Senha (min 6)  ]                                             │
+│  [         Redefinir         ]                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                     POST /api/auth/reset-password
+                    { email, resetToken, newPassword }
+                                │
+                                ▼
+          Atualiza password (hashado), limpa tokens
+          Gera novo JWT, retorna { user, token }
+                                │
+                                ▼
+                       Redirect para Home
+                     (Já logado com nova senha)
+```
+
+#### Regras de Negócio - Validações
+
+**Código SMS:**
+- 6 dígitos numéricos
+- Expira em 5 minutos
+- Máximo 3 tentativas por código
+- Após 3 erros: aguardar 15 min ou solicitar novo
+- Rate limit: 3 códigos por hora por usuário
+
+**Senhas:**
+- Mínimo 6 caracteres
+- Hash bcrypt com 12 rounds
+- Opcional para cadastro por celular
+
+**Email:**
+- Normalizado para lowercase
+- Único no sistema
+- Não obrigatório para cadastro por celular
+
+**CPF:**
+- Formato: 000.000.000-00
+- Opcional
+- Único no sistema (se fornecido)
+- Validação de formato (não de dígitos verificadores)
+
+**profileComplete:**
+- `true` se: nome preenchido E email preenchido E (profileComplete marcado OU authProvider === 'google')
+- Bloqueia criação de pedidos/reservas se `false`
 
 #### Segurança
 
-- **Tokens JWT**: Expiração 7 dias, renovação automática
-- **SMS Verification**: Rate limit 3 tentativas, código expira 5min
-- **Google OAuth**: Token validado server-side, nunca exposto
-- **Password Hash**: bcrypt com 12 rounds
-- **Rate Limiting**: 100 requisições / 15min por IP
+| Aspecto | Implementação |
+|---------|---------------|
+| JWT | Expiração 7 dias, payload: { userId } |
+| Password | bcrypt 12 rounds |
+| SMS Code | 6 dígitos, 5 min expiry, 3 tentativas |
+| Reset Token | 32 bytes hex, 10 min expiry |
+| Rate Limit | 100 req/15min por IP (global) |
+| Google OAuth | Token validado server-side via API |
+| XSS | Tokens em localStorage, httpOnly desativado |
+| CORS | Configurado para domínio de produção |
+
+#### Mapeamento Técnico Completo - Autenticação
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                           BACKEND                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  models/User.js                                                      │
+│  ├── 26 campos (ver tabela acima)                                   │
+│  ├── 10 métodos de instância                                        │
+│  └── hook beforeSave (hash + normalize)                             │
+│                                                                      │
+│  controllers/authController.js (16 métodos)                         │
+│  ├── register()           → Cadastro completo                       │
+│  ├── registerPhone()      → Cadastro só celular                     │
+│  ├── verifySMS()          → Verificar código                        │
+│  ├── resendSMS()          → Reenviar código                         │
+│  ├── loginSMS()           → Login SMS (cria se não existe!)         │
+│  ├── loginPassword()      → Login email/senha                       │
+│  ├── googleAuth()         → OAuth Google                            │
+│  ├── completeProfile()    → Completar perfil                        │
+│  ├── updateProfile()      → Atualizar perfil                        │
+│  ├── getMe()              → Dados usuário logado                    │
+│  ├── logout()             → Logout                                  │
+│  ├── forgotPassword()     → Solicitar reset                         │
+│  ├── verifyResetCode()    → Verificar código reset                  │
+│  ├── resetPassword()      → Redefinir senha                         │
+│  ├── deleteUnverifiedUser() → Debug                                 │
+│  └── debugSMSCode()       → Debug                                   │
+│                                                                      │
+│  routes/auth.js (17 rotas)                                          │
+│  ├── POST /register, /register-phone, /verify-sms, /resend-sms     │
+│  ├── POST /login-sms, /login, /google, /complete-profile           │
+│  ├── PUT  /profile                                                  │
+│  ├── POST /logout, /forgot-password, /verify-reset-code            │
+│  ├── POST /reset-password                                           │
+│  ├── GET  /me, /debug-sms/:celular                                  │
+│  └── DELETE /delete-unverified/:email                               │
+│                                                                      │
+│  services/sms.service.js (Twilio)                                   │
+│  ├── generateSMSCode()        → Gera código 6 dígitos              │
+│  ├── sendVerificationCode()   → Envia código                        │
+│  ├── sendWelcomeMessage()     → Boas-vindas                         │
+│  └── sendPasswordResetCode()  → Código de reset                     │
+│                                                                      │
+│  services/google.service.js                                         │
+│  └── verifyToken(credential)  → Valida JWT Google                   │
+│                                                                      │
+│  middlewares/auth.middleware.js                                     │
+│  ├── authenticate()           → Verifica JWT                        │
+│  └── generateToken(userId)    → Gera JWT                            │
+│                                                                      │
+│  middlewares/validation.middleware.js                               │
+│  ├── validateUserRegistration → Valida campos cadastro              │
+│  ├── validateSMSCode          → Valida código SMS                   │
+│  └── validateUserLogin        → Valida campos login                 │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                          FRONTEND                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  pages/                                                              │
+│  ├── login.js                                                       │
+│  │   ├── Toggle: SMS ou Email/Senha                                 │
+│  │   ├── Campo celular com máscara internacional                    │
+│  │   ├── Campo email/senha                                          │
+│  │   ├── Botão Google OAuth                                         │
+│  │   └── Step de verificação SMS                                    │
+│  │                                                                   │
+│  ├── register.js                                                    │
+│  │   ├── Campos: nome, email, celular, senha, confirmação           │
+│  │   ├── Checkbox aceitar termos                                    │
+│  │   ├── Botão Google OAuth                                         │
+│  │   └── Step de verificação SMS                                    │
+│  │                                                                   │
+│  ├── complete-profile.js                                            │
+│  │   ├── Campos: nome*, email*, cpf (opcional), senha (opcional)    │
+│  │   ├── Exibe celular já verificado                                │
+│  │   ├── Máscara CPF: 000.000.000-00                                │
+│  │   └── Redirect se profileComplete já true                        │
+│  │                                                                   │
+│  └── recuperar-senha.js                                             │
+│      ├── Step 1: Informar email                                     │
+│      ├── Step 2: Verificar código SMS                               │
+│      └── Step 3: Nova senha                                         │
+│                                                                      │
+│  stores/authStore.js (Zustand + persist)                            │
+│  ├── State:                                                         │
+│  │   ├── user: null | User                                          │
+│  │   ├── token: null | string                                       │
+│  │   ├── refreshToken: null | string                                │
+│  │   ├── isAuthenticated: boolean                                   │
+│  │   └── isLoading: boolean                                         │
+│  │                                                                   │
+│  ├── Actions:                                                       │
+│  │   ├── setAuth(authData)         → Salva user + token             │
+│  │   ├── clearAuth()               → Limpa autenticação             │
+│  │   ├── register(userData)        → POST /register                 │
+│  │   ├── registerPhone(celular)    → POST /register-phone           │
+│  │   ├── verifySMS(celular, code)  → POST /verify-sms               │
+│  │   ├── loginWithSMS(celular)     → POST /login-sms                │
+│  │   ├── loginWithPassword(e,p)    → POST /login                    │
+│  │   ├── verifySMSLogin(cel, code) → POST /verify-sms               │
+│  │   ├── googleLogin(credential)   → POST /google                   │
+│  │   ├── completeProfile(data)     → POST /complete-profile         │
+│  │   ├── updateProfile(data)       → PUT /profile                   │
+│  │   ├── logout()                  → POST /logout                   │
+│  │   ├── checkAuth()               → GET /me                        │
+│  │   ├── refreshAuthToken()        → POST /refresh                  │
+│  │   ├── changePassword(old, new)  → PUT /change-password           │
+│  │   ├── resetPassword(email)      → POST /reset-password           │
+│  │   └── resendSMS(celular)        → POST /resend-sms               │
+│  │                                                                   │
+│  └── Persistência: localStorage key 'flame-auth'                    │
+│      (user, token, refreshToken, isAuthenticated)                   │
+│                                                                      │
+│  components/                                                         │
+│  ├── GoogleLoginButton.js    → Wrapper Google Identity              │
+│  ├── PhoneInput.js           → Input celular com país              │
+│  └── LoadingSpinner.js       → Indicador de loading                │
+│                                                                      │
+│  utils/                                                              │
+│  └── roleRedirect.js         → Redirect baseado em role             │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Estados do Usuário
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ESTADOS DO USUÁRIO                                │
+└─────────────────────────────────────────────────────────────────────┘
+
+1. CADASTRO INICIADO (Tradicional)
+   ├── phoneVerified: false
+   ├── profileComplete: true (já tem nome+email)
+   └── Estado: Aguardando verificação SMS
+
+2. CADASTRO INICIADO (Celular)
+   ├── phoneVerified: false
+   ├── profileComplete: false
+   ├── nome: "Usuário XXXX"
+   └── Estado: Aguardando verificação SMS
+
+3. SMS VERIFICADO (Tradicional)
+   ├── phoneVerified: true
+   ├── profileComplete: true
+   └── Estado: ATIVO - Acesso total
+
+4. SMS VERIFICADO (Celular)
+   ├── phoneVerified: true
+   ├── profileComplete: false
+   └── Estado: Precisa completar perfil
+
+5. PERFIL COMPLETO
+   ├── phoneVerified: true
+   ├── profileComplete: true
+   └── Estado: ATIVO - Acesso total
+
+6. GOOGLE OAUTH
+   ├── phoneVerified: false (não tem celular)
+   ├── profileComplete: true (Google tem nome+email)
+   ├── authProvider: 'google'
+   └── Estado: ATIVO - Acesso total
+       ⚠️ Sugestão: adicionar celular
+
+7. CONTA VINCULADA
+   ├── Conta local existia com email
+   ├── Usuário fez login com Google
+   ├── googleId vinculado à conta
+   └── Estado: ATIVO - Dois métodos de login
+```
 
 ---
 
@@ -234,37 +695,47 @@ authProvider: ENUM ('local', 'google') // Provedor usado
 
 #### Roles e Permissões
 
-| Role | Acesso |
-|------|--------|
-| **Cozinha** | Fila produção, marcar status |
-| **Bar** | Fila drinks, narguilé |
-| **Atendente** | Pedidos prontos, entregas |
-| **Caixa** | PDV, abertura/fechamento |
-| **Gerente** | Tudo + relatórios + ajustes |
+| Role | Acesso | Página | Status |
+|------|--------|--------|--------|
+| **Cozinha** | Fila produção (comida), marcar status | `/cozinha` | ✅ |
+| **Bar** | Fila drinks APENAS | `/staff/bar` | ✅ |
+| **Atendente** | Pedidos prontos, entregas, ~~NARGUILÉ~~ | `/atendente` | ⚠️ Narguilé ainda no Bar |
+| **Caixa** | PDV, abertura/fechamento | `/staff/caixa` | ✅ |
+| **Gerente** | Tudo + relatórios + ajustes | `/admin` | ✅ |
+| **Admin** | Configurações completas do sistema | `/admin` | ✅ |
+
+> **⚠️ DIVERGÊNCIA IDENTIFICADA**: O Narguilé está atualmente em `/staff/bar` mas deveria estar em `/atendente` conforme definido no PRD.
 
 #### Funcionalidades por Role
 
-**COZINHA**
+**COZINHA** (`/cozinha`)
 - Ver fila de pedidos (tempo real)
 - Filtrar por categoria (comida)
-- Iniciar preparo (timer começa)
-- Marcar pronto
+- Botão "Preparar" (pending → preparing)
+- Botão "Pronto" (preparing → ready)
 - Alertas de atraso (>15min)
+- Timer visual por pedido
 - Histórico do turno
 
-**BAR**
-- Ver fila de drinks
-- Ver fila de narguilés
-- Controle de tempo narguilé
-- Marcar pronto
-- Solicitar reposição estoque
+**BAR** (`/staff/bar`)
+- Ver fila de drinks (tempo real)
+- Botão "Preparar" (pending → preparing)
+- Botão "Pronto" (preparing → ready)
+- Alertas de atraso (>15min)
+- Timer visual por pedido
+- **NOTA**: NÃO controla narguilé (migrado para Atendente)
 
-**ATENDENTE**
-- Notificação pedido pronto
-- Fazer pickup
-- Entregar na mesa / balcão
-- Confirmar entrega
-- Chamar cliente (balcão)
+**ATENDENTE** (`/atendente`)
+- Notificação quando pedido fica "ready"
+- Ver pedidos prontos para retirar
+- Botão "Retirar" (ready → on_way) - bloqueado até estar pronto
+- Botão "Entregar" (on_way → delivered)
+- Chamar cliente via SMS
+- **NARGUILÉ**: Controle completo de sessões
+  - Criar/iniciar sessões
+  - Trocar carvão
+  - Pausar/retomar
+  - Finalizar sessão
 
 **CAIXA**
 - Abrir caixa (valor inicial)
@@ -282,22 +753,56 @@ authProvider: ENUM ('local', 'google') // Provedor usado
 - Ver todos os módulos
 - Relatórios
 
+#### Mapeamento Técnico - Staff
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+controllers/staffController.js          pages/cozinha/index.js
+├── getDashboard()                      pages/staff/bar.js
+├── getOrders()                         pages/staff/caixa.js
+├── getOrderDetails()                   pages/staff/relatorios.js
+├── updateOrderStatus()                 pages/atendente/index.js
+├── getAlerts()
+└── callCustomer()                      stores/staffStore.js
+                                        ├── fetchDashboard()
+controllers/hookahController.js         ├── fetchOrders()
+├── createSession()                     ├── updateOrderStatus()
+├── registerCoalChange()                └── timers management
+├── pauseSession()
+├── resumeSession()                     stores/hookahStore.js
+└── endSession()                        stores/cashierStore.js
+
+services/hookahService.js               components/StaffOrderCard.js
+services/cashier.service.js             components/HookahSessionCard.js
+
+models/HookahSession.js
+models/HookahFlavor.js
+models/Cashier.js
+models/CashierMovement.js
+
+routes/staff.js (7 endpoints)
+routes/hookah.js (12 endpoints)
+routes/cashier.routes.js (8 endpoints)
+```
+
 ---
 
 ### 2.3 MÓDULO ESTOQUE
 
 #### Funcionalidades
 
-| Feature | Descrição |
-|---------|-----------|
-| Cadastro Produtos | Nome, categoria, unidade, custo |
-| Entrada | Registrar compras, NF, fornecedor |
-| Saída | Automática (venda) ou manual (perda) |
-| Saldo | Quantidade atual por produto |
-| Custo Médio | Calculado automaticamente |
-| Alerta Mínimo | Notifica quando baixo |
-| Fornecedores | Cadastro, histórico |
-| Inventário | Contagem física, ajustes |
+| Feature | Descrição | Status |
+|---------|-----------|--------|
+| Cadastro Produtos | Nome, categoria, unidade, custo | ✅ |
+| Entrada | Registrar compras, NF, fornecedor | ✅ |
+| Saída | Automática (venda) ou manual (perda) | ✅ |
+| Saldo | Quantidade atual por produto | ✅ |
+| Custo Médio | Calculado automaticamente | ⚠️ Parcial |
+| Alerta Mínimo | Notifica quando baixo | ✅ |
+| Fornecedores | Cadastro, histórico | ❌ Não implementado |
+| Inventário | Contagem física, ajustes | ✅ |
+| Ficha Técnica | Insumos por produto para baixa | ❌ Não implementado |
 
 #### Modelo de Dados
 
@@ -347,6 +852,36 @@ Para cada insumo da ficha:
         → Se sim: Criar alerta
 ```
 
+> **⚠️ ESTADO ATUAL**: A ficha técnica (receita com insumos) **não está implementada**. Atualmente a baixa de estoque é feita diretamente no campo `stock` do Product, sem decomposição em insumos.
+
+#### Mapeamento Técnico - Estoque
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+controllers/inventoryController.js      pages/admin/estoque.js
+├── getDashboard()
+├── getMovements()                      stores/inventoryStore.js
+├── getProductMovements()               ├── fetchDashboard()
+├── getAlerts()                         ├── fetchMovements()
+├── adjustStock()                       ├── adjustStock()
+├── getReport()                         └── fetchAlerts()
+├── getForecast()
+└── getConsumption()                    components/InventoryChart.js
+                                        components/InventoryTable.js
+services/inventoryService.js
+├── recordMovement()
+├── getLowStockProducts()
+├── getStockAlerts()
+├── generateInventoryReport()
+└── predictStockOut()
+
+models/Product.js (campos: stock, minStock, hasStock)
+models/InventoryMovement.js
+
+routes/inventory.js (8 endpoints)
+```
+
 ---
 
 ### 2.4 MÓDULO CRM
@@ -392,10 +927,54 @@ Cliente
 
 #### Automações
 
-- **Aniversário**: Notificação + cupom especial
-- **Inativo 30d**: Lembrete "sentimos sua falta"
-- **Upgrade Tier**: Notificação de benefícios
-- **Novo cliente**: Welcome message
+| Automação | Descrição | Status |
+|-----------|-----------|--------|
+| Aniversário | Notificação + cupom especial | ❌ Manual via Admin |
+| Inativo 30d | Lembrete "sentimos sua falta" | ⚠️ Via Campanhas |
+| Upgrade Tier | Notificação de benefícios | ❌ Não automático |
+| Novo cliente | Welcome message | ❌ Manual |
+
+> **⚠️ ESTADO ATUAL**: As automações de CRM não estão implementadas automaticamente. O módulo de Campanhas permite criar ações manuais para clientes inativos.
+
+#### Mapeamento Técnico - CRM
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+controllers/crm.controller.js           pages/admin/clientes.js
+├── getDashboard()
+├── listCustomers()                     components/CustomerDetailsModal.js
+├── getCustomer()
+├── getCashbackHistory()
+├── addCashback()
+├── getInactiveCustomers()
+├── getNearUpgrade()
+└── adjustTier()
+
+services/crm.service.js
+├── getCustomerStats()
+├── listCustomers()
+├── getDashboardStats()
+├── addManualCashback()
+├── getInactiveCustomers()
+└── getCustomersNearTierUpgrade()
+
+controllers/campaign.controller.js      pages/admin/campanhas.js
+├── create(), list(), execute()
+├── simulate(), pause()                 stores/campaignStore.js
+└── createQuickReactivation()
+
+models/User.js (métricas CRM)
+├── totalOrders, totalSpent
+├── lastVisit, lastOrderDate
+└── loyaltyTier, cashbackBalance
+
+models/Campaign.js
+models/CashbackHistory.js
+
+routes/crm.js (8 endpoints)
+routes/campaign.routes.js (12 endpoints)
+```
 
 ---
 
@@ -413,13 +992,16 @@ O sistema de fidelidade funciona com **cashback em dinheiro (R$)** ao invés de 
 
 #### Regras de Acúmulo
 
-| Ação | Cashback |
-|------|----------|
-| Compra | % do valor baseado no tier |
-| Cadastro | R$ 10,00 bônus |
-| Aniversário | Baseado no tier |
-| Indicação | R$ 15,00 (quem indica) |
-| Avaliação | R$ 2,00 |
+|| Ação | Cashback |
+||------|----------|
+|| Compra | % do valor baseado no tier |
+|| Cadastro | R$ 10,00 bônus |
+|| Aniversário | Baseado no tier |
+|| Indicação | R$ 15,00 (quem indica) |
+|| Avaliação | R$ 2,00 |
+
+> **Estado atual:** no código hoje, **apenas o acúmulo sobre compras está automatizado** (ganho % do valor do pedido entregue/pago).  
+> Bônus de cadastro/aniversário/indicação/avaliação podem ser lançados manualmente via CRM/Admin; automações específicas ainda não foram implementadas.
 
 #### Tiers (baseados em Total Gasto)
 
@@ -432,13 +1014,16 @@ O sistema de fidelidade funciona com **cashback em dinheiro (R$)** ao invés de 
 
 **Progressão Automática**: O tier é calculado automaticamente baseado no totalSpent (total gasto histórico). Quando o cliente atinge o threshold de um novo tier, é promovido automaticamente.
 
-#### Uso do Cashback
+#### Uso do Cashback (estado atual)
 
-O cashback acumulado pode ser usado como desconto em qualquer pedido:
-- Aplicado automaticamente no checkout (cliente escolhe quanto usar)
-- Pode cobrir até 50% do valor do pedido
-- Não expira enquanto o cliente estiver ativo (compra nos últimos 12 meses)
-- Saldo visível em tempo real no app
+- O cliente **acumula** cashback automaticamente em cada pedido entregue e pago, de acordo com seu tier (2%–10%).
+- O saldo acumulado fica registrado em `cashback_saldo`/`cashbackBalance` e em `CashbackHistory`, sendo usado em telas de CRM/Admin e no módulo de Cashback do app.
+- O uso de cashback como desconto direto no checkout **ainda não está implementado**; quando for ativado, seguirá a regra planejada de usar no máximo cerca de **50% do valor do pedido** em cashback.
+
+#### Validade e Expiração
+
+- Um job diário expira saldos de cashback que ficaram **90 dias** sem novas transações de ganho (`earned`) ou bônus (`bonus`).
+- A expiração gera uma transação `expired` em `CashbackHistory` e zera o saldo do usuário.
 
 #### Modelo de Dados
 
@@ -461,24 +1046,66 @@ User
 ├── totalSpent (R$) - total gasto histórico
 ```
 
+#### Mapeamento Técnico - Cashback
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+models/User.js                          pages/cashback.js
+├── cashbackBalance (DECIMAL)
+├── loyaltyTier (ENUM)                  stores/cashbackStore.js
+├── totalSpent (DECIMAL)                ├── fetchBalance()
+├── addCashback(amount, orderId)        ├── fetchHistory()
+├── useCashback(maxAmount) ❌           └── applyCashback() ❌
+├── calculateTier()
+├── updateTier()                        components/CashbackDisplay.js
+└── getTierBenefits()
+
+models/CashbackHistory.js
+├── userId, orderId
+├── amount, type (earned/redeemed/expired/bonus)
+├── balanceBefore, balanceAfter
+└── expiresAt
+
+Trigger automático:
+Order.afterUpdate hook → quando status='delivered'
+├── Calcula % baseado no tier
+├── Chama user.addCashback()
+└── Cria registro em CashbackHistory
+
+⚠️ NÃO IMPLEMENTADO:
+├── Uso de cashback no checkout
+├── Bônus de cadastro (R$10)
+├── Bônus de aniversário
+├── Bônus de indicação (R$15)
+└── Bônus de avaliação (R$2)
+```
+
 ---
 
 ### 2.6 MÓDULO NARGUILÉ
 
+> **IMPORTANTE**: O narguilé é controlado pelo **ATENDENTE**, não pelo Bar.
+> O atendente é quem: acende, troca carvão, controla sessão na mesa, interage com cliente.
+
+> **⚠️ DIVERGÊNCIA ATUAL**: No código atual, o narguilé está em `/staff/bar`. Precisa ser migrado para `/atendente`.
+
 #### Modelo de Operação
 
 ```
-Cliente solicita narguilé
+Cliente solicita narguilé (via app ou presencial)
     ↓
 Escolhe sabor (lista de disponíveis)
     ↓
-Funcionário prepara
+ATENDENTE prepara e acende
     ↓
 Entrega na mesa → Timer inicia
     ↓
-A cada 15min: Troca de carvão (automática/incluída)
+A cada 15min: Troca de carvão pelo ATENDENTE
     ↓
 Cliente solicita encerrar OU tempo máximo
+    ↓
+ATENDENTE finaliza sessão
     ↓
 Calcula valor (tempo × taxa/hora)
     ↓
@@ -516,14 +1143,68 @@ ConfigNarguilé
 ├── intervalo_carvao: 15min
 ```
 
-#### Interface (Bar/Staff)
+#### Interface (ATENDENTE)
+
+> **Localização**: `/atendente` (aba "Narguilé")
+> **NÃO está mais em**: `/staff/bar`
 
 - Lista de narguilés ativos
 - Timer por mesa (countdown visual)
 - Alerta troca de carvão
 - Botão "Trocar Carvão" (registra)
+- Botão "Pausar" / "Retomar"
 - Botão "Finalizar"
 - Histórico do dia
+
+#### Mapeamento Técnico - Narguilé
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+controllers/hookahController.js         pages/staff/bar.js ⚠️
+├── getFlavors()                        (deveria ser /atendente)
+├── createSession()
+├── getActiveSessions()                 stores/hookahStore.js
+├── registerCoalChange()                ├── fetchFlavors()
+├── pauseSession()                      ├── fetchSessions()
+├── resumeSession()                     ├── startSession()
+├── endSession()                        ├── registerCoalChange()
+├── getHistory()                        ├── pauseSession()
+└── getRevenueReport()                  ├── endSession()
+                                        └── sessionTimers
+services/hookahService.js
+├── createSession()                     components/HookahFlavorCard.js
+├── getActiveSessions()                 components/HookahSessionCard.js
+├── registerCoalChange()
+├── pauseSession()
+├── resumeSession()
+├── endSession()
+└── getRevenueReport()
+
+models/HookahSession.js
+├── mesaId, flavorId, quantity
+├── startedAt, endedAt, pausedAt
+├── status (active/paused/ended)
+├── duration, scheduledEndTime
+├── coalChanges (JSON array)
+├── totalPausedTime, price
+└── métodos: getElapsedTime(), getRemainingTime(), isOvertime()
+
+models/HookahFlavor.js
+├── name, description, category
+├── price, inStock, popularity, rating
+└── métodos: getPriceForDuration(), incrementPopularity()
+
+routes/hookah.js (12 endpoints)
+
+Socket.IO Events:
+├── hookah:session_started
+├── hookah:coal_change_alert
+├── hookah:coal_changed
+├── hookah:paused, hookah:resumed
+├── hookah:ended
+└── hookah:overtime_warning
+```
 
 ---
 
@@ -531,14 +1212,15 @@ ConfigNarguilé
 
 #### Funcionalidades
 
-| Feature | Descrição |
-|---------|-----------|
-| Calendário | Visualizar disponibilidade |
-| Solicitar | Cliente pede reserva |
-| Confirmar | Staff aprova/rejeita |
-| Lembrete | Notificação 2h antes |
-| No-show | Marcar não compareceu |
-| Walk-in | Registrar sem reserva |
+|| Feature | Descrição |
+||---------|-----------|
+|| Calendário | Visualizar disponibilidade |
+|| Solicitar | Cliente pede reserva pelo app (requer login + perfil completo) |
+|| Confirmar | Staff/Admin aprova ou rejeita pelo painel de reservas (/admin/reservas) |
+|| Lembrete | Lembrete automático ~2h antes da reserva (WhatsApp para o cliente, se configurado) |
+|| Notificação Loja | WhatsApp automático para FLAME com detalhes de cada nova reserva/cancelamento |
+|| No-show | Marcar não compareceu (automático após tolerância) |
+|| Walk-in | Registrar chegada sem reserva prévia (via painel Staff/Admin) |
 
 #### Modelo de Dados
 
@@ -559,11 +1241,57 @@ Reserva
 
 #### Regras
 
-- Antecedência mínima: 2 horas
-- Antecedência máxima: 30 dias
-- Tolerância chegada: 15 minutos
-- Após 15min sem aparecer: No-show automático
-- No-show penaliza pontos: -50 pontos
+- Reservas não podem ser criadas para datas/horários no passado.
+- Lembrete: enviado automaticamente ~2 horas antes da reserva (WhatsApp para o cliente, quando habilitado).
+- Tolerância de chegada: 15 minutos.
+- Após 15min sem chegada marcada: reserva automaticamente marcada como `no_show`.
+- Hoje o no-show apenas atualiza o status; qualquer penalização em cashback/CRM deve ser tratada via regras de fidelidade.
+
+> **⚠️ ESTADO ATUAL**: O método `markNoShows()` existe mas o job automático não está agendado.
+
+#### Mapeamento Técnico - Reservas
+
+```
+BACKEND                                 FRONTEND
+───────────────────────────────────────────────────────────────
+controllers/reservationController.js    pages/reservas.js (cliente)
+├── createReservation()                 pages/admin/reservas.js (admin)
+├── getReservation()
+├── getMyReservations()                 stores/reservationStore.js
+├── getAllReservations()                ├── fetchAvailableSlots()
+├── updateReservation()                 ├── createReservation()
+├── confirmReservation()                ├── fetchMyReservations()
+├── cancelReservation()                 ├── cancelReservation()
+├── getAvailableSlots()                 └── confirmReservation() (admin)
+├── markArrived()
+├── sendReminder()                      components/ReservationForm.js
+└── getReservationStats()               components/ReservationCalendar.js
+                                        components/ReservationTimeSlots.js
+services/reservationService.js
+├── createReservation()
+├── confirmReservation()
+├── cancelReservation()
+├── getAvailableSlots()
+├── sendReminder()
+├── markNoShows() ⚠️ job não agendado
+└── getReservationStats()
+
+services/whatsapp.service.js
+├── notifyNewReservation()
+├── notifyCancellation()
+└── sendReminder()
+
+models/Reservation.js
+├── confirmationCode (UNIQUE)
+├── guestName, guestEmail, guestPhone
+├── reservationDate, partySize
+├── status (pending/confirmed/cancelled/completed/no_show)
+├── tableId, userId
+├── confirmedAt, arrivedAt, cancelledAt
+└── métodos: confirm(), cancel(), markArrived(), markNoShow()
+
+routes/reservations.js (12 endpoints)
+```
 
 ---
 
@@ -694,7 +1422,7 @@ RECEITA BRUTA
 | Usuários | Staff, roles, permissões |
 | Horários | Funcionamento, happy hour |
 | Pagamentos | Métodos, taxas |
-| Fidelidade | Regras pontos, recompensas |
+|| Fidelidade | Regras de cashback, tiers, bônus |
 | Narguilé | Preços, sabores |
 | Notificações | Templates, automações |
 | Integrações | Stripe, Twilio, etc |
@@ -737,57 +1465,91 @@ RECEITA BRUTA
 
 ## 4. INTEGRAÇÕES
 
-| Serviço | Propósito | Status |
-|---------|-----------|--------|
-| Stripe | Pagamentos | ✅ Configurado |
-| Twilio | SMS | ✅ Configurado |
-| Google OAuth 2.0 | Autenticação Social | 🔄 Planejado |
-| Socket.IO | Real-time | ✅ Implementado |
-| Push Notifications | Alertas PWA | 🔄 Pendente |
-| WhatsApp Business | Notificações | 🔄 Futuro |
+| Serviço | Propósito | Status | Componentes |
+|---------|-----------|--------|-------------|
+| Stripe | Pagamentos | ✅ Configurado | `payment.service.js`, `payment.controller.js` |
+| Twilio | SMS | ✅ Ativo | `sms.service.js` |
+| Google OAuth 2.0 | Autenticação Social | ⚠️ 90% | `google.service.js` - **Falta credenciais** |
+| Socket.IO | Real-time | ✅ Implementado | `socket.service.js`, `socket.js` |
+| Push Notifications | Alertas PWA | ⚠️ Parcial | `push.service.js` - **Precisa ativar** |
+| WhatsApp (via Twilio) | Notificações de reservas | ✅ Implementado | `whatsapp.service.js` |
+
+#### Serviços Backend Completos
+
+```
+services/
+├── sms.service.js          # Twilio SMS (9 métodos)
+├── push.service.js         # Web Push VAPID (13 métodos)
+├── payment.service.js      # Stripe (11 métodos)
+├── socket.service.js       # Socket.IO real-time
+├── google.service.js       # Google OAuth validation
+├── whatsapp.service.js     # WhatsApp via Twilio (3 métodos)
+├── crm.service.js          # CRM e métricas (8 métodos)
+├── campaign.service.js     # Campanhas marketing (12 métodos)
+├── cashier.service.js      # Gestão de caixa (9 métodos)
+├── hookahService.js        # Sessões narguilé (13 métodos)
+├── inventoryService.js     # Controle estoque (8 métodos)
+├── reservationService.js   # Reservas (13 métodos)
+├── report.service.js       # Relatórios (5 métodos)
+└── orderStatus.service.js  # Máquina de estados ⚠️ incompleto
+```
 
 ---
 
 ## 5. ROADMAP DE IMPLEMENTAÇÃO
 
-### Fase 1: Core (Semanas 1-2)
-- [ ] Atualizar Design System (cores FLAME)
-- [ ] Refatorar componentes visuais
-- [ ] Ajustar fluxo QR Code mesa
-- [ ] Implementar opção balcão
+### Fases Concluídas ✅
 
-### Fase 2: Estoque (Semanas 3-4)
-- [ ] Modelo de dados estoque
-- [ ] CRUD produtos/insumos
-- [ ] Movimentações
-- [ ] Integração com vendas
-- [ ] Alertas de mínimo
+| Fase | Descrição | Status |
+|------|-----------|--------|
+| Fase 1 | Core (Design System, QR Code, Balcão) | ✅ 100% |
+| Fase 2 | Estoque (CRUD, Movimentações, Alertas) | ✅ 90% (falta ficha técnica) |
+| Fase 3 | Staff (Roles, Telas, Real-time) | ✅ 95% |
+| Fase 4 | Narguilé & Reservas | ✅ 100% |
+| Fase 5 | CRM & Fidelidade | ⚠️ 80% (falta uso cashback) |
+| Fase 6 | Financeiro (Caixa, DRE, Relatórios) | ✅ 90% |
 
-### Fase 3: Staff (Semanas 5-6)
-- [ ] Sistema de roles
-- [ ] Telas por função
-- [ ] Real-time aprimorado
-- [ ] Login funcionário
+### Próximas Sprints
 
-### Fase 4: Narguilé & Reservas (Semanas 7-8)
-- [ ] Módulo narguilé completo
-- [ ] Sistema de reservas
-- [ ] Calendário
+**Sprint 23 - CORREÇÃO DE FLUXOS (Prioridade P0)**
+- [ ] Criar `orderStatus.service.js` com máquina de estados
+- [ ] Validar transições de status por role
+- [ ] Migrar Narguilé de `/staff/bar` para `/atendente`
+- [ ] Notificar atendente em novos pedidos
 
-### Fase 5: CRM & Fidelidade (Semanas 9-10)
-- [x] Módulo CRM
-- [x] Sistema de cashback
-- [x] Tiers baseados em gasto total
-- [x] Uso automático de cashback
+**Sprint 24 - CASHBACK COMPLETO**
+- [ ] Implementar uso de cashback no checkout
+- [ ] Adicionar bônus de cadastro (R$10)
+- [ ] Automatizar bônus de aniversário
 
-### Fase 6: Financeiro (Semanas 11-12)
-- [ ] Módulo caixa
-- [ ] DRE
-- [ ] Relatórios
+**Sprint 25 - GOOGLE OAUTH**
+- [ ] Configurar projeto no Google Cloud Console
+- [ ] Adicionar credenciais no Railway/Vercel
+- [ ] Testar fluxo completo
+
+**Sprint 26 - PUSH NOTIFICATIONS**
+- [ ] Validar service worker em produção
+- [ ] Ativar envio de push em eventos de pedido
+- [ ] Testar em dispositivos móveis
 
 ---
 
-## 6. MÉTRICAS DE SUCESSO
+## 6. DIVERGÊNCIAS CONHECIDAS
+
+| # | Problema | PRD | Sistema | Prioridade |
+|---|----------|-----|---------|------------|
+| 1 | Fluxo de Pedidos | Transições controladas | Qualquer um muda | P0 |
+| 2 | Narguilé | Atendente controla | Bar controla | P0 |
+| 3 | Uso de Cashback | 50% do pedido | Não implementado | P0 |
+| 4 | Google OAuth | Implementado | Falta credenciais | P1 |
+| 5 | Push Notifications | Ativo | Service existe, não ativo | P1 |
+| 6 | Bônus automáticos | Cadastro, aniversário | Manual | P2 |
+| 7 | No-show automático | Job agendado | Método existe, sem job | P2 |
+| 8 | Ficha Técnica | Insumos por produto | Não implementado | P2 |
+
+---
+
+## 7. MÉTRICAS DE SUCESSO
 
 | Indicador | Meta |
 |-----------|------|
@@ -799,4 +1561,588 @@ RECEITA BRUTA
 
 ---
 
-*FLAME PRD v3.0.0 - Dezembro 2024*
+## 8. MAPEAMENTO COMPLETO DE PÁGINAS
+
+### Frontend - 48 Páginas
+
+```
+pages/
+├── Públicas (12)
+│   ├── index.js              # Homepage
+│   ├── login.js              # Login
+│   ├── register.js           # Cadastro
+│   ├── cardapio.js           # Cardápio digital
+│   ├── historia.js           # Nossa história
+│   ├── conceito.js           # Nosso conceito
+│   ├── logos.js              # Brand assets
+│   ├── 404.js                # Página de erro
+│   ├── offline.js            # PWA offline
+│   ├── apresentacao.js       # Apresentação
+│   ├── roadmap.js            # Roadmap
+│   └── termos.js             # Termos de uso
+│
+├── Cliente Autenticado (6)
+│   ├── perfil.js             # Perfil do usuário
+│   ├── checkout.js           # Finalizar pedido
+│   ├── recuperar-senha.js    # Recuperação de senha
+│   ├── complete-profile.js   # Completar cadastro
+│   ├── reservas.js           # Reservas
+│   └── cashback.js           # Programa de cashback
+│
+├── Admin (11)
+│   ├── admin/index.js        # Dashboard
+│   ├── admin/products.js     # Produtos
+│   ├── admin/estoque.js      # Estoque
+│   ├── admin/orders.js       # Pedidos
+│   ├── admin/reports.js      # Relatórios
+│   ├── admin/settings.js     # Configurações
+│   ├── admin/clientes.js     # CRM
+│   ├── admin/reservas.js     # Reservas
+│   ├── admin/campanhas.js    # Campanhas
+│   ├── admin/logs.js         # Logs
+│   └── admin/tables.js       # Mesas
+│
+├── Staff (5)
+│   ├── staff/bar.js          # Bar (inclui narguilé ⚠️)
+│   ├── staff/caixa.js        # Caixa
+│   ├── staff/relatorios.js   # Relatórios staff
+│   ├── staff/login.js        # Login staff
+│   └── atendente/index.js    # Atendente
+│
+├── Operacional (2)
+│   ├── cozinha/index.js      # Cozinha
+│   └── pedidos.js            # Lista pedidos
+│
+└── Dinâmicas (12)
+    ├── pedido/[id].js        # Detalhes do pedido
+    ├── avaliacao/[id].js     # Avaliar pedido
+    ├── qr/[mesaId].js        # QR Code mesa
+    └── ... outras
+```
+
+### Backend - 15 Models
+
+```
+models/
+├── User.js                   # Usuários (35+ campos)
+├── Order.js                  # Pedidos (30+ campos)
+├── OrderItem.js              # Itens do pedido
+├── Product.js                # Produtos (30+ campos)
+├── Table.js                  # Mesas
+├── Reservation.js            # Reservas (20+ campos)
+├── HookahSession.js          # Sessões narguilé
+├── HookahFlavor.js           # Sabores narguilé
+├── Cashier.js                # Caixa
+├── CashierMovement.js        # Movimentos do caixa
+├── CashbackHistory.js        # Histórico cashback
+├── PointsHistory.js          # Histórico pontos (legado)
+├── InventoryMovement.js      # Movimentos estoque
+├── Campaign.js               # Campanhas marketing
+└── PushSubscription.js       # Notificações push
+```
+
+---
+
+---
+
+## 9. AUDITORIA COMPLETA DOS MÓDULOS
+
+Esta seção contém o mapeamento técnico detalhado de cada módulo, identificando problemas críticos, divergências e o que precisa ser implementado.
+
+### 9.1 MÓDULO DE PEDIDOS (Order)
+
+#### Modelo Order.js - Campos Completos
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `id` | UUID | ✅ | PK |
+| `orderNumber` | STRING | ✅ | Número sequencial único |
+| `userId` | UUID | ✅ | FK para User |
+| `tableId` | UUID | ❌ | FK para Table (null = balcão) |
+| `status` | ENUM | ✅ | pending/confirmed/preparing/ready/on_way/delivered/cancelled |
+| `paymentMethod` | ENUM | ❌ | cash/credit/debit/pix |
+| `paymentStatus` | ENUM | ✅ | pending/processing/completed/failed/refunded |
+| `subtotal` | DECIMAL(10,2) | ✅ | Soma dos itens |
+| `serviceFee` | DECIMAL(10,2) | ✅ | Taxa de serviço (10%) |
+| `discount` | DECIMAL(10,2) | ✅ | Desconto aplicado |
+| `total` | DECIMAL(10,2) | ✅ | Valor final |
+| `notes` | TEXT | ❌ | Observações |
+| `estimatedTime` | INTEGER | ❌ | Tempo estimado (min) |
+| `rating` | INTEGER | ❌ | Avaliação 1-5 |
+| `ratingComment` | TEXT | ❌ | Comentário da avaliação |
+| `stripePaymentIntentId` | STRING | ❌ | ID do Stripe |
+| `confirmedAt` | DATE | ❌ | Quando foi confirmado |
+| `preparingAt` | DATE | ❌ | Quando começou preparo |
+| `readyAt` | DATE | ❌ | Quando ficou pronto |
+| `deliveredAt` | DATE | ❌ | Quando foi entregue |
+| `cancelledAt` | DATE | ❌ | Quando foi cancelado |
+| `cancelReason` | TEXT | ❌ | Motivo do cancelamento |
+
+#### 🔴 PROBLEMAS CRÍTICOS DE SEGURANÇA
+
+1. **Webhook sem autenticação**: `POST /orders/payment/confirm` aceita qualquer request
+2. **Sem validação de role**: `getAllOrders()` e `getDashboardMetrics()` não validam role
+3. **Transição de status**: Qualquer role pode mudar para qualquer status
+
+#### Status de Pedido - Transições Válidas
+
+```
+pending → confirmed (cozinha/admin)
+confirmed → preparing (cozinha/admin)
+preparing → ready (cozinha/admin)
+ready → on_way (atendente/admin) ← BLOQUEADO até ready
+on_way → delivered (atendente/admin)
+* → cancelled (admin/gerente)
+```
+
+#### Mapeamento Backend-Frontend
+
+| Backend | Frontend |
+|---------|----------|
+| `orderController.js` (13 métodos) | `pages/pedidos.js`, `pages/checkout.js` |
+| `orderService.js` | `stores/orderStore.js` |
+| `routes/orders.js` (15 endpoints) | `pages/pedido/[id].js` |
+
+---
+
+### 9.2 MÓDULO DE PRODUTOS (Product)
+
+#### Modelo Product.js - Campos Completos
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `name` | STRING(100) | Nome do produto |
+| `description` | TEXT | Descrição |
+| `price` | DECIMAL(10,2) | Preço base |
+| `category` | ENUM | food/drink/dessert/hookah/other |
+| `subcategory` | STRING | Subcategoria |
+| `image` | STRING | URL da imagem |
+| `isAvailable` | BOOLEAN | Disponível para venda |
+| `isActive` | BOOLEAN | Ativo no cardápio |
+| `preparationTime` | INTEGER | Tempo preparo (min) |
+| `hasStock` | BOOLEAN | Controla estoque |
+| `stock` | INTEGER | Quantidade atual |
+| `minStock` | INTEGER | Estoque mínimo (alerta) |
+| `dietary` | JSON | Flags: vegetarian, vegan, glutenFree, lactoseFree |
+| `allergens` | JSON | Lista de alérgenos |
+| `ingredients` | TEXT | Ingredientes (texto) |
+| `promotionPrice` | DECIMAL | Preço promocional |
+| `promotionStart` | DATE | Início promoção |
+| `promotionEnd` | DATE | Fim promoção |
+| `sortOrder` | INTEGER | Ordem no cardápio |
+
+#### 🔴 PROBLEMA CRÍTICO DE SEGURANÇA
+
+**Nenhuma validação de role no CRUD de produtos!**
+
+```javascript
+// QUALQUER usuário autenticado pode:
+POST   /products      → Criar produto
+PUT    /products/:id  → Editar produto
+DELETE /products/:id  → Deletar produto
+```
+
+**Necessário**: Adicionar `requireAdmin` ou `requireRole(['admin', 'gerente'])` nas rotas
+
+#### Funcionalidades Não Implementadas
+
+- ❌ Ficha técnica / receita (insumos por produto)
+- ❌ Exibição de alérgenos no frontend
+- ❌ Filtros dietéticos no cardápio
+
+---
+
+### 9.3 MÓDULO DE MESAS (Table)
+
+#### Modelo Table.js - Campos
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `number` | INTEGER | Número único (1-999) |
+| `name` | STRING(50) | Nome opcional |
+| `capacity` | INTEGER | Capacidade (1-20) |
+| `location` | ENUM | interno/externo/balcao/vip/reservado |
+| `status` | ENUM | available/occupied/reserved/maintenance |
+| `isActive` | BOOLEAN | Mesa ativa |
+| `qrCode` | STRING | URL do QR Code |
+| `lastCleaned` | DATE | Última limpeza |
+| `notes` | TEXT | Observações |
+| `position` | JSON | {x, y} para mapa |
+
+#### 🔴 PROBLEMA CRÍTICO: QR Code URL Incorreta
+
+```javascript
+// ATUAL (ERRADO) em tableController.js:
+const qrCodeUrl = `${process.env.FRONTEND_URL}/table/${table.number}`;
+
+// DEVERIA SER:
+const qrCodeUrl = `${process.env.FRONTEND_URL}/qr/${table.number}`;
+```
+
+**Locais que precisam correção**:
+- `tableController.js:17` - getQRCodeURL()
+- `tableController.js:190` - createTable()
+- `tableController.js:249` - updateTable()
+- `tableController.js:538` - generateQRCode()
+
+#### Divergências Status
+
+| Onde | Status Válidos |
+|------|---------------|
+| Model | available, occupied, reserved, maintenance |
+| Controller | available, occupied, reserved, **cleaning**, **unavailable** |
+| Frontend | available, occupied, reserved, cleaning, **inactive** |
+
+**Problema**: Controller aceita status que o model não valida!
+
+#### Fluxo QR Code
+
+```
+1. Cliente escaneia QR → /qr/{numero}
+2. Salva em sessionStorage: 'redlight-qr-mesa' = numero
+3. cartStore.setTable(mesaId, parseInt(mesaId))
+4. Se logado → /cardapio?mesa=${mesaId}
+5. Se não → Tela login/cadastro
+```
+
+---
+
+### 9.4 MÓDULO DE RESERVAS (Reservation)
+
+#### Modelo Reservation.js - Campos Completos
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `userId` | UUID | FK User (opcional) |
+| `confirmationCode` | STRING(12) | Código único |
+| `guestName` | STRING(100) | Nome do cliente |
+| `guestEmail` | STRING(100) | Email |
+| `guestPhone` | STRING(20) | Telefone |
+| `reservationDate` | DATE | Data/hora da reserva |
+| `partySize` | INTEGER | Número de pessoas (1-50) |
+| `status` | ENUM | pending/confirmed/cancelled/no_show/completed |
+| `specialRequests` | TEXT | Pedidos especiais |
+| `guestNotes` | TEXT | Notas do cliente |
+| `tableId` | UUID | Mesa atribuída |
+| `confirmedAt` | DATE | Data confirmação |
+| `arrivedAt` | DATE | Data chegada |
+| `cancelledAt` | DATE | Data cancelamento |
+| `cancelReason` | TEXT | Motivo cancelamento |
+| `reminderSentAt` | DATE | Data lembrete enviado |
+
+#### 🔴 BUG CRÍTICO NO JOB DE NO-SHOW
+
+**Arquivo**: `/backend/src/jobs/noShow.job.js`
+
+```javascript
+// BUG: Usa campo r.time que NÃO EXISTE no modelo!
+const reservationDateTime = new Date(`${r.reservationDate}T${r.time}`);
+// r.time é undefined → job não funciona!
+```
+
+**Impacto**: No-shows automáticos não são marcados
+
+#### Fluxo de Reserva
+
+```
+1. Cliente acessa /reservas
+2. Seleciona data → calendário
+3. Seleciona horário → slots 13h-22h (30min intervalo)
+4. Preenche dados → nome, email, telefone, ocasião
+5. Submete → POST /api/reservations
+6. Backend:
+   - Gera confirmationCode
+   - Cria registro (status: pending)
+   - Envia SMS async
+   - Envia WhatsApp para FLAME
+   - Notifica admin via Socket.IO
+7. Admin confirma → status: confirmed
+8. 2h antes → job envia lembrete
+9. Cliente chega → markArrived()
+10. OU 15min após → markNoShow() ⚠️ job quebrado
+```
+
+---
+
+### 9.5 MÓDULO DE NARGUILÉ (Hookah)
+
+#### Modelo HookahSession.js - Campos
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `mesaId` | UUID | FK Table |
+| `flavorId` | UUID | FK HookahFlavor |
+| `quantity` | INTEGER | Quantidade de narguilés |
+| `startedAt` | DATE | Início da sessão |
+| `endedAt` | DATE | Fim da sessão |
+| `pausedAt` | DATE | Quando pausou |
+| `status` | ENUM | active/paused/ended |
+| `duration` | INTEGER | Duração em minutos |
+| `scheduledEndTime` | DATE | Fim agendado |
+| `coalChanges` | JSON | Array de trocas de carvão |
+| `totalPausedTime` | INTEGER | Tempo pausado (min) |
+| `price` | DECIMAL | Valor da sessão |
+
+#### ✅ CONFIRMADO: Narguilé está em `/atendente`
+
+O narguilé foi **migrado de `/staff/bar` para `/atendente`** na Sprint 23.
+
+**Localização atual**: `pages/atendente/index.js`
+
+#### ⚠️ PROBLEMA: Falta Socket Listeners no Frontend
+
+O frontend do atendente **não escuta** eventos Socket.IO do narguilé:
+
+```javascript
+// Eventos que existem no backend mas NÃO são escutados no frontend:
+- hookah:session_started
+- hookah:coal_changed
+- hookah:coal_change_alert
+- hookah:overtime_warning
+- hookah:session_ended
+```
+
+**Impacto**: Não há sincronização em tempo real das sessões
+
+---
+
+### 9.6 MÓDULO DE ESTOQUE (Inventory)
+
+#### Campos de Estoque no Product.js
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `hasStock` | BOOLEAN | Controla estoque |
+| `stock` | INTEGER | Quantidade atual |
+| `minStock` | INTEGER | Estoque mínimo (default: 5) |
+
+#### Modelo InventoryMovement.js
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `productId` | UUID | FK Product |
+| `orderId` | UUID | FK Order (opcional) |
+| `type` | ENUM | entrada/saida/ajuste/devolucao |
+| `quantity` | INTEGER | Quantidade |
+| `reason` | TEXT | Motivo |
+| `previousStock` | INTEGER | Estoque antes |
+| `newStock` | INTEGER | Estoque depois |
+| `notes` | TEXT | Observações |
+| `userId` | UUID | Quem fez |
+
+#### Fluxo de Baixa Automática
+
+```
+1. Pedido criado (pending)
+2. Para cada item:
+   a. Valida: product.hasStock && stock >= quantity
+   b. Product.decrement('stock', { by: quantity })
+   c. InventoryService.recordMovement(type='saida', reason='venda')
+3. Se pedido cancelado:
+   a. Product.increment('stock', { by: quantity })
+   b. InventoryService.recordMovement(type='devolucao')
+```
+
+#### ❌ FICHA TÉCNICA NÃO IMPLEMENTADA
+
+**Estado atual**: Baixa é feita diretamente no produto, não em insumos
+
+```javascript
+// O que existe:
+Venda de "Caipirinha" → decrementa stock de "Caipirinha"
+
+// O que deveria existir:
+Venda de "Caipirinha" → decrementa:
+  - Limão (1 unidade)
+  - Cachaça (50ml)
+  - Açúcar (1 colher)
+```
+
+**Impacto**: Impossível saber qual insumo específico está faltando
+
+---
+
+### 9.7 MÓDULO DE CAIXA (Cashier)
+
+#### Modelo Cashier.js - Campos
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `operatorId` | UUID | FK User (quem abriu) |
+| `operatorName` | STRING | Nome desnormalizado |
+| `openedAt` | DATE | Data/hora abertura |
+| `closedAt` | DATE | Data/hora fechamento |
+| `status` | ENUM | open/closed |
+| `openingAmount` | DECIMAL | Valor inicial |
+| `closingAmount` | DECIMAL | Valor contado |
+| `totalSales` | DECIMAL | Total vendas dinheiro |
+| `totalDeposits` | DECIMAL | Total suprimentos |
+| `totalWithdrawals` | DECIMAL | Total sangrias |
+| `notes` | TEXT | Observações |
+| `closedBy` | UUID | FK User (quem fechou) |
+
+#### Modelo CashierMovement.js - Tipos
+
+| Tipo | Descrição |
+|------|-----------|
+| `sale` | Venda em dinheiro |
+| `deposit` | Suprimento (entrada) |
+| `withdrawal` | Sangria (saída) |
+| `opening` | Abertura do caixa |
+| `closing` | Fechamento do caixa |
+
+#### ⚠️ INTEGRAÇÃO COM PEDIDOS NÃO IMPLEMENTADA
+
+**Problema**: Quando um pedido é pago em dinheiro, **NÃO é registrado automaticamente no caixa**
+
+```javascript
+// O método existe:
+cashierService.registerSale(cashierId, orderId, orderNumber, amount, userId, userName)
+
+// Mas orderController.js NÃO chama esse método!
+```
+
+**Impacto**: Caixa fica desincronizado com vendas
+
+#### Cálculo de Fechamento
+
+```
+Esperado = Abertura + Vendas + Suprimentos - Sangrias
+Diferença = Contado - Esperado
+Resultado = "Sobra" (positivo) ou "Falta" (negativo)
+```
+
+---
+
+### 9.8 MÓDULO CRM/CAMPANHAS
+
+#### Campos CRM no User.js
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `totalOrders` | INTEGER | Total de pedidos |
+| `totalSpent` | DECIMAL | Total gasto R$ |
+| `lastVisit` | DATE | Última visita |
+| `lastOrderDate` | DATE | Último pedido |
+| `loyaltyTier` | ENUM | bronze/silver/gold/platinum |
+| `cashbackBalance` | DECIMAL | Saldo cashback |
+
+#### Modelo Campaign.js
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | UUID | PK |
+| `name` | STRING | Nome da campanha |
+| `description` | TEXT | Descrição |
+| `type` | ENUM | reactivation/promotion/loyalty/announcement |
+| `status` | ENUM | draft/active/paused/completed |
+| `targetType` | ENUM | all/inactive/tier/custom |
+| `targetFilters` | JSON | Filtros de segmentação |
+| `content` | JSON | {subject, body, sms} |
+| `channels` | JSON | ['email', 'sms'] |
+| `scheduledAt` | DATE | Agendamento |
+| `sentAt` | DATE | Data de envio |
+| `stats` | JSON | {totalTargets, sent, opened, clicked, converted} |
+
+#### Funcionalidades CRM Implementadas
+
+✅ Segmentação por tier, gasto, pedidos
+✅ Clientes inativos (30/60/90/180 dias)
+✅ Próximos de upgrade de tier
+✅ Dashboard com KPIs
+✅ Histórico de cashback
+
+#### ❌ Automações NÃO Implementadas
+
+- Boas-vindas automáticas
+- Campanhas de inatividade automáticas
+- Notificação de upgrade de tier
+- Campanha de aniversário
+- Agendamento de campanhas (campo existe mas não é usado)
+- Tracking de campanhas (opened, clicked nunca são atualizados)
+
+---
+
+### 9.9 INTEGRAÇÕES EXTERNAS
+
+#### Socket.IO - Eventos Principais
+
+**Pedidos:**
+- `order_created`, `order_status_updated`, `order_ready_alert`
+- `order_picked_up`, `order_delivered`, `order_cancelled`
+
+**Narguilé:**
+- `hookah:session_started`, `hookah:coal_changed`, `hookah:coal_change_alert`
+- `hookah:paused`, `hookah:resumed`, `hookah:overtime_warning`
+
+**Reservas:**
+- `reservation:new`, `reservation:confirmed`, `reservation:cancelled`
+- `reservation:arrived`, `reservation:reminder_sent`
+
+#### Stripe - Status
+
+| Item | Status |
+|------|--------|
+| Pagamento com cartão | ✅ Implementado |
+| Pagamento PIX | ✅ Implementado |
+| Webhooks | ⚠️ Incompleto (TODO no código) |
+| Modo | **TESTE** (sk_test_*) |
+
+#### 🔴 PROBLEMAS CRÍTICOS DE SEGURANÇA
+
+1. **Google OAuth**: Credenciais expostas em `.env` no repositório
+2. **WhatsApp**: Número pessoal hardcoded (+5521995354010)
+3. **Push VAPID**: Chaves padrão hardcoded no código
+4. **Stripe**: Modo teste em produção
+
+#### Variáveis de Ambiente Críticas
+
+```env
+# EXPOSTAS OU NÃO CONFIGURADAS:
+GOOGLE_CLIENT_ID=611018665878-...  # EXPOSTO
+GOOGLE_CLIENT_SECRET=GOCSPX-...    # EXPOSTO
+FLAME_WHATSAPP_NUMBER=+5521995354010  # NÚMERO PESSOAL
+VAPID_PUBLIC_KEY=BLN9wBx...  # DEFAULT HARDCODED
+VAPID_PRIVATE_KEY=nJqz_CE...  # DEFAULT HARDCODED
+STRIPE_SECRET_KEY=sk_test_...  # MODO TESTE
+```
+
+---
+
+## 10. AÇÕES PRIORITÁRIAS
+
+### 🔴 CRÍTICO (Segurança e Funcionamento)
+
+1. **Remover .env do repositório** e revogar credenciais Google
+2. **Corrigir URL do QR Code** em 4 locais do tableController
+3. **Adicionar validação de role** no productController
+4. **Adicionar autenticação** no webhook de pagamento
+5. **Corrigir job de no-show** (campo `r.time` não existe)
+6. **Remover número pessoal** do whatsapp.service.js
+7. **Gerar VAPID keys únicas** (não usar default)
+
+### 🟠 ALTO (Funcionalidade Quebrada)
+
+8. **Implementar uso de cashback** no checkout
+9. **Integrar caixa com pedidos** em dinheiro
+10. **Adicionar socket listeners** no frontend do narguilé
+11. **Padronizar status de mesas** entre model/controller/frontend
+12. **Completar webhook Stripe** (atualizar status do pedido)
+
+### 🟡 MÉDIO (Melhorias)
+
+13. Implementar ficha técnica (receita com insumos)
+14. Implementar automações de CRM
+15. Adicionar Push Notifications no service worker
+16. Implementar tracking de campanhas
+
+---
+
+*FLAME PRD v3.3.0 - Atualizado em 07/12/2024*
+*Documento sincronizado com auditoria completa de todos os módulos*

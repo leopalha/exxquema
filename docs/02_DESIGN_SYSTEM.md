@@ -508,4 +508,285 @@ darkMode: 'class', // Controlado via classe no <html>
 
 ---
 
-*FLAME Design System v1.0*
+## 11. COMPONENTES REUTILIZÁVEIS
+
+### 11.1 Button Component
+
+**Arquivo**: `frontend/src/components/Button.js`
+
+**Importação**:
+```jsx
+import Button, { IconButton, ButtonGroup } from '../components/Button';
+```
+
+**Variantes disponíveis**:
+
+| Variante | Descrição | Uso |
+|----------|-----------|-----|
+| `primary` | Magenta sólido (--theme-primary) | CTAs principais |
+| `secondary` | Outline magenta | CTAs secundários |
+| `accent` | Roxo sólido (--theme-accent) | Destaque |
+| `ghost` | Transparente | Ações discretas |
+| `danger` | Vermelho | Ações destrutivas |
+| `success` | Verde | Confirmações |
+| `outline` | Borda cinza | Ações neutras |
+| `dark` | Cinza escuro | Botões em dark mode |
+
+**Tamanhos**: `xs`, `sm`, `md` (padrão), `lg`, `xl`
+
+**Props**:
+```typescript
+{
+  variant?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger' | 'success' | 'outline' | 'dark';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  loading?: boolean;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
+```
+
+**Exemplos**:
+```jsx
+// Botão primário
+<Button variant="primary" onClick={handleClick}>
+  Confirmar
+</Button>
+
+// Botão com loading
+<Button variant="primary" loading>
+  Salvando...
+</Button>
+
+// Botão com ícone
+<Button variant="secondary" leftIcon={<Plus className="w-4 h-4" />}>
+  Adicionar
+</Button>
+
+// Botão de ícone
+<IconButton
+  variant="ghost"
+  icon={<Trash className="w-5 h-5" />}
+  aria-label="Excluir"
+/>
+```
+
+### 11.2 Input Components
+
+**Arquivo**: `frontend/src/components/Input.js`
+
+**Importação**:
+```jsx
+import Input, {
+  PasswordInput,
+  SearchInput,
+  TextArea,
+  Select,
+  Checkbox,
+  Toggle
+} from '../components/Input';
+```
+
+**Componentes disponíveis**:
+
+| Componente | Descrição |
+|------------|-----------|
+| `Input` | Input base com label, error, hint, ícones |
+| `PasswordInput` | Input de senha com toggle de visibilidade |
+| `SearchInput` | Input de busca com ícone e botão limpar |
+| `TextArea` | Área de texto multilinha |
+| `Select` | Dropdown estilizado |
+| `Checkbox` | Checkbox com label |
+| `Toggle` | Switch on/off com label e descrição |
+
+**Props comuns**:
+```typescript
+{
+  label?: string;
+  error?: string;
+  hint?: string;
+  disabled?: boolean;
+  required?: boolean;
+  fullWidth?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+}
+```
+
+**Exemplos**:
+```jsx
+// Input básico
+<Input
+  label="Email"
+  type="email"
+  placeholder="seu@email.com"
+  required
+/>
+
+// Input com erro
+<Input
+  label="Nome"
+  error="Nome é obrigatório"
+/>
+
+// Input de senha
+<PasswordInput
+  label="Senha"
+  placeholder="••••••••"
+/>
+
+// Select
+<Select
+  label="Categoria"
+  options={[
+    { value: 'food', label: 'Comida' },
+    { value: 'drink', label: 'Bebida' },
+  ]}
+/>
+
+// Toggle
+<Toggle
+  label="Notificações"
+  description="Receber alertas push"
+  checked={enabled}
+  onChange={(e) => setEnabled(e.target.checked)}
+/>
+```
+
+### 11.3 Loading & Skeleton Components
+
+**Arquivo**: `frontend/src/components/LoadingSpinner.js`
+
+**Importação**:
+```jsx
+import LoadingSpinner, {
+  SkeletonCard,
+  SkeletonList,
+  SkeletonTable,
+  SkeletonChart,
+  SkeletonProductCard,
+  SkeletonOrderCard,
+  SkeletonProfile,
+  SkeletonStats,
+  SkeletonMenu,
+  SkeletonForm,
+  InlineLoader,
+  PageLoader
+} from '../components/LoadingSpinner';
+```
+
+**Componentes disponíveis**:
+
+| Componente | Uso |
+|------------|-----|
+| `LoadingSpinner` | Spinner animado com texto opcional |
+| `SkeletonCard` | Placeholder para cards genéricos |
+| `SkeletonList` | Placeholder para listas |
+| `SkeletonTable` | Placeholder para tabelas |
+| `SkeletonChart` | Placeholder para gráficos |
+| `SkeletonProductCard` | Placeholder para cards de produto |
+| `SkeletonOrderCard` | Placeholder para cards de pedido |
+| `SkeletonProfile` | Placeholder para página de perfil |
+| `SkeletonStats` | Placeholder para cards de estatísticas |
+| `SkeletonMenu` | Placeholder para cardápio |
+| `SkeletonForm` | Placeholder para formulários |
+| `InlineLoader` | Loader inline com texto |
+| `PageLoader` | Loader de página inteira |
+
+**LoadingSpinner Props**:
+```typescript
+{
+  size?: 'small' | 'medium' | 'large' | 'xl';
+  color?: 'orange' | 'white' | 'gray';
+  text?: string;
+  fullScreen?: boolean;
+}
+```
+
+**Exemplos**:
+```jsx
+// Spinner básico
+<LoadingSpinner text="Carregando..." />
+
+// Spinner fullscreen
+<LoadingSpinner fullScreen text="Processando..." />
+
+// Skeleton de cards de produto
+{loading && (
+  <div className="grid grid-cols-3 gap-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <SkeletonProductCard key={i} />
+    ))}
+  </div>
+)}
+
+// Loader de página
+{loading && <PageLoader text="Carregando cardápio..." />}
+
+// Loader inline
+<InlineLoader text="Buscando..." />
+```
+
+---
+
+## 12. CSS VARIABLES (TEMAS)
+
+O sistema usa CSS variables para suportar temas dinâmicos:
+
+```css
+:root {
+  --theme-primary: #FF006E;      /* Magenta */
+  --theme-accent: #B266FF;       /* Purple */
+  --theme-secondary: #00D4FF;    /* Cyan */
+  --theme-primary-rgb: 255, 0, 110;
+  --theme-accent-rgb: 178, 102, 255;
+  --theme-secondary-rgb: 0, 212, 255;
+}
+```
+
+**Temas disponíveis**:
+
+| Tema | Primary | Accent | Secondary |
+|------|---------|--------|-----------|
+| FLAME (padrão) | Magenta | Purple | Cyan |
+| INFERNO | Red | Purple | Orange |
+| PASSION | Wine | Pink | Rose |
+| NEON | Purple | Green | Lime |
+| TWILIGHT | Purple | Lavender | Blue |
+| AMBER | Gold | Pink | Yellow |
+
+**Uso em componentes**:
+```jsx
+// Inline style
+<div style={{ background: 'var(--theme-primary)' }}>
+
+// Com transparência (usando RGB)
+<div style={{ background: 'rgba(var(--theme-primary-rgb), 0.2)' }}>
+
+// Classe Tailwind customizada
+<div className="bg-[var(--theme-primary)]">
+```
+
+**Troca de tema** (via `useThemeStore`):
+```jsx
+const { currentTheme, setTheme, getPalette } = useThemeStore();
+setTheme('inferno');
+```
+
+---
+
+## 13. BOAS PRÁTICAS
+
+1. **Use CSS Variables** para cores do tema (nunca hardcode)
+2. **Use componentes reutilizáveis** (Button, Input) em vez de estilos inline
+3. **Mantenha consistência** nos espaçamentos (múltiplos de 4px)
+4. **Use Framer Motion** para animações
+5. **Teste em diferentes breakpoints** (mobile-first)
+6. **Garanta contraste adequado** (WCAG AA)
+7. **Use estados de loading** apropriados (skeletons > spinners)
+8. **Sempre inclua estados de erro** nos formulários
+9. **Prefira dark mode** - o sistema é dark-first
+
+---
+
+*FLAME Design System v2.0 - Atualizado 07/12/2024*

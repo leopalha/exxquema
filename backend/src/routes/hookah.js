@@ -18,14 +18,16 @@ router.get('/popular-flavors', hookahController.getPopularFlavors);
 router.get('/flavors/category/:category', hookahController.getFlavorsByCategory);
 
 /**
- * Rotas Protegidas (Staff Bar)
+ * Rotas Protegidas (Staff Atendente)
+ * NOTA: Narguilé é controlado pelo ATENDENTE, não pelo Bar
+ * - Atendente acende, troca carvão, controla sessão na mesa
  */
 
 // POST /api/hookah/sessions - Criar nova sessão
 router.post(
   '/sessions',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.createSession
 );
 
@@ -33,7 +35,7 @@ router.post(
 router.get(
   '/sessions',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.getActiveSessions
 );
 
@@ -41,7 +43,7 @@ router.get(
 router.get(
   '/sessions/:id',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.getSessionDetails
 );
 
@@ -49,7 +51,7 @@ router.get(
 router.put(
   '/sessions/:id/coal',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.registerCoalChange
 );
 
@@ -57,7 +59,7 @@ router.put(
 router.put(
   '/sessions/:id/pause',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.pauseSession
 );
 
@@ -65,7 +67,7 @@ router.put(
 router.put(
   '/sessions/:id/resume',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.resumeSession
 );
 
@@ -73,7 +75,7 @@ router.put(
 router.put(
   '/sessions/:id/end',
   authenticate,
-  requireRole(['bar', 'staff', 'admin']),
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
   hookahController.endSession
 );
 

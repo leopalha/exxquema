@@ -16,23 +16,21 @@ async function checkNoShows() {
 
   try {
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
 
     // Horário limite: 15 minutos atrás
     const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
 
-    // Buscar reservas confirmadas de hoje que já passaram do horário
-    const reservations = await Reservation.findAll({
+    // Buscar reservas confirmadas que:
+    // 1. Já passaram 15 minutos do horário agendado
+    // 2. Cliente não chegou (arrivedAt é null)
+    const noShowReservations = await Reservation.findAll({
       where: {
         status: 'confirmed',
-        reservationDate: today
+        arrivedAt: null,
+        reservationDate: {
+          [Op.lte]: fifteenMinutesAgo  // reservationDate inclui data E hora
+        }
       }
-    });
-
-    // Filtrar reservas que já passaram 15 minutos do horário
-    const noShowReservations = reservations.filter(r => {
-      const reservationDateTime = new Date(`${r.reservationDate}T${r.time}`);
-      return reservationDateTime < fifteenMinutesAgo;
     });
 
     console.log(`[NO-SHOW] Encontradas ${noShowReservations.length} reservas para marcar como no-show`);

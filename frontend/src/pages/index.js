@@ -118,7 +118,7 @@ export default function Home() {
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="absolute top-1/4 left-1/4 w-96 h-96 bg-magenta-500 rounded-full blur-3xl"
+                className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--theme-primary)] rounded-full blur-3xl"
               />
               <motion.div
                 animate={{
@@ -131,7 +131,7 @@ export default function Home() {
                   ease: "easeInOut",
                   delay: 1
                 }}
-                className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500 rounded-full blur-3xl"
+                className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--theme-secondary)] rounded-full blur-3xl"
               />
             </div>
 
@@ -173,7 +173,7 @@ export default function Home() {
                 >
                   Drinks + Gastronomia + Narguile
                 </p>
-                <p className="text-sm sm:text-base md:text-lg text-neutral-300 max-w-2xl mx-auto leading-relaxed px-6 sm:px-4">
+                <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed px-6 sm:px-4">
                   Onde o sabor encontra a sofisticacao. Drinks autorais, gastronomia premium e narguile em Botafogo.
                 </p>
               </motion.div>
@@ -197,7 +197,7 @@ export default function Home() {
                 </div>
 
                 <div
-                  className="flex items-center gap-2 text-neutral-300 bg-neutral-900/50 backdrop-blur-sm px-5 py-2.5 rounded-full"
+                  className="flex items-center gap-2 text-gray-300 bg-gray-900/50 backdrop-blur-sm px-5 py-2.5 rounded-full"
                   style={{ borderWidth: '1px', borderStyle: 'solid', borderColor: 'color-mix(in srgb, var(--theme-primary) 20%, transparent)' }}
                 >
                   <MapPin className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
@@ -213,13 +213,14 @@ export default function Home() {
               >
                 <Link
                   href="/cardapio"
-                  className="group relative text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl sm:hover:scale-105 overflow-hidden w-full sm:w-auto hover:opacity-90"
+                  className="group relative px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl sm:hover:scale-105 overflow-hidden w-full sm:w-auto hover:opacity-90"
                   style={{
-                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`,
+                    color: 'white'
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <span className="relative z-10 text-white">Ver Cardápio</span>
+                  <span className="relative z-10">Ver Cardápio</span>
                   <svg className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
@@ -227,14 +228,15 @@ export default function Home() {
 
                 <Link
                   href="/historia"
-                  className="group bg-black/40 backdrop-blur-sm border-2 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
+                  className="group bg-black/40 backdrop-blur-sm border-2 px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
                   style={{
-                    borderColor: 'var(--theme-primary)'
+                    borderColor: 'var(--theme-primary)',
+                    color: 'white'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--theme-primary)'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.4)'}
                 >
-                  <span className="z-10 text-white">Nossa História</span>
+                  <span className="z-10">Nossa História</span>
                   <svg className="z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -271,8 +273,8 @@ export default function Home() {
           >
             {/* Background accent */}
             <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-magenta-500 to-transparent" />
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--theme-primary)] to-transparent" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-[var(--theme-secondary)] to-transparent" />
             </div>
 
             <div className="max-w-6xl mx-auto px-4 relative z-10">
@@ -283,7 +285,7 @@ export default function Home() {
                   viewport={{ once: true }}
                   className="inline-block mb-4"
                 >
-                  <span className="text-magenta-400 font-semibold tracking-wider uppercase text-sm">
+                  <span className="text-[var(--theme-primary)] font-semibold tracking-wider uppercase text-sm">
                     O Melhor de Botafogo
                   </span>
                 </motion.div>
@@ -306,7 +308,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
-                  className="text-xl text-neutral-400 max-w-3xl mx-auto leading-relaxed"
+                  className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed"
                 >
                   Experiencia completa em um so lugar: drinks, gastronomia e narguile premium
                 </motion.p>
@@ -325,17 +327,17 @@ export default function Home() {
                     className="absolute inset-0 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-20"
                     style={{ background: 'radial-gradient(circle, var(--theme-primary) 0%, transparent 70%)' }}
                   />
-                  <div className="relative bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-8 rounded-2xl border border-magenta-500/20 group-hover:border-magenta-500/40 transition-all">
+                  <div className="relative bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm p-8 rounded-2xl border border-[var(--theme-primary)]/20 group-hover:border-[var(--theme-primary)]/40 transition-all">
                     <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg" style={{
                       background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
                       boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)'
                     }}>
                       <Wine className="w-10 h-10 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-magenta-400 transition-colors">
+                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[var(--theme-primary)] transition-colors">
                       Drinks Autorais
                     </h3>
-                    <p className="text-neutral-400 leading-relaxed">
+                    <p className="text-gray-400 leading-relaxed">
                       Criacoes exclusivas dos nossos bartenders com ingredientes premium e apresentacao impecavel.
                     </p>
                   </div>
@@ -350,14 +352,14 @@ export default function Home() {
                   className="group relative"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-8 rounded-2xl border border-purple-500/20 group-hover:border-purple-500/40 transition-all">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/30">
+                  <div className="relative bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm p-8 rounded-2xl border border-purple-500/20 group-hover:border-purple-500/40 transition-all">
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-[var(--theme-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/30">
                       <Zap className="w-10 h-10 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-purple-400 transition-colors">
                       Gastronomia Premium
                     </h3>
-                    <p className="text-neutral-400 leading-relaxed">
+                    <p className="text-gray-400 leading-relaxed">
                       Pratos elaborados com ingredientes selecionados para harmonizar com nossos drinks.
                     </p>
                   </div>
@@ -371,15 +373,15 @@ export default function Home() {
                   whileHover={{ y: -8 }}
                   className="group relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-8 rounded-2xl border border-cyan-500/20 group-hover:border-cyan-500/40 transition-all">
-                    <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-magenta-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/30">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--theme-secondary)]/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm p-8 rounded-2xl border border-[var(--theme-secondary)]/20 group-hover:border-[var(--theme-secondary)]/40 transition-all">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[var(--theme-secondary)] to-[var(--theme-primary)] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-[var(--theme-secondary)]/30">
                       <Flame className="w-10 h-10 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[var(--theme-secondary)] transition-colors">
                       Narguile Premium
                     </h3>
-                    <p className="text-neutral-400 leading-relaxed">
+                    <p className="text-gray-400 leading-relaxed">
                       Variedade de sabores importados com atendimento especializado para sua sessão perfeita.
                     </p>
                   </div>
@@ -415,7 +417,7 @@ export default function Home() {
                   className="text-center mb-16"
                 >
                   <div className="inline-block mb-4">
-                    <span className="text-magenta-400 font-semibold text-sm uppercase tracking-wider bg-magenta-500/10 px-4 py-2 rounded-full border border-magenta-500/30">
+                    <span className="text-[var(--theme-primary)] font-semibold text-sm uppercase tracking-wider bg-[var(--theme-primary)]/10 px-4 py-2 rounded-full border border-[var(--theme-primary)]/30">
                       Nosso Cardapio
                     </span>
                   </div>
@@ -430,7 +432,7 @@ export default function Home() {
                     </span>
                     {' '}Especiais
                   </h2>
-                  <p className="text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
                     Nossos produtos mais pedidos e criacoes especiais da casa
                   </p>
                 </motion.div>
@@ -462,10 +464,11 @@ export default function Home() {
                 >
                   <Link
                     href="/cardapio"
-                    className="group relative text-white px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
+                    className="group relative px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
                     style={{
                       background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+                      color: 'white'
                     }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -506,7 +509,7 @@ export default function Home() {
                   transition={{ duration: 0.6 }}
                 >
                   <div className="mb-6">
-                    <span className="text-magenta-400 font-semibold text-sm uppercase tracking-wider bg-magenta-500/10 px-4 py-2 rounded-full border border-magenta-500/30">
+                    <span className="text-[var(--theme-primary)] font-semibold text-sm uppercase tracking-wider bg-[var(--theme-primary)]/10 px-4 py-2 rounded-full border border-[var(--theme-primary)]/30">
                       Localizacao
                     </span>
                   </div>
@@ -521,14 +524,14 @@ export default function Home() {
                       Visitar
                     </span>
                   </h2>
-                  <p className="text-xl text-neutral-400 mb-10 leading-relaxed">
+                  <p className="text-xl text-gray-400 mb-10 leading-relaxed">
                     Estamos localizados no coracao de Botafogo, facil acesso e estacionamento proximo.
                   </p>
 
                   <div className="space-y-6 mb-10">
                     <motion.div
                       whileHover={{ x: 5 }}
-                      className="group flex items-start gap-4 bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-5 rounded-xl border border-magenta-500/20 hover:border-magenta-500/40 transition-all"
+                      className="group flex items-start gap-4 bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm p-5 rounded-xl border border-[var(--theme-primary)]/20 hover:border-[var(--theme-primary)]/40 transition-all"
                     >
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg" style={{
                         background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-accent))',
@@ -538,20 +541,20 @@ export default function Home() {
                       </div>
                       <div>
                         <div className="text-white font-semibold mb-1">Endereco</div>
-                        <span className="text-neutral-300">Rua Arnaldo Quintela 19, Botafogo - RJ</span>
+                        <span className="text-gray-300">Rua Arnaldo Quintela 19, Botafogo - RJ</span>
                       </div>
                     </motion.div>
 
                     <motion.div
                       whileHover={{ x: 5 }}
-                      className="group flex items-start gap-4 bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm p-5 rounded-xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
+                      className="group flex items-start gap-4 bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm p-5 rounded-xl border border-[var(--theme-secondary)]/20 hover:border-[var(--theme-secondary)]/40 transition-all"
                     >
-                      <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/30">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[var(--theme-secondary)] to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-[var(--theme-secondary)]/30">
                         <Clock className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <div className="text-white font-semibold mb-2">Horario de Funcionamento</div>
-                        <div className="text-neutral-300 space-y-1">
+                        <div className="text-gray-300 space-y-1">
                           <div>Dom-Qui: 18h as 02h</div>
                           <div>Sex-Sab: 18h as 03h</div>
                         </div>
@@ -562,10 +565,11 @@ export default function Home() {
                   <Link
                     href="https://maps.google.com"
                     target="_blank"
-                    className="group relative text-white px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
+                    className="group relative px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
                     style={{
                       background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
+                      color: 'white'
                     }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -585,9 +589,9 @@ export default function Home() {
                   className="relative group"
                 >
                   {/* Glowing border effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-magenta-500/30 via-purple-500/20 to-cyan-500/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--theme-primary)]/30 via-purple-500/20 to-[var(--theme-secondary)]/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
 
-                  <div className="relative bg-gradient-to-br from-neutral-900/90 to-neutral-900/50 backdrop-blur-sm rounded-2xl p-6 border border-magenta-500/30 h-[500px] overflow-hidden">
+                  <div className="relative bg-gradient-to-br from-gray-900/90 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-[var(--theme-primary)]/30 h-[500px] overflow-hidden">
                     <iframe
                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3675.0987654321!2d-43.1847!3d-22.9496!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDU2JzU4LjYiUyA0M8KwMTEnMDQuOSJX!5e0!3m2!1spt-BR!2sbr!4v1234567890!5m2!1spt-BR!2sbr"
                       width="100%"
@@ -600,13 +604,13 @@ export default function Home() {
                     />
 
                     {/* Overlay com informações */}
-                    <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-magenta-500/30">
+                    <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm p-4 rounded-lg border border-[var(--theme-primary)]/30">
                       <div className="flex items-start gap-3">
-                        <Flame className="w-5 h-5 text-magenta-400 flex-shrink-0 mt-1" />
+                        <Flame className="w-5 h-5 text-[var(--theme-primary)] flex-shrink-0 mt-1" />
                         <div>
                           <p className="text-white font-semibold mb-1">FLAME Lounge Bar</p>
-                          <p className="text-neutral-400 text-sm">Botafogo, Rio de Janeiro</p>
-                          <p className="text-neutral-400 text-sm">Rua Arnaldo Quintela, 19</p>
+                          <p className="text-gray-400 text-sm">Botafogo, Rio de Janeiro</p>
+                          <p className="text-gray-400 text-sm">Rua Arnaldo Quintela, 19</p>
                         </div>
                       </div>
                     </div>

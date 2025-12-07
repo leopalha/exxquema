@@ -275,6 +275,7 @@ export default function PainelCozinha() {
                             order={order}
                             onStatusUpdate={handleStatusUpdate}
                             onTimerAlert={handleTimerAlert}
+                            userRole="cozinha"
                           />
                         ))}
                       </div>
@@ -293,6 +294,7 @@ export default function PainelCozinha() {
                             order={order}
                             onStatusUpdate={handleStatusUpdate}
                             onTimerAlert={handleTimerAlert}
+                            userRole="cozinha"
                           />
                         ))}
                       </div>

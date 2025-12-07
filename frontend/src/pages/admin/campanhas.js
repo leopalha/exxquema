@@ -23,8 +23,7 @@ import {
   ChevronRight,
   Zap
 } from 'lucide-react';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import Layout from '../../components/Layout';
 import useCampaignStore from '../../stores/campaignStore';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from 'react-hot-toast';
@@ -203,23 +202,23 @@ export default function AdminCampanhas() {
         <title>Campanhas de Marketing - FLAME Admin</title>
       </Head>
 
-      <div className="min-h-screen bg-black text-white">
-        <Header />
-
-        <main className="max-w-7xl mx-auto px-4 py-24">
+      <Layout>
+        <div className="min-h-screen pt-16 bg-black text-white">
+          <main className="max-w-7xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 Campanhas de Marketing
               </h1>
-              <p className="text-zinc-400">
+              <p className="text-gray-400">
                 Gerencie campanhas de email e SMS para seus clientes
               </p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-magenta-600 hover:bg-magenta-700 text-white font-medium rounded-lg transition-colors"
+              className="flex items-center gap-2 px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90"
+              style={{ background: 'var(--theme-primary)' }}
             >
               <Plus className="w-5 h-5" />
               Nova Campanha
@@ -232,11 +231,11 @@ export default function AdminCampanhas() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-6"
+                className="bg-gray-900 border border-gray-800 rounded-xl p-6"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <Megaphone className="w-5 h-5 text-magenta-400" />
-                  <span className="text-zinc-400 text-sm">Total</span>
+                  <Megaphone className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
+                  <span className="text-gray-400 text-sm">Total</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </motion.div>
@@ -245,11 +244,11 @@ export default function AdminCampanhas() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-6"
+                className="bg-gray-900 border border-gray-800 rounded-xl p-6"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <Play className="w-5 h-5 text-green-400" />
-                  <span className="text-zinc-400 text-sm">Ativas</span>
+                  <span className="text-gray-400 text-sm">Ativas</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.active}</p>
               </motion.div>
@@ -258,11 +257,11 @@ export default function AdminCampanhas() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-6"
+                className="bg-gray-900 border border-gray-800 rounded-xl p-6"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <Check className="w-5 h-5 text-blue-400" />
-                  <span className="text-zinc-400 text-sm">Concluídas</span>
+                  <span className="text-gray-400 text-sm">Concluídas</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
               </motion.div>
@@ -271,11 +270,11 @@ export default function AdminCampanhas() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-6"
+                className="bg-gray-900 border border-gray-800 rounded-xl p-6"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-5 h-5 text-cyan-400" />
-                  <span className="text-zinc-400 text-sm">Alcançados</span>
+                  <span className="text-gray-400 text-sm">Alcançados</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.totalReached || 0}</p>
               </motion.div>
@@ -283,7 +282,7 @@ export default function AdminCampanhas() {
           )}
 
           {/* Quick Actions */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-8">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-8">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-400" />
               Ações Rápidas - Campanhas de Reativação
@@ -308,10 +307,10 @@ export default function AdminCampanhas() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-magenta-500"></div>
             </div>
           ) : campaigns.length === 0 ? (
-            <div className="text-center py-12 bg-zinc-900 rounded-xl border border-zinc-800">
-              <Megaphone className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400 text-lg">Nenhuma campanha criada</p>
-              <p className="text-zinc-500 text-sm mt-2">
+            <div className="text-center py-12 bg-gray-900 rounded-xl border border-gray-800">
+              <Megaphone className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">Nenhuma campanha criada</p>
+              <p className="text-gray-500 text-sm mt-2">
                 Crie sua primeira campanha para alcançar seus clientes
               </p>
             </div>
@@ -327,7 +326,7 @@ export default function AdminCampanhas() {
                     key={campaign.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors"
+                    className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -337,7 +336,7 @@ export default function AdminCampanhas() {
                           </div>
                           <div>
                             <h3 className="font-semibold text-white">{campaign.name}</h3>
-                            <p className="text-sm text-zinc-500">{campaign.description || 'Sem descrição'}</p>
+                            <p className="text-sm text-gray-500">{campaign.description || 'Sem descrição'}</p>
                           </div>
                         </div>
 
@@ -349,13 +348,13 @@ export default function AdminCampanhas() {
                             {type.name}
                           </span>
                           {campaign.channels?.includes('email') && (
-                            <span className="flex items-center gap-1 text-zinc-400">
+                            <span className="flex items-center gap-1 text-gray-400">
                               <Mail className="w-4 h-4" />
                               Email
                             </span>
                           )}
                           {campaign.channels?.includes('sms') && (
-                            <span className="flex items-center gap-1 text-zinc-400">
+                            <span className="flex items-center gap-1 text-gray-400">
                               <MessageSquare className="w-4 h-4" />
                               SMS
                             </span>
@@ -363,7 +362,7 @@ export default function AdminCampanhas() {
                         </div>
 
                         {campaign.stats && campaign.status !== 'draft' && (
-                          <div className="flex items-center gap-6 mt-4 text-sm text-zinc-400">
+                          <div className="flex items-center gap-6 mt-4 text-sm text-gray-400">
                             <span>
                               <strong className="text-white">{campaign.stats.totalTargets}</strong> alvos
                             </span>
@@ -435,17 +434,17 @@ export default function AdminCampanhas() {
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="p-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                    className="p-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <span className="text-zinc-400">
+                  <span className="text-gray-400">
                     Página {pagination.page} de {pagination.totalPages}
                   </span>
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="p-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                    className="p-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -453,10 +452,9 @@ export default function AdminCampanhas() {
               )}
             </div>
           )}
-        </main>
-
-        <Footer />
-      </div>
+          </main>
+        </div>
+      </Layout>
 
       {/* Create Campaign Modal */}
       <AnimatePresence>
@@ -472,14 +470,14 @@ export default function AdminCampanhas() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold">Nova Campanha</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -488,14 +486,14 @@ export default function AdminCampanhas() {
               <form onSubmit={handleCreateCampaign} className="space-y-6">
                 {/* Name */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Nome da Campanha *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none outline-none"
                     placeholder="Ex: Promoção de Verão"
                     required
                   />
@@ -503,13 +501,13 @@ export default function AdminCampanhas() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Descrição
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none resize-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none outline-none resize-none"
                     rows={3}
                     placeholder="Descrição da campanha..."
                   />
@@ -517,7 +515,7 @@ export default function AdminCampanhas() {
 
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Tipo de Campanha
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -531,7 +529,7 @@ export default function AdminCampanhas() {
                           className={`flex items-center gap-3 p-4 rounded-lg border transition-all ${
                             formData.type === key
                               ? `${config.bg} border-current ${config.color}`
-                              : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                              : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600'
                           }`}
                         >
                           <Icon className="w-5 h-5" />
@@ -544,13 +542,13 @@ export default function AdminCampanhas() {
 
                 {/* Target */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Público-alvo
                   </label>
                   <select
                     value={formData.targetType}
                     onChange={(e) => setFormData({ ...formData, targetType: e.target.value })}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none outline-none"
                   >
                     <option value="all">Todos os clientes</option>
                     <option value="inactive">Clientes inativos</option>
@@ -561,7 +559,7 @@ export default function AdminCampanhas() {
                 {/* Inactive Days Filter */}
                 {formData.targetType === 'inactive' && (
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Inativos há quantos dias?
                     </label>
                     <select
@@ -570,7 +568,7 @@ export default function AdminCampanhas() {
                         ...formData,
                         targetFilters: { ...formData.targetFilters, inactiveDays: parseInt(e.target.value) }
                       })}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none outline-none"
                     >
                       <option value={30}>30 dias</option>
                       <option value={60}>60 dias</option>
@@ -582,7 +580,7 @@ export default function AdminCampanhas() {
 
                 {/* Content */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Assunto do Email
                   </label>
                   <input
@@ -592,13 +590,13 @@ export default function AdminCampanhas() {
                       ...formData,
                       content: { ...formData.content, subject: e.target.value }
                     })}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none outline-none"
                     placeholder="Ex: Sentimos sua falta!"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Corpo do Email
                   </label>
                   <textarea
@@ -607,7 +605,7 @@ export default function AdminCampanhas() {
                       ...formData,
                       content: { ...formData.content, body: e.target.value }
                     })}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:border-magenta-500 focus:ring-1 focus:ring-magenta-500 outline-none resize-none"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none outline-none resize-none"
                     rows={4}
                     placeholder="Use {nome} para personalizar a mensagem..."
                   />
@@ -615,7 +613,7 @@ export default function AdminCampanhas() {
 
                 {/* Channels */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Canais de Envio
                   </label>
                   <div className="flex gap-3">
@@ -630,7 +628,7 @@ export default function AdminCampanhas() {
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                         formData.channels.includes('email')
                           ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                          : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                          : 'bg-gray-800 border-gray-700 text-gray-400'
                       }`}
                     >
                       <Mail className="w-4 h-4" />
@@ -647,7 +645,7 @@ export default function AdminCampanhas() {
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
                         formData.channels.includes('sms')
                           ? 'bg-green-500/20 border-green-500 text-green-400'
-                          : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                          : 'bg-gray-800 border-gray-700 text-gray-400'
                       }`}
                     >
                       <MessageSquare className="w-4 h-4" />
@@ -661,14 +659,15 @@ export default function AdminCampanhas() {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
+                    className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-magenta-600 hover:bg-magenta-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors"
+                    className="flex-1 px-6 py-3 disabled:opacity-50 text-white font-medium rounded-lg transition-all hover:opacity-90"
+                    style={{ background: 'var(--theme-primary)' }}
                   >
                     {loading ? 'Criando...' : 'Criar Campanha'}
                   </button>

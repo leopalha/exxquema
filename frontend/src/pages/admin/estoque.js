@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import useInventoryStore from '../../stores/inventoryStore';
-import useThemeStore from '../../stores/themeStore';
 import InventoryTable from '../../components/InventoryTable';
 import InventoryChart from '../../components/InventoryChart';
 
@@ -33,9 +32,6 @@ const EstoqueAdminPage = () => {
     generateReport,
     clearError
   } = useInventoryStore();
-
-  const { getPalette } = useThemeStore();
-  const palette = getPalette();
 
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -106,9 +102,9 @@ const EstoqueAdminPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-gradient-to-r from-gray-900 to-gray-800 border-b border-gray-700 p-4 sm:p-6">
+      <div className="sticky top-0 z-40 bg-gray-900 border-b border-gray-800 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -170,11 +166,11 @@ const EstoqueAdminPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 bg-gradient-to-br from-blue-900/20 to-blue-800/10 rounded-2xl border border-blue-500/30"
+            className="p-6 bg-gray-900 rounded-2xl border border-gray-700"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-400">TOTAL DE PRODUTOS</h3>
-              <Package className="w-5 h-5" style={{ color: palette.primary }} />
+              <Package className="w-5 h-5 text-blue-400" />
             </div>
             <p className="text-3xl font-bold text-white">{products.length}</p>
             <p className="text-xs text-gray-500 mt-2">Com controle de estoque</p>
@@ -185,13 +181,13 @@ const EstoqueAdminPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-6 bg-gradient-to-br from-[var(--theme-primary)]/20 to-[var(--theme-secondary)]/10 rounded-2xl border border-[var(--theme-primary)]/30"
+            className="p-6 bg-gray-900 rounded-2xl border border-gray-700"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-400">CRÍTICOS</h3>
-              <AlertTriangle className="w-5 h-5 text-[var(--theme-primary)]" />
+              <AlertTriangle className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
             </div>
-            <p className="text-3xl font-bold text-[var(--theme-primary)]">{alerts.critical}</p>
+            <p className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>{alerts.critical}</p>
             <p className="text-xs text-gray-500 mt-2">Sem estoque</p>
           </motion.div>
 
@@ -200,7 +196,7 @@ const EstoqueAdminPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 rounded-2xl border border-yellow-500/30"
+            className="p-6 bg-gray-900 rounded-2xl border border-gray-700"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-400">ALERTAS</h3>
@@ -215,11 +211,11 @@ const EstoqueAdminPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-gradient-to-br from-purple-900/20 to-purple-800/10 rounded-2xl border border-purple-500/30"
+            className="p-6 bg-gray-900 rounded-2xl border border-gray-700"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-400">URGENTE</h3>
-              <Plus className="w-5 h-5" style={{ color: palette.primary }} />
+              <Plus className="w-5 h-5 text-purple-400" />
             </div>
             <p className="text-3xl font-bold text-purple-400">
               {forecasts.filter(f => f.daysUntilStockOut && f.daysUntilStockOut <= 7).length}

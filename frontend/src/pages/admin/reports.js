@@ -26,14 +26,11 @@ import LoadingSpinner, { SkeletonChart, SkeletonCard } from '../../components/Lo
 import { useAuthStore } from '../../stores/authStore';
 import { useApi } from '../../hooks';
 import { formatCurrency, formatNumber, formatDate, formatPercentage } from '../../utils/format';
-import useThemeStore from '../../stores/themeStore';
 import toast from 'react-hot-toast';
 
 export default function AdminReports() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const { getPalette } = useThemeStore();
-  const palette = getPalette();
 
   // State
   const [dateRange, setDateRange] = useState('month'); // 'today', 'week', 'month', 'quarter', 'year', 'custom'
@@ -325,7 +322,7 @@ export default function AdminReports() {
                   <select
                     value={reportType}
                     onChange={(e) => setReportType(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:outline-none"
                   >
                     <option value="sales">Vendas</option>
                     <option value="products">Produtos</option>
@@ -343,7 +340,7 @@ export default function AdminReports() {
                   <select
                     value={dateRange}
                     onChange={(e) => handleDateRangeChange(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:outline-none"
                   >
                     <option value="today">Hoje</option>
                     <option value="week">Esta Semana</option>
@@ -365,7 +362,7 @@ export default function AdminReports() {
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:outline-none"
                       />
                     </div>
                     <div>
@@ -376,7 +373,7 @@ export default function AdminReports() {
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:outline-none"
                       />
                     </div>
                   </div>

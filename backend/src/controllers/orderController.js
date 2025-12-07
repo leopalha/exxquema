@@ -4,14 +4,23 @@ const smsService = require('../services/sms.service');
 const socketService = require('../services/socket.service');
 const pushService = require('../services/push.service');
 const InventoryService = require('../services/inventoryService');
-const { Op } = require('sequelize');
+const orderStatusService = require('../services/orderStatus.service');
+const { Op, fn, col } = require('sequelize');
 
 class OrderController {
   // Criar novo pedido
   async createOrder(req, res) {
+    let paymentResult = null; // Declarar no escopo externo
     try {
-      const { tableId, items, notes, paymentMethod } = req.body;
+      console.log('📦 [CREATE ORDER] Iniciando criação de pedido');
+      console.log('📦 [CREATE ORDER] Body:', JSON.stringify(req.body, null, 2));
+
+      const { tableId, items, notes, paymentMethod, useCashback } = req.body;
       const userId = req.user.id;
+      console.log('📦 [CREATE ORDER] userId:', userId);
+      console.log('📦 [CREATE ORDER] tableId:', tableId);
+      console.log('📦 [CREATE ORDER] items:', JSON.stringify(items));
+      console.log('📦 [CREATE ORDER] useCashback:', useCashback);
 
       // Validar valor mínimo
       const minimumOrderValue = parseFloat(process.env.MINIMUM_ORDER_VALUE) || 15.00;
@@ -63,27 +72,71 @@ class OrderController {
         });
       }
 
-      // Verificar se mesa existe
-      const table = await Table.findByPk(tableId);
-      if (!table || !table.isActive) {
-        return res.status(404).json({
-          success: false,
-          message: 'Mesa não encontrada ou inativa'
-        });
+      // Verificar se mesa existe (apenas se tableId foi informado)
+      let table = null;
+      if (tableId) {
+        table = await Table.findByPk(tableId);
+        if (!table || !table.isActive) {
+          return res.status(404).json({
+            success: false,
+            message: 'Mesa não encontrada ou inativa'
+          });
+        }
       }
 
-      // Criar pedido
+      // Calcular tempo estimado baseado nos produtos
+      const preparationTimes = [];
+      for (const item of orderItems) {
+        const product = await Product.findByPk(item.productId);
+        if (product) {
+          preparationTimes.push(product.preparationTime || 15);
+        }
+      }
+      const estimatedTime = preparationTimes.length > 0 ? Math.max(...preparationTimes) : 15;
+
+      // Calcular taxa de serviço e total (antes de criar o pedido)
+      const serviceFeePercentage = parseFloat(process.env.SERVICE_FEE_PERCENTAGE) || 10;
+      const serviceFee = (subtotal * serviceFeePercentage / 100);
+      const taxes = 0;
+      let totalBeforeDiscount = subtotal + serviceFee + taxes;
+
+      // Processar uso de cashback
+      let cashbackUsed = 0;
+      const user = await User.findByPk(userId);
+      const userCashbackBalance = parseFloat(user?.cashbackBalance) || 0;
+
+      if (useCashback && useCashback > 0 && userCashbackBalance > 0) {
+        // Limitar ao saldo disponível e ao total do pedido
+        const requestedCashback = parseFloat(useCashback);
+        cashbackUsed = Math.min(requestedCashback, userCashbackBalance, totalBeforeDiscount);
+        console.log('📦 [CREATE ORDER] Cashback solicitado:', requestedCashback, 'Saldo:', userCashbackBalance, 'Usado:', cashbackUsed);
+      }
+
+      // Calcular total final com desconto
+      const total = Math.max(0, totalBeforeDiscount - cashbackUsed);
+
+      console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'cashbackUsed:', cashbackUsed, 'total:', total);
+
+      // Criar pedido (tableId é opcional para pedidos de balcão)
       const order = await Order.create({
         userId,
-        tableId,
+        tableId: tableId || null,
         subtotal: subtotal.toFixed(2),
+        serviceFee: serviceFee.toFixed(2),
+        taxes: taxes.toFixed(2),
+        cashbackUsed: cashbackUsed.toFixed(2),
+        discount: cashbackUsed.toFixed(2), // Por enquanto discount = cashbackUsed
+        total: total.toFixed(2),
         notes,
         paymentMethod,
-        estimatedTime: Math.max(...orderItems.map(item => {
-          // Buscar tempo de preparo do produto
-          return items.find(i => i.productId === item.productId)?.preparationTime || 15;
-        }))
+        estimatedTime
       });
+
+      // Debitar cashback do usuário se foi usado
+      if (cashbackUsed > 0) {
+        await user.useCashback(cashbackUsed, `Usado no pedido #${order.orderNumber}`);
+        console.log('📦 [CREATE ORDER] Cashback debitado:', cashbackUsed);
+      }
 
       // Criar itens do pedido
       for (const item of orderItems) {
@@ -145,7 +198,7 @@ class OrderController {
 
       // Criar pagamento se não for dinheiro
       if (paymentMethod && paymentMethod !== 'cash') {
-        const paymentResult = await paymentService.createPaymentIntent(
+        paymentResult = await paymentService.createPaymentIntent(
           parseFloat(order.total),
           'brl',
           {
@@ -209,12 +262,13 @@ class OrderController {
         }
       }
 
+      console.log('📦 [CREATE ORDER] Pedido criado com sucesso! ID:', order.id);
       res.status(201).json({
         success: true,
         message: 'Pedido criado com sucesso',
         data: {
           order: completeOrder,
-          paymentClientSecret: paymentMethod !== 'cash' ? paymentResult.clientSecret : null
+          paymentClientSecret: paymentResult?.clientSecret || null
         }
       });
     } catch (error) {
@@ -625,8 +679,11 @@ class OrderController {
   async updateOrderStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status: newStatus } = req.body;
       const userId = req.user.id;
+      const userRole = req.user.role;
+
+      console.log(`📝 [UPDATE STATUS] Pedido ${id}: ${newStatus} por ${userRole}`);
 
       const order = await Order.findByPk(id, {
         include: [
@@ -648,54 +705,88 @@ class OrderController {
         });
       }
 
-      // Atualizar campos específicos baseado no status
-      const updateData = { status };
+      const currentStatus = order.status;
 
-      if (status === 'preparing') {
-        updateData.kitchenUserId = userId;
-      } else if (status === 'on_way') {
-        updateData.attendantId = userId;
+      // Validar transição usando o serviço de status
+      const validation = orderStatusService.validateTransition(currentStatus, newStatus, userRole);
+
+      if (!validation.valid) {
+        console.log(`❌ [UPDATE STATUS] Transição negada: ${validation.error}`);
+        return res.status(400).json({
+          success: false,
+          message: validation.error,
+          currentStatus: orderStatusService.getStatusLabel(currentStatus),
+          requestedStatus: orderStatusService.getStatusLabel(newStatus),
+          allowedTransitions: orderStatusService.getNextValidStatuses(currentStatus, userRole)
+        });
       }
+
+      // Obter campos de timestamp a atualizar
+      const timestampFields = orderStatusService.getTimestampFields(newStatus, userId);
+
+      // Atualizar pedido
+      const updateData = {
+        status: newStatus,
+        ...timestampFields
+      };
 
       await order.update(updateData);
 
+      console.log(`✅ [UPDATE STATUS] Pedido ${order.orderNumber}: ${currentStatus} → ${newStatus}`);
+
       // Notificar mudança via WebSocket
-      socketService.notifyOrderStatusChange(order.id, status, {
+      socketService.notifyOrderStatusChange(order.id, newStatus, {
         orderNumber: order.orderNumber,
-        tableNumber: order.table.number,
-        customerName: order.customer.nome
+        tableNumber: order.table?.number || 'Balcão',
+        customerName: order.customer?.nome,
+        previousStatus: currentStatus,
+        changedBy: req.user.nome,
+        changedByRole: userRole
       });
 
-      // Notificações quando status muda
-      if (status === 'ready') {
-        // Enviar SMS quando pedido estiver pronto
-        await smsService.sendOrderReady(
-          order.customer.celular,
-          order.orderNumber
-        );
+      // Notificações específicas por status
+      if (newStatus === 'ready') {
+        // SMS quando pedido estiver pronto
+        if (order.customer?.celular) {
+          try {
+            await smsService.sendOrderReady(
+              order.customer.celular,
+              order.orderNumber
+            );
+          } catch (smsError) {
+            console.error('⚠️ Erro ao enviar SMS:', smsError);
+          }
+        }
 
-        // Enviar Push Notification para cliente
+        // Push Notification para cliente
         try {
           await pushService.notifyOrderReady(order);
         } catch (pushError) {
-          console.error('Erro ao enviar push para cliente:', pushError);
+          console.error('⚠️ Erro ao enviar push para cliente:', pushError);
         }
-      } else if (['preparing', 'delivered', 'cancelled'].includes(status)) {
+      } else if (['preparing', 'on_way', 'delivered', 'cancelled'].includes(newStatus)) {
         // Notificar cliente sobre mudança de status
         try {
-          await pushService.notifyOrderStatus(order, status);
+          await pushService.notifyOrderStatus(order, newStatus);
         } catch (pushError) {
-          console.error('Erro ao enviar push de status:', pushError);
+          console.error('⚠️ Erro ao enviar push de status:', pushError);
         }
       }
 
+      // Recarregar pedido com dados atualizados
+      await order.reload();
+
       res.status(200).json({
         success: true,
-        message: 'Status atualizado com sucesso',
-        data: { order }
+        message: `Status atualizado para "${orderStatusService.getStatusLabel(newStatus)}"`,
+        data: {
+          order,
+          timeline: orderStatusService.calculateTimeline(order),
+          nextStatuses: orderStatusService.getNextValidStatuses(newStatus, userRole)
+        }
       });
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
+      console.error('❌ Erro ao atualizar status:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',
@@ -731,7 +822,7 @@ class OrderController {
       const averageTicket = totalOrdersToday > 0 ? totalRevenueToday / totalOrdersToday : 0;
 
       const ordersByStatus = await Order.findAll({
-        attributes: ['status', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+        attributes: ['status', [fn('COUNT', col('id')), 'count']],
         where: {
           createdAt: {
             [Op.between]: [today, tomorrow]

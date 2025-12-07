@@ -15,6 +15,9 @@ const Cashier = require('./Cashier');
 const CashierMovement = require('./CashierMovement');
 const PushSubscription = require('./PushSubscription');
 const Campaign = require('./Campaign');
+const Ingredient = require('./Ingredient');
+const RecipeItem = require('./RecipeItem');
+const IngredientMovement = require('./IngredientMovement');
 
 // Define associations
 const defineAssociations = () => {
@@ -240,6 +243,47 @@ const defineAssociations = () => {
     foreignKey: 'createdBy',
     as: 'creator'
   });
+
+  // Ingredient associations (Ficha Técnica)
+  Ingredient.hasMany(RecipeItem, {
+    foreignKey: 'ingredientId',
+    as: 'recipeItems'
+  });
+
+  Ingredient.hasMany(IngredientMovement, {
+    foreignKey: 'ingredientId',
+    as: 'movements'
+  });
+
+  RecipeItem.belongsTo(Ingredient, {
+    foreignKey: 'ingredientId',
+    as: 'ingredient'
+  });
+
+  RecipeItem.belongsTo(Product, {
+    foreignKey: 'productId',
+    as: 'product'
+  });
+
+  Product.hasMany(RecipeItem, {
+    foreignKey: 'productId',
+    as: 'recipe'
+  });
+
+  IngredientMovement.belongsTo(Ingredient, {
+    foreignKey: 'ingredientId',
+    as: 'ingredient'
+  });
+
+  IngredientMovement.belongsTo(Order, {
+    foreignKey: 'orderId',
+    as: 'order'
+  });
+
+  IngredientMovement.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
 };
 
 // Initialize associations
@@ -339,6 +383,9 @@ module.exports = {
   CashierMovement,
   PushSubscription,
   Campaign,
+  Ingredient,
+  RecipeItem,
+  IngredientMovement,
   syncDatabase,
   createTables,
   dropTables

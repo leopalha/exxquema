@@ -27,7 +27,7 @@ const StarRating = ({ rating, size = 'md' }) => {
         <Star
           key={star}
           className={`${sizeClasses[size]} ${
-            star <= rating ? 'fill-amber-400 text-amber-400' : 'text-neutral-600'
+            star <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-600'
           }`}
         />
       ))}
@@ -53,7 +53,7 @@ const ReviewCard = ({ review, onMarkHelpful }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 transition-all hover:border-opacity-30"
+      className="bg-gray-900 border border-gray-800 rounded-xl p-6 transition-all hover:border-opacity-30"
       style={{ '--border-color': 'var(--theme-primary)' }}
     >
       {/* Header */}
@@ -68,14 +68,14 @@ const ReviewCard = ({ review, onMarkHelpful }) => {
           </div>
           <div>
             <h4 className="font-semibold text-white">{review.userName}</h4>
-            <p className="text-sm text-neutral-400">{formatDate(review.createdAt)}</p>
+            <p className="text-sm text-gray-400">{formatDate(review.createdAt)}</p>
           </div>
         </div>
         <StarRating rating={review.rating} />
       </div>
 
       {/* Comment */}
-      <p className="text-neutral-300 leading-relaxed mb-4">{review.comment}</p>
+      <p className="text-gray-300 leading-relaxed mb-4">{review.comment}</p>
 
       {/* Category ratings */}
       {review.categories && Object.keys(review.categories).length > 0 && (
@@ -86,10 +86,10 @@ const ReviewCard = ({ review, onMarkHelpful }) => {
             return (
               <div
                 key={catId}
-                className="flex items-center gap-1.5 bg-neutral-800 px-3 py-1.5 rounded-full text-sm"
+                className="flex items-center gap-1.5 bg-gray-800 px-3 py-1.5 rounded-full text-sm"
               >
                 <span>{category.emoji}</span>
-                <span className="text-neutral-300">{category.nome}</span>
+                <span className="text-gray-300">{category.nome}</span>
                 <span className="text-amber-400 font-medium">{rating}</span>
               </div>
             );
@@ -99,20 +99,20 @@ const ReviewCard = ({ review, onMarkHelpful }) => {
 
       {/* Response from establishment */}
       {review.response && (
-        <div className="bg-neutral-800/50 rounded-r-lg p-4 mb-4" style={{ borderLeft: '4px solid var(--theme-primary)' }}>
+        <div className="bg-gray-800/50 rounded-r-lg p-4 mb-4" style={{ borderLeft: '4px solid var(--theme-primary)' }}>
           <div className="flex items-center gap-2 mb-2">
             <Quote className="w-4 h-4" style={{ color: 'var(--theme-primary)' }} />
             <span className="text-sm font-semibold" style={{ color: 'var(--theme-primary)' }}>Resposta do FLAME</span>
           </div>
-          <p className="text-sm text-neutral-300">{review.response}</p>
+          <p className="text-sm text-gray-300">{review.response}</p>
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-800">
         <button
           onClick={() => onMarkHelpful(review.id)}
-          className="flex items-center gap-2 text-sm text-neutral-400 hover:text-cyan-400 transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-400 hover:text-cyan-400 transition-colors"
         >
           <ThumbsUp className="w-4 h-4" />
           <span>Útil ({review.helpful})</span>
@@ -194,7 +194,7 @@ export default function Avaliacoes() {
               >
                 Avaliacoes
               </motion.h1>
-              <p className="text-neutral-400 text-lg">
+              <p className="text-gray-400 text-lg">
                 Veja o que nossos clientes dizem sobre a experiencia FLAME
               </p>
             </div>
@@ -206,13 +206,13 @@ export default function Avaliacoes() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 rounded-2xl p-6 text-center"
+                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-gray-700 rounded-2xl p-6 text-center"
               >
                 <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500 mb-2">
                   {averageRating}
                 </div>
                 <StarRating rating={Math.round(parseFloat(averageRating))} size="lg" />
-                <p className="text-neutral-400 mt-2">{totalReviews} avaliacoes</p>
+                <p className="text-gray-400 mt-2">{totalReviews} avaliacoes</p>
               </motion.div>
 
               {/* Rating Distribution */}
@@ -220,21 +220,21 @@ export default function Avaliacoes() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 rounded-2xl p-6"
+                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-gray-700 rounded-2xl p-6"
               >
                 <h3 className="text-lg font-semibold text-white mb-4">Distribuicao</h3>
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map((rating) => (
                     <div key={rating} className="flex items-center gap-3">
-                      <span className="text-sm text-neutral-400 w-6">{rating}</span>
+                      <span className="text-sm text-gray-400 w-6">{rating}</span>
                       <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <div className="flex-1 h-2 bg-neutral-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all"
                           style={{ width: `${getPercentage(distribution[rating])}%` }}
                         />
                       </div>
-                      <span className="text-sm text-neutral-400 w-8">{distribution[rating]}</span>
+                      <span className="text-sm text-gray-400 w-8">{distribution[rating]}</span>
                     </div>
                   ))}
                 </div>
@@ -245,7 +245,7 @@ export default function Avaliacoes() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 rounded-2xl p-6"
+                className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-gray-700 rounded-2xl p-6"
               >
                 <h3 className="text-lg font-semibold text-white mb-4">Por Categoria</h3>
                 <div className="space-y-3">
@@ -255,7 +255,7 @@ export default function Avaliacoes() {
                       <div key={cat.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span>{cat.emoji}</span>
-                          <span className="text-neutral-300">{cat.nome}</span>
+                          <span className="text-gray-300">{cat.nome}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -271,12 +271,12 @@ export default function Avaliacoes() {
             {/* Filters */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-neutral-400" />
-                <span className="text-neutral-400">Filtrar:</span>
+                <Filter className="w-5 h-5 text-gray-400" />
+                <span className="text-gray-400">Filtrar:</span>
                 <select
                   value={filterRating}
                   onChange={(e) => setFilterRating(e.target.value)}
-                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-magenta-500"
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--theme-primary)]"
                 >
                   <option value="all">Todas as notas</option>
                   <option value="5">5 estrelas</option>
@@ -288,11 +288,11 @@ export default function Avaliacoes() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-neutral-400">Ordenar:</span>
+                <span className="text-gray-400">Ordenar:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-magenta-500"
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--theme-primary)]"
                 >
                   <option value="recent">Mais recentes</option>
                   <option value="highest">Maior nota</option>
@@ -317,9 +317,9 @@ export default function Avaliacoes() {
                 ))
               ) : (
                 <div className="text-center py-12">
-                  <MessageCircle className="w-16 h-16 text-neutral-700 mx-auto mb-4" />
+                  <MessageCircle className="w-16 h-16 text-gray-700 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-white mb-2">Nenhuma avaliação encontrada</h3>
-                  <p className="text-neutral-400">
+                  <p className="text-gray-400">
                     {filterRating !== 'all'
                       ? 'Tente mudar os filtros'
                       : 'Seja o primeiro a avaliar!'}
@@ -342,16 +342,17 @@ export default function Avaliacoes() {
                 <h3 className="text-2xl font-bold text-white mb-4">
                   Já visitou o FLAME?
                 </h3>
-                <p className="text-neutral-400 mb-6">
+                <p className="text-gray-400 mb-6">
                   Faça seu pedido e deixe sua avaliação para ajudar outros clientes!
                 </p>
                 <a
                   href="/cardapio"
                   style={{
                     background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))',
-                    boxShadow: 'rgba(var(--theme-primary-rgb, 255, 0, 110), 0.3) 0 0 20px'
+                    boxShadow: 'rgba(var(--theme-primary-rgb, 255, 0, 110), 0.3) 0 0 20px',
+                    color: 'white'
                   }}
-                  className="inline-block text-white font-semibold px-8 py-3 rounded-lg transition-all hover:opacity-90"
+                  className="inline-block font-semibold px-8 py-3 rounded-lg transition-all hover:opacity-90"
                 >
                   Ver Cardapio
                 </a>

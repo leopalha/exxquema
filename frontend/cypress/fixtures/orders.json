@@ -1,0 +1,116 @@
+{
+  "pendingOrder": {
+    "id": "order-pending-1",
+    "orderNumber": "1001",
+    "status": "pending",
+    "total": 89.80,
+    "serviceFee": 8.98,
+    "taxes": 0,
+    "items": [
+      {
+        "productId": "prod-1",
+        "name": "Hamburguer Artesanal",
+        "price": 42.90,
+        "quantity": 2
+      }
+    ],
+    "consumptionType": "mesa",
+    "tableId": "table-5",
+    "createdAt": "2024-12-07T20:00:00.000Z"
+  },
+  "preparingOrder": {
+    "id": "order-preparing-1",
+    "orderNumber": "1002",
+    "status": "preparing",
+    "total": 65.00,
+    "items": [
+      {
+        "productId": "prod-3",
+        "name": "Narguile Premium",
+        "price": 65.00,
+        "quantity": 1
+      }
+    ],
+    "consumptionType": "mesa",
+    "tableId": "table-3",
+    "startedAt": "2024-12-07T20:10:00.000Z",
+    "createdAt": "2024-12-07T20:00:00.000Z"
+  },
+  "readyOrder": {
+    "id": "order-ready-1",
+    "orderNumber": "1003",
+    "status": "ready",
+    "total": 117.90,
+    "items": [
+      {
+        "productId": "prod-4",
+        "name": "Tábua de Frios",
+        "price": 89.90,
+        "quantity": 1
+      },
+      {
+        "productId": "prod-2",
+        "name": "Caipirinha Premium",
+        "price": 28.00,
+        "quantity": 1
+      }
+    ],
+    "consumptionType": "balcao",
+    "finishedAt": "2024-12-07T20:25:00.000Z",
+    "createdAt": "2024-12-07T20:00:00.000Z"
+  },
+  "deliveredOrder": {
+    "id": "order-delivered-1",
+    "orderNumber": "1004",
+    "status": "delivered",
+    "total": 156.80,
+    "cashbackUsed": 15.00,
+    "cashbackEarned": 7.09,
+    "items": [
+      {
+        "productId": "prod-1",
+        "name": "Hamburguer Artesanal",
+        "price": 42.90,
+        "quantity": 2
+      },
+      {
+        "productId": "prod-2",
+        "name": "Caipirinha Premium",
+        "price": 28.00,
+        "quantity": 2
+      }
+    ],
+    "consumptionType": "mesa",
+    "tableId": "table-8",
+    "deliveredAt": "2024-12-07T20:45:00.000Z",
+    "createdAt": "2024-12-07T20:00:00.000Z"
+  },
+  "ordersList": [
+    {
+      "id": "order-list-1",
+      "orderNumber": "1001",
+      "status": "pending",
+      "total": 89.80,
+      "consumptionType": "mesa",
+      "tableNumber": 5,
+      "createdAt": "2024-12-07T20:00:00.000Z"
+    },
+    {
+      "id": "order-list-2",
+      "orderNumber": "1002",
+      "status": "preparing",
+      "total": 65.00,
+      "consumptionType": "mesa",
+      "tableNumber": 3,
+      "createdAt": "2024-12-07T19:45:00.000Z"
+    },
+    {
+      "id": "order-list-3",
+      "orderNumber": "1003",
+      "status": "ready",
+      "total": 117.90,
+      "consumptionType": "balcao",
+      "createdAt": "2024-12-07T19:30:00.000Z"
+    }
+  ]
+}

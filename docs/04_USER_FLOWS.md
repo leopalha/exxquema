@@ -1,11 +1,28 @@
 # 🔄 FLAME - USER FLOWS
 
+**Versão:** 3.3.0
+**Última Atualização:** 07/12/2024
+**Sincronizado com:** Código-fonte e PRD v3.3.0 (Auditoria Completa)
+
 ## ÍNDICE
 
 1. [Fluxos do Cliente](#1-fluxos-do-cliente)
 2. [Fluxos do Staff](#2-fluxos-do-staff)
 3. [Fluxos Administrativos](#3-fluxos-administrativos)
 4. [Fluxos do Sistema](#4-fluxos-do-sistema)
+5. [Mapeamento Técnico](#5-mapeamento-técnico)
+6. [Divergências Conhecidas](#6-divergências-conhecidas)
+
+---
+
+## LEGENDA DE STATUS
+
+| Símbolo | Significado |
+|---------|-------------|
+| ✅ | Implementado e funcionando |
+| ⚠️ | Parcialmente implementado ou com divergência |
+| ❌ | Não implementado |
+| 🔄 | Em desenvolvimento |
 
 ---
 
@@ -57,61 +74,109 @@
 └─────────────────────────────────────────────────────────┘
 ```
 
-#### 1.1.2 Cadastro Novo Cliente
+#### 1.1.2 Cadastro Completo (Tradicional) ✅
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     CADASTRO                            │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Tela 1: Dados Básicos                                 │
-│  ┌─────────────────────────────────────┐               │
-│  │ Nome: [_______________]             │               │
-│  │ Celular: [(21) 99999-9999]          │               │
-│  │                                     │               │
-│  │ [Continuar]                         │               │
-│  └─────────────────────────────────────┘               │
-│              │                                          │
-│              ▼                                          │
-│  Sistema envia SMS com código                          │
-│              │                                          │
-│              ▼                                          │
-│  Tela 2: Verificação                                   │
-│  ┌─────────────────────────────────────┐               │
-│  │ Digite o código enviado:            │               │
-│  │                                     │               │
-│  │     [_] [_] [_] [_] [_] [_]         │               │
-│  │                                     │               │
-│  │ Reenviar código (30s)               │               │
-│  │                                     │               │
-│  │ [Verificar]                         │               │
-│  └─────────────────────────────────────┘               │
-│              │                                          │
-│              ▼                                          │
-│      ┌───────────────┐                                 │
-│      │ Código OK?    │                                 │
-│      └───────┬───────┘                                 │
-│              │                                          │
-│      ┌───────┴───────┐                                 │
-│      │               │                                 │
-│      ▼               ▼                                 │
-│    [SIM]           [NÃO]                               │
-│      │               │                                 │
-│      │               ▼                                 │
-│      │         Erro + tentar                           │
-│      │         novamente                               │
-│      ▼                                                 │
-│  Conta criada!                                         │
-│  +R$ 10,00 de bônus                                    │
-│      │                                                 │
-│      ▼                                                 │
-│  Redireciona para /cardapio                            │
-│  (mesa já salva em session)                            │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                 CADASTRO COMPLETO (/register)                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Formulário:                                                         │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ Nome Completo:    [_______________________]                 │    │
+│  │ Email:            [_______________________]                 │    │
+│  │ Celular:          [+55 (21) 99999-9999   ]                  │    │
+│  │ Senha:            [___________] (min 6 chars)               │    │
+│  │ Confirmar Senha:  [___________]                             │    │
+│  │                                                             │    │
+│  │ [✓] Aceito os Termos de Uso e Política de Privacidade      │    │
+│  │                                                             │    │
+│  │ [          Criar Conta          ]                           │    │
+│  │                                                             │    │
+│  │ ─────────────────── ou ───────────────────                  │    │
+│  │                                                             │    │
+│  │ [   G   Cadastrar com Google    ]                           │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                │                                     │
+│                     POST /api/auth/register                         │
+│                    { nome, email, celular, password }               │
+│                                │                                     │
+│                                ▼                                     │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ Backend:                                                    │    │
+│  │ 1. Valida unicidade: email, celular (e cpf se fornecido)   │    │
+│  │ 2. Cria User com profileComplete: true, phoneVerified: false│   │
+│  │ 3. Gera código SMS 6 dígitos (expira em 5 min)             │    │
+│  │ 4. Envia SMS via Twilio                                    │    │
+│  │ 5. Retorna { userId, celular, smsExpiry }                  │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                │                                     │
+│                                ▼                                     │
+│  Tela de Verificação SMS:                                           │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │        Código Enviado!                                      │    │
+│  │    Enviamos um código para +55 21 99999-9999               │    │
+│  │                                                             │    │
+│  │    [ 0 ] [ 0 ] [ 0 ] [ 0 ] [ 0 ] [ 0 ]                     │    │
+│  │                                                             │    │
+│  │    [     Verificar Código      ]                            │    │
+│  │    Não recebeu? [Reenviar]                                  │    │
+│  │    [     Voltar     ]                                       │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                │                                     │
+│                     POST /api/auth/verify-sms                       │
+│                    { celular, code }                                │
+│                                │                                     │
+│                  ┌─────────────┴─────────────┐                      │
+│                  │                           │                      │
+│              Código OK               Código Errado                  │
+│                  │                           │                      │
+│                  ▼                           ▼                      │
+│  ┌────────────────────┐       ┌────────────────────────────┐       │
+│  │ phoneVerified=true │       │ smsAttempts++ (máx 3)      │       │
+│  │ smsCode=null       │       │ Erro: "Código incorreto"   │       │
+│  │ Gera JWT token     │       │ Tentativas restantes: X    │       │
+│  │ Envia SMS welcome  │       └────────────────────────────┘       │
+│  └────────────────────┘                                             │
+│           │                                                          │
+│           ▼                                                          │
+│  Redirect: / (home baseado na role)                                 │
+│  Toast: "Cadastro concluído! Bem-vindo ao FLAME!"                   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-#### 1.1.3 Cadastro Rápido (Phone-Only)
+**Mapeamento Técnico:**
+
+| Componente | Arquivo | Função |
+|------------|---------|--------|
+| Frontend Page | `pages/register.js` | Formulário com validação |
+| Store | `stores/authStore.js` | `register()`, `verifySMS()` |
+| Backend Controller | `controllers/authController.js` | `register()`, `verifySMS()` |
+| Service SMS | `services/sms.service.js` | `generateSMSCode()`, `sendVerificationCode()` |
+| Model | `models/User.js` | 26 campos (ver PRD 2.1.1) |
+| Rota | `routes/auth.js` | `POST /register`, `POST /verify-sms` |
+
+**Campos Criados no User:**
+```javascript
+{
+  nome: "Nome Informado",
+  email: "email@exemplo.com",
+  celular: "+5521999999999",
+  password: "[hash bcrypt]",
+  profileComplete: true,  // Já tem nome + email
+  phoneVerified: false,   // → true após SMS
+  smsCode: "123456",      // → null após verificação
+  smsCodeExpiry: Date,    // +5 minutos
+  smsAttempts: 0,         // → incrementa a cada erro
+  role: "cliente",
+  isActive: true
+}
+```
+
+> **⚠️ DIVERGÊNCIA**: O bônus de R$10 no cadastro NÃO é automático. Deve ser adicionado manualmente via Admin/CRM.
+
+#### 1.1.3 Cadastro Rápido (Phone-Only) ✅
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -348,7 +413,7 @@ Input: Código 6 dígitos
 │  ┌─────────────────────────────────────┐               │
 │  │ Confirme seu pedido                 │               │
 │  │                                     │               │
-│  │ 📍 Mesa: 07 (detectada via QR)     │               │
+│  │ 📍 Mesa: 07 (selecionada no checkout)│              │
 │  │    [Trocar mesa]                    │               │
 │  │                                     │               │
 │  │ 💳 Pagamento:                       │               │
@@ -357,15 +422,10 @@ Input: Código 6 dígitos
 │  │    ● PIX                            │               │
 │  │    ○ Pagar no Caixa                 │               │
 │  │                                     │               │
-│  │ 🎁 Usar cashback?                   │               │
-│  │    Saldo: R$ 34,00                  │               │
-│  │    [Usar R$ 10,00]                  │               │
-│  │                                     │               │
 │  │ ─────────────────────────────────   │               │
 │  │ Subtotal:         R$ 85,00          │               │
 │  │ Taxa serviço:     R$ 8,50           │               │
-│  │ Desconto cashback: -R$ 10,00        │               │
-│  │ TOTAL:            R$ 83,50          │               │
+│  │ TOTAL:            R$ 93,50          │               │
 │  │                                     │               │
 │  │ [Confirmar Pedido]                  │               │
 │  └─────────────────────────────────────┘               │
@@ -376,7 +436,7 @@ Input: Código 6 dígitos
 │  ┌─────────────────────────────────────┐               │
 │  │ [QR Code PIX]                       │               │
 │  │                                     │               │
-│  │ Valor: R$ 83,50                     │               │
+│  │ Valor: R$ 93,50                     │               │
 │  │                                     │               │
 │  │ [Copiar código]                     │               │
 │  │                                     │               │
@@ -640,6 +700,9 @@ Eventos Socket.IO:
 │  │ 👥 4 pessoas                        │               │
 │  │ Status: Aguardando confirmação      │               │
 │  │                                     │               │
+│  │ (Sistema envia WhatsApp para FLAME  │               │
+│  │  com os detalhes da reserva)        │               │
+│  │                                     │               │
 │  │ [Ver minhas reservas]               │               │
 │  └─────────────────────────────────────┘               │
 │              │                                          │
@@ -648,7 +711,7 @@ Eventos Socket.IO:
 │  SMS: "🔥 Reserva confirmada! 08/12 às 20:00"         │
 │                                                         │
 │  No dia, 2h antes:                                     │
-│  Push: "Lembrete: sua reserva é hoje às 20:00!"       │
+│  WhatsApp: "Lembrete: sua reserva é hoje às 20:00!"   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -717,10 +780,13 @@ Eventos Socket.IO:
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 
-**Como usar:**
-- Cashback é aplicado automaticamente no checkout
-- Pode cobrir até 50% do valor do pedido
-- Não expira enquanto você estiver ativo
+**Como funciona hoje:**
+|- Você ganha cashback automaticamente em cada pedido entregue e pago, de acordo com seu tier.
+|- O saldo e o histórico ficam visíveis no módulo "Meu Cashback" (app) e nas telas de CRM/Admin.
+|- O uso como desconto direto no checkout ainda **não está ativo**; a regra planejada é permitir usar até cerca de 50% do valor do pedido em cashback.
+
+**Validade:**
+|- Um job diário expira saldos de cashback que ficaram mais de 90 dias sem novas transações de ganho ou bônus.
 ```
 
 ---
@@ -815,98 +881,99 @@ Eventos Socket.IO (emite):
 
 ### 2.3 Painel Bar
 
+> **NOTA**: O Bar agora gerencia APENAS bebidas. Narguilé foi migrado para o Atendente.
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │               BAR (/staff/bar)                          │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  [DRINKS]  [NARGUILÉ]                    Maria 👤      │
+│  [BEBIDAS]                              Maria 👤       │
 │                                                         │
-│  === ABA DRINKS ===                                    │
-│  (similar à cozinha, filtra categoria drinks)          │
+│  === FILA DE BEBIDAS ===                               │
 │                                                         │
-│  === ABA NARGUILÉ ===                                  │
-│                                                         │
-│  ATIVOS AGORA                                          │
-│                                                         │
+│  EM PREPARO (2)                                        │
 │  ┌─────────────────────────────────────┐               │
-│  │ Mesa 07 │ Uva                       │               │
-│  │ ⏱️ 00:42:15                         │               │
+│  │ #0127 │ Mesa 07 │ 🕐 05min          │               │
+│  │ ─────────────────────────────────   │               │
+│  │ • 2x Caipirinha                     │               │
+│  │ • 1x Gin Tônica                     │               │
 │  │                                     │               │
-│  │ Próximo carvão: 02:45               │               │
-│  │                                     │               │
-│  │ [Trocar Carvão] [Finalizar]         │               │
+│  │ [Pronto] ← Botão ativo              │               │
 │  └─────────────────────────────────────┘               │
 │                                                         │
+│  AGUARDANDO (1)                                        │
 │  ┌─────────────────────────────────────┐               │
-│  │ Mesa 12 │ Love 66 (premium)         │               │
-│  │ ⏱️ 01:15:30                         │               │
-│  │                                     │  🔴 CARVÃO!  │
-│  │ Carvão atrasado!                    │               │
+│  │ #0129 │ Mesa 03 │ NOVO              │               │
+│  │ ─────────────────────────────────   │               │
+│  │ • 3x Cerveja Artesanal              │               │
 │  │                                     │               │
-│  │ [Trocar Carvão] [Finalizar]         │               │
-│  └─────────────────────────────────────┘               │
-│                                                         │
-│  NOVOS PEDIDOS NARGUILÉ                                │
-│                                                         │
-│  ┌─────────────────────────────────────┐               │
-│  │ Mesa 09 │ Menta                     │  NOVO        │
-│  │ Aguardando preparo                  │               │
-│  │                                     │               │
-│  │ [Iniciar]                           │               │
+│  │ [Preparar] ← Primeiro botão         │               │
 │  └─────────────────────────────────────┘               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
+
+Fluxo de Botões (Bar/Cozinha):
+1. Pedido chega → Status "pending" → Botão [Preparar]
+2. Clica [Preparar] → Status "preparing" → Botão [Pronto]
+3. Clica [Pronto] → Status "ready" → Pedido SAI da tela
+   → Vai para tela do Atendente
 ```
 
 ### 2.4 Painel Atendente
 
+> **NOTA**: Atendente agora controla também o NARGUILÉ (migrado do Bar)
+
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              ATENDENTE (/staff/atendente)               │
+│              ATENDENTE (/atendente)                     │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  [PRONTOS]  [ENTREGAS]  [BALCÃO]         Pedro 👤      │
+│  [PRONTOS]  [ENTREGUES]  [BALCÃO]  [NARGUILÉ]  Pedro 👤│
 │                                                         │
-│  === PRONTOS PARA ENTREGA ===                          │
+│  === ABA PRONTOS ===                                   │
 │                                                         │
+│  EM ENTREGA (status: on_way)                           │
+│  ┌─────────────────────────────────────┐               │
+│  │ #0124 │ Mesa 07 │ 🕐 1min          │  COMIGO       │
+│  │ ─────────────────────────────────   │               │
+│  │ • 1x Tábua de Frios                 │               │
+│  │ • 1x Cerveja                        │               │
+│  │                                     │               │
+│  │ [Entregar] ← Finaliza entrega       │               │
+│  └─────────────────────────────────────┘               │
+│                                                         │
+│  PRONTOS PARA RETIRAR (status: ready)                  │
 │  ┌─────────────────────────────────────┐               │
 │  │ #0125 │ Mesa 03 │ 🕐 2min pronto    │               │
 │  │ ─────────────────────────────────   │               │
 │  │ • 2x Porção Bolinho (COZINHA ✅)    │               │
 │  │ • 2x Caipirinha (BAR ✅)            │               │
 │  │                                     │               │
-│  │ [Pegar Pedido]                      │               │
+│  │ [Retirar] ← Botão (ready→on_way)    │               │
 │  └─────────────────────────────────────┘               │
 │                                                         │
-│  === EM MINHAS MÃOS ===                                │
+│  ⚠️ Botão fica BLOQUEADO enquanto status != ready      │
+│                                                         │
+│  === ABA NARGUILÉ (NOVO!) ===                          │
 │                                                         │
 │  ┌─────────────────────────────────────┐               │
-│  │ #0124 │ Mesa 07                     │  COMIGO      │
-│  │ ─────────────────────────────────   │               │
-│  │ • 1x Tábua de Frios                 │               │
-│  │ • 1x Cerveja                        │               │
+│  │ Mesa 07 │ Uva │ ⏱️ 00:42:15        │               │
+│  │ Próximo carvão: 02:45               │               │
 │  │                                     │               │
-│  │ [Entregar] [Problema]               │               │
-│  └─────────────────────────────────────┘               │
-│                                                         │
-│  === BALCÃO ===                                        │
-│                                                         │
-│  ┌─────────────────────────────────────┐               │
-│  │ #0128 │ BALCÃO │ Cliente: Ana      │               │
-│  │ ─────────────────────────────────   │               │
-│  │ PRONTO PARA RETIRADA                │  📢          │
-│  │                                     │               │
-│  │ [Chamar Cliente] [Entregue]         │               │
+│  │ [Trocar Carvão] [Pausar] [Finalizar]│               │
 │  └─────────────────────────────────────┘               │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 
-Ações:
-- "Pegar Pedido" → status = 'picked_up', assigned_to = staff_id
-- "Entregar" → status = 'delivered', notifica cliente
-- "Chamar Cliente" → Push notification para cliente
-- "Entregue" (balcão) → status = 'delivered'
+Fluxo de Botões (Atendente):
+1. Pedido fica "ready" na Cozinha/Bar → Aparece para Atendente
+2. Botão [Retirar] fica ATIVO → Clica → Status "on_way"
+3. Botão [Entregar] aparece → Clica → Status "delivered"
+4. Pedido SAI da tela
+
+IMPORTANTE: Botões do Atendente ficam BLOQUEADOS até o pedido
+estar "ready". Ele não pode acelerar o preparo da Cozinha/Bar.
 ```
 
 ### 2.5 Painel Caixa
@@ -1024,15 +1091,16 @@ Ações:
 │      • Separa itens por setor:                         │
 │        - Comida → Cozinha                              │
 │        - Drink → Bar                                   │
-│        - Narguilé → Bar                                │
+│        - Narguilé → Bar ⚠️ (deveria ser Atendente)    │
 │      • Emite Socket 'new_order' para cada setor        │
+│      • ⚠️ FALTA: notificar Atendente em novos pedidos │
 │              │                                          │
 │              ▼                                          │
 │  [5] ESTOQUE                                           │
 │      • Para cada item:                                 │
-│        - Busca ficha técnica                           │
-│        - Baixa insumos                                 │
-│        - Verifica alertas                              │
+│        - Baixa direta no product.stock                 │
+│        - ⚠️ Ficha técnica NÃO implementada            │
+│        - Verifica alertas se stock < minStock          │
 │              │                                          │
 │              ▼                                          │
 │  [6] CASHBACK                                          │
@@ -1093,4 +1161,229 @@ Todos itens prontos?
 
 ---
 
-*FLAME User Flows v3.0.0*
+## 5. MAPEAMENTO TÉCNICO
+
+### 5.1 Arquivos por Fluxo
+
+| Fluxo | Frontend (Pages) | Frontend (Stores) | Backend (Routes) | Backend (Controllers) | Models |
+|-------|-----------------|-------------------|------------------|----------------------|--------|
+| **Cadastro/Login** | `/register`, `/login`, `/complete-profile` | `authStore.js` | `auth.js` | `authController.js` | `User.js` |
+| **Pedido Mesa** | `/cardapio`, `/carrinho`, `/checkout`, `/pedido/[id]` | `cartStore.js`, `orderStore.js` | `orders.js` | `orderController.js` | `Order.js`, `OrderItem.js` |
+| **Narguilé** | `/cardapio` (categoria), `/staff/bar` | `cartStore.js` | `hookah.js`, `orders.js` | `hookahController.js` | `HookahSession.js` |
+| **Reserva** | `/reservas` | `reservationStore.js` | `reservations.js` | `reservationController.js` | `Reservation.js` |
+| **Cashback** | `/perfil`, `/cashback` | `userStore.js` | `cashback.js`, `users.js` | `cashbackController.js` | `Cashback.js`, `CashbackTransaction.js` |
+| **Cozinha** | `/cozinha/index.js` | `orderStore.js`, `staffStore.js` | `orders.js` | `orderController.js` | `Order.js`, `OrderItem.js` |
+| **Bar** | `/staff/bar.js` | `orderStore.js`, `staffStore.js` | `orders.js`, `hookah.js` | `orderController.js` | `Order.js`, `HookahSession.js` |
+| **Atendente** | `/atendente/index.js` | `orderStore.js`, `staffStore.js` | `orders.js` | `orderController.js` | `Order.js` |
+| **Caixa** | `/staff/caixa.js` | `cashStore.js`, `orderStore.js` | `cash-register.js` | `cashRegisterController.js` | `CashRegister.js`, `CashMovement.js` |
+| **Admin** | `/admin/*` (12 páginas) | `adminStore.js`, `productStore.js` | `admin.js`, `products.js` | `adminController.js` | Vários |
+
+### 5.2 Eventos Socket.IO
+
+| Evento | Emissor | Receptor | Payload | Descrição |
+|--------|---------|----------|---------|-----------|
+| `new_order` | Backend | Cozinha/Bar | `{ order, items }` | Novo pedido criado |
+| `new_kitchen_order` | Backend | Cozinha | `{ order, items }` | Itens de comida |
+| `new_bar_order` | Backend | Bar | `{ order, items }` | Itens de bebida |
+| `order_status_update` | Backend | Cliente/Staff | `{ orderId, status, timestamp }` | Mudança de status |
+| `item_ready` | Staff | Backend→Atendente | `{ orderId, itemId }` | Item pronto |
+| `order_ready` | Backend | Atendente/Cliente | `{ orderId }` | Pedido completo pronto |
+| `order_delivered` | Atendente | Backend→Cliente | `{ orderId }` | Pedido entregue |
+| `table_updated` | Backend | Admin/Atendente | `{ tableId, status }` | Status mesa mudou |
+| `hookah_timer_update` | Backend | Cliente/Bar | `{ sessionId, elapsed }` | Timer narguilé |
+
+### 5.3 Endpoints Principais
+
+#### Autenticação
+```
+POST /api/auth/register        → Cadastro completo
+POST /api/auth/register-phone  → Cadastro só celular
+POST /api/auth/login           → Login email/senha
+POST /api/auth/login-phone     → Enviar SMS
+POST /api/auth/verify-phone    → Verificar código
+POST /api/auth/google          → OAuth Google
+GET  /api/auth/me              → Dados usuário logado
+```
+
+#### Pedidos
+```
+GET    /api/orders             → Lista pedidos (filtros)
+POST   /api/orders             → Criar pedido
+GET    /api/orders/:id         → Detalhes pedido
+PATCH  /api/orders/:id/status  → Mudar status ⚠️ (sem validação de role)
+GET    /api/orders/kitchen     → Pedidos da cozinha
+GET    /api/orders/bar         → Pedidos do bar
+```
+
+#### Produtos
+```
+GET    /api/products           → Lista produtos
+GET    /api/products/:id       → Detalhes produto
+POST   /api/products           → Criar (admin)
+PUT    /api/products/:id       → Editar (admin)
+DELETE /api/products/:id       → Remover (admin)
+GET    /api/products/categories → Categorias
+```
+
+#### Staff
+```
+GET  /api/staff/dashboard      → Métricas gerente
+GET  /api/staff/tables         → Mapa de mesas
+POST /api/staff/tables/:id/status → Atualizar mesa
+```
+
+### 5.4 Status de Pedido (Máquina de Estados)
+
+```
+                    ┌─────────────────────────────────────────┐
+                    │         ESTADOS DO PEDIDO               │
+                    └─────────────────────────────────────────┘
+
+         ┌──────────────┐
+         │pending_payment│ ← Pedido criado, aguarda pagamento
+         └──────┬───────┘
+                │ (pagamento confirmado)
+                ▼
+         ┌──────────────┐
+         │  confirmed   │ ← Pedido pago, aguarda preparo
+         └──────┬───────┘
+                │ (staff inicia preparo)
+                ▼
+         ┌──────────────┐
+         │  preparing   │ ← Em preparo (Cozinha/Bar)
+         └──────┬───────┘
+                │ (todos itens prontos)
+                ▼
+         ┌──────────────┐
+         │    ready     │ ← Pronto para retirada
+         └──────┬───────┘
+                │ (atendente pega)
+                ▼
+         ┌──────────────┐
+         │   on_way     │ ← A caminho da mesa
+         └──────┬───────┘
+                │ (atendente entrega)
+                ▼
+         ┌──────────────┐
+         │  delivered   │ ← Entregue (cashback creditado)
+         └──────────────┘
+
+         ⚠️ DIVERGÊNCIA: Qualquer staff pode mudar para qualquer status
+            (deveria ter validações por role)
+```
+
+### 5.5 Tiers de Cashback
+
+| Tier | Gasto Acumulado | % Cashback | Campos no User |
+|------|-----------------|------------|----------------|
+| Bronze | R$ 0 - 499 | 2% | `cashbackTier: 'bronze'` |
+| Silver | R$ 500 - 1.999 | 5% | `cashbackTier: 'silver'` |
+| Gold | R$ 2.000 - 4.999 | 8% | `cashbackTier: 'gold'` |
+| Platinum | R$ 5.000+ | 10% | `cashbackTier: 'platinum'` |
+
+**Modelo Cashback:**
+- `userId` - FK para User
+- `balance` - Saldo disponível
+- `totalEarned` - Total ganho histórico
+- `totalSpent` - Total gasto histórico
+
+**Modelo CashbackTransaction:**
+- `type`: 'earn' | 'spend' | 'bonus' | 'expire' | 'adjustment'
+- `amount` - Valor da transação
+- `orderId` - FK opcional (quando vinculado a pedido)
+- `description` - Motivo (ex: "Cashback pedido #127")
+
+---
+
+## 6. DIVERGÊNCIAS CONHECIDAS
+
+| # | Fluxo | PRD/Doc | Sistema Real | Impacto | Prioridade |
+|---|-------|---------|--------------|---------|------------|
+| 1 | Mudança Status | Validado por role | Qualquer um muda | Alto - integridade | P0 |
+| 2 | Narguilé | Atendente controla | Bar controla | Médio - UX | P1 |
+| 3 | Cashback no Checkout | Usar até 50% | Não implementado | Alto - receita | P0 |
+| 4 | Bônus Cadastro | Automático R$10 | Manual via CRM | Baixo | P2 |
+| 5 | Bônus Aniversário | Automático | Manual | Baixo | P2 |
+| 6 | No-show Reserva | Automático | Método existe, job não | Baixo | P3 |
+| 7 | Ficha Técnica | Baixa por insumo | Baixa direto produto | Médio - estoque | P1 |
+| 8 | Notificação Atendente | Em novos pedidos | Não implementado | Médio - operação | P1 |
+
+---
+
+---
+
+## 7. PROBLEMAS CRÍTICOS IDENTIFICADOS NA AUDITORIA
+
+### 7.1 Segurança
+
+| Problema | Arquivo | Impacto | Prioridade |
+|----------|---------|---------|------------|
+| **Webhook sem autenticação** | `orderController.js` `/payment/confirm` | Qualquer um pode confirmar pagamento | 🔴 CRÍTICO |
+| **CRUD produtos sem role** | `productController.js` | Qualquer usuário cria/edita/deleta | 🔴 CRÍTICO |
+| **Google credentials expostas** | `.env` no repositório | Vazamento de credenciais | 🔴 CRÍTICO |
+| **WhatsApp número pessoal** | `whatsapp.service.js:16` | Privacidade comprometida | 🔴 CRÍTICO |
+| **VAPID keys hardcoded** | `push.service.js:11-13` | Push inseguro | 🔴 CRÍTICO |
+
+### 7.2 Bugs de Funcionamento
+
+| Bug | Arquivo | Descrição | Impacto |
+|-----|---------|-----------|---------|
+| **QR Code URL errada** | `tableController.js` (4 locais) | Gera `/table/` mas rota é `/qr/` | QR não funciona |
+| **Job no-show quebrado** | `noShow.job.js:28-35` | Usa `r.time` que não existe | No-shows não marcados |
+| **Caixa desincronizado** | `orderController.js` | Vendas dinheiro não registram | Caixa incorreto |
+| **Socket hookah falta** | `atendente/index.js` | Não escuta eventos do narguilé | Sem tempo real |
+
+### 7.3 Funcionalidades Faltando
+
+| Funcionalidade | Status | Prioridade |
+|----------------|--------|------------|
+| Uso de cashback no checkout | ❌ Não implementado | P0 |
+| Ficha técnica (receita/insumos) | ❌ Não implementado | P1 |
+| Automações CRM | ❌ Não implementado | P2 |
+| Push no Service Worker | ❌ Não implementado | P1 |
+| Tracking de campanhas | ❌ Não implementado | P2 |
+
+---
+
+## 8. CONFIRMAÇÕES DA AUDITORIA
+
+### ✅ Confirmado: Narguilé em `/atendente`
+
+A migração do narguilé de `/staff/bar` para `/atendente` **foi concluída** na Sprint 23.
+
+**Localização atual**: `pages/atendente/index.js`
+
+O atendente agora controla:
+- Criar sessões de narguilé
+- Trocar carvão
+- Pausar/retomar
+- Finalizar sessão
+
+### ✅ Confirmado: Baixa de estoque automática
+
+Quando um pedido é criado:
+1. Valida estoque disponível
+2. `Product.decrement('stock', { by: quantity })`
+3. `InventoryService.recordMovement(type='saida', reason='venda')`
+4. Se cancelado, restaura com `devolucao`
+
+### ✅ Confirmado: Cashback automático
+
+Quando pedido é entregue (status = 'delivered'):
+1. Calcula % baseado no tier do usuário
+2. `user.addCashback(amount, orderId)`
+3. Cria registro em `CashbackHistory`
+4. Atualiza `cashbackBalance` do user
+
+### ✅ Confirmado: Tiers implementados
+
+| Tier | Gasto Mínimo | Cashback |
+|------|--------------|----------|
+| Bronze | R$ 0 | 2% |
+| Silver | R$ 1.000 | 5% |
+| Gold | R$ 5.000 | 8% |
+| Platinum | R$ 10.000 | 10% |
+
+---
+
+*FLAME User Flows v3.3.0 - Sincronizado com auditoria completa em 07/12/2024*

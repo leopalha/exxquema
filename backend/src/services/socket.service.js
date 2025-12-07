@@ -207,7 +207,8 @@ class SocketService {
 
     // Enviar para COZINHA se tiver comida
     if (foodItems.length > 0) {
-      this.emitToRoom('kitchen', 'new_order', {
+      console.log(`📡 [SOCKET] Enviando order_created para kitchen com ${foodItems.length} itens`);
+      this.emitToRoom('kitchen', 'order_created', {
         orderId: orderData.id,
         orderNumber: orderData.orderNumber,
         tableNumber: orderData.table?.number,
@@ -221,7 +222,8 @@ class SocketService {
 
     // Enviar para BAR se tiver bebidas ou narguilé
     if (drinkItems.length > 0 || hookahItems.length > 0) {
-      this.emitToRoom('bar', 'new_order', {
+      console.log(`📡 [SOCKET] Enviando order_created para bar com ${drinkItems.length + hookahItems.length} itens`);
+      this.emitToRoom('bar', 'order_created', {
         orderId: orderData.id,
         orderNumber: orderData.orderNumber,
         tableNumber: orderData.table?.number,
@@ -234,12 +236,26 @@ class SocketService {
     }
 
     // Notificar atendentes sobre QUALQUER pedido
-    this.emitToRoom('attendants', 'new_order_notification', {
+    console.log(`📡 [SOCKET] Enviando order_created para attendants`);
+    this.emitToRoom('attendants', 'order_created', {
       orderId: orderData.id,
       orderNumber: orderData.orderNumber,
       tableNumber: orderData.table?.number,
       customerName: orderData.customer?.nome,
       total: orderData.total,
+      timestamp: new Date()
+    });
+
+    // Notificar ADMINS sobre QUALQUER pedido (para dashboard em tempo real)
+    console.log(`📡 [SOCKET] Enviando order_created para admins`);
+    this.emitToRoom('admins', 'order_created', {
+      orderId: orderData.id,
+      orderNumber: orderData.orderNumber,
+      tableNumber: orderData.table?.number,
+      customerName: orderData.customer?.nome,
+      total: orderData.total,
+      itemsCount: orderData.items?.length || 0,
+      paymentMethod: orderData.paymentMethod,
       timestamp: new Date()
     });
   }
@@ -256,15 +272,34 @@ class SocketService {
     // Notificar cliente que está acompanhando o pedido
     this.emitToRoom(`order_${orderId}`, 'order_status_updated', eventData);
 
-    // Notificar funcionários baseado no status
-    if (status === 'preparing') {
+    // SEMPRE notificar admins sobre QUALQUER mudança de status
+    console.log(`📡 [SOCKET] Notificando admins sobre status ${status} do pedido ${orderId}`);
+    this.emitToRoom('admins', 'order_status_changed', eventData);
+
+    // Notificar funcionários específicos baseado no status
+    if (status === 'confirmed' || status === 'preparing') {
+      // Atendente sabe que pedido está sendo preparado
       this.emitToRoom('attendants', 'order_status_changed', eventData);
     } else if (status === 'ready') {
-      this.emitToRoom('attendants', 'order_ready_notification', eventData);
+      // ALERTA URGENTE para atendente - pedido pronto para buscar!
+      console.log(`🔔 [SOCKET] ALERTA: Pedido ${orderId} PRONTO para buscar!`);
+      this.emitToRoom('attendants', 'order_ready_alert', {
+        ...eventData,
+        priority: 'high',
+        message: `Pedido #${additionalData.orderNumber || orderId} PRONTO para entrega!`
+      });
     } else if (status === 'on_way') {
+      // Cozinha/Bar sabe que pedido foi retirado
       this.emitToRoom('kitchen', 'order_picked_up', eventData);
+      this.emitToRoom('bar', 'order_picked_up', eventData);
     } else if (status === 'delivered') {
+      // Confirmar entrega
       this.emitToRoom('admins', 'order_delivered', eventData);
+    } else if (status === 'cancelled') {
+      // Notificar todos sobre cancelamento
+      this.emitToRoom('kitchen', 'order_cancelled', eventData);
+      this.emitToRoom('bar', 'order_cancelled', eventData);
+      this.emitToRoom('attendants', 'order_cancelled', eventData);
     }
   }
 
@@ -396,7 +431,19 @@ class SocketService {
   }
 
   // Notificar nova sessão de narguilé
+  // NOTA: Atendente é responsável pelo narguilé, não o Bar
   notifyNewHookahSession(sessionData) {
+    // Notificar atendentes (principal responsável)
+    this.emitToRoom('attendants', 'hookah:session_started', {
+      sessionId: sessionData.id,
+      tableNumber: sessionData.mesa?.number,
+      flavorName: sessionData.flavor?.name,
+      duration: sessionData.duration,
+      quantity: sessionData.quantity,
+      timestamp: new Date()
+    });
+
+    // Também notificar bar (para preparar o carvão inicial)
     this.emitToRoom('bar', 'hookah:session_started', {
       sessionId: sessionData.id,
       tableNumber: sessionData.mesa?.number,
@@ -419,7 +466,19 @@ class SocketService {
   }
 
   // Alerta de carvão (15 min antes do fim)
+  // NOTA: Atendente é principal responsável
   notifyCoalChangeAlert(sessionData) {
+    // Notificar atendentes (principal responsável)
+    this.emitToRoom('attendants', 'hookah:coal_change_alert', {
+      sessionId: sessionData.id,
+      tableNumber: sessionData.mesa?.number,
+      flavorName: sessionData.flavor?.name,
+      remainingMinutes: sessionData.remainingMinutes,
+      timestamp: new Date(),
+      priority: 'high'
+    });
+
+    // Também notificar bar (backup)
     this.emitToRoom('bar', 'hookah:coal_change_alert', {
       sessionId: sessionData.id,
       tableNumber: sessionData.mesa?.number,

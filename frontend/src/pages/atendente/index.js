@@ -4,12 +4,14 @@ import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
 import useStaffStore from '../../stores/staffStore';
-import { useThemeStore } from '../../stores/themeStore';
+import { useHookahStore } from '../../stores/hookahStore';
+import useThemeStore from '../../stores/themeStore';
 import { formatCurrency } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import socketService from '../../services/socket';
 import api from '../../services/api';
 import StaffOrderCard from '../../components/StaffOrderCard';
+import HookahSessionCard from '../../components/HookahSessionCard';
 import useNotificationSound from '../../hooks/useNotificationSound';
 import {
   Bell,
@@ -27,18 +29,28 @@ import {
   BarChart3,
   Phone,
   MessageSquare,
-  X
+  X,
+  Flame,
+  Pause,
+  Play,
+  Zap
 } from 'lucide-react';
 
 export default function PainelAtendente() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
   const { stats, orders, fetchDashboard, updateOrderStatus } = useStaffStore();
-  const { getPalette } = useThemeStore();
-  const palette = getPalette();
+  const {
+    sessions: hookahSessions,
+    fetchSessions,
+    registerCoalChange,
+    pauseSession,
+    resumeSession,
+    endSession
+  } = useHookahStore();
   const { playSuccess, playAlert } = useNotificationSound();
 
-  const [activeTab, setActiveTab] = useState('ready'); // ready, delivered, pickup
+  const [activeTab, setActiveTab] = useState('new'); // new, ready, delivered, pickup, hookah
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [callCustomerModal, setCallCustomerModal] = useState(null);
   const [isCallingCustomer, setIsCallingCustomer] = useState(false);
@@ -69,6 +81,7 @@ export default function PainelAtendente() {
     };
 
     loadDashboard();
+    fetchSessions(); // Carregar sessões de narguilé
 
     // Conectar ao Socket.IO
     const token = localStorage.getItem('token');
@@ -181,7 +194,8 @@ export default function PainelAtendente() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  FLAME - Painel Atendente
+                  <Bell className="w-7 h-7" style={{ color: 'var(--theme-primary)' }} />
+                  FLAME - Atendente
                 </h1>
                 <p className="text-gray-400 text-sm mt-1">
                   Olá, {user?.name || 'Atendente'}!
@@ -192,19 +206,30 @@ export default function PainelAtendente() {
                 {/* Notification Badge */}
                 {readyOrders.length > 0 && (
                   <div className="relative">
-                    <Bell className="w-6 h-6 animate-pulse" style={{ color: 'var(--theme-primary)' }} />
-                    <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white font-bold" style={{ background: 'var(--theme-primary)' }}>
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse" style={{ background: 'var(--theme-primary-20)' }}>
+                      <Bell className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+                    </div>
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white font-bold" style={{ background: 'var(--theme-primary)' }}>
                       {readyOrders.length}
                     </span>
                   </div>
                 )}
+
+                {/* Current Time */}
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">
+                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
 
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
                 >
                   <LogOut className="w-5 h-5" />
-                  <span className="hidden sm:inline">Sair</span>
                 </button>
               </div>
             </div>
@@ -256,10 +281,23 @@ export default function PainelAtendente() {
             </div>
 
             {/* Tab Buttons */}
-            <div className="flex gap-2 mb-6 border-b border-gray-700">
+            <div className="flex gap-2 mb-6 border-b border-gray-700 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab('new')}
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                  activeTab === 'new'
+                    ? 'border-yellow-500 text-yellow-400'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Novos ({(orders.pending?.length || 0) + (orders.preparing?.length || 0)})
+                </div>
+              </button>
               <button
                 onClick={() => setActiveTab('ready')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
                   activeTab === 'ready'
                     ? 'border-transparent'
                     : 'border-transparent text-gray-400 hover:text-white'
@@ -273,7 +311,7 @@ export default function PainelAtendente() {
               </button>
               <button
                 onClick={() => setActiveTab('delivered')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
                   activeTab === 'delivered'
                     ? 'border-green-500 text-green-400'
                     : 'border-transparent text-gray-400 hover:text-white'
@@ -286,7 +324,7 @@ export default function PainelAtendente() {
               </button>
               <button
                 onClick={() => setActiveTab('pickup')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
                   activeTab === 'pickup'
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-gray-400 hover:text-white'
@@ -297,10 +335,89 @@ export default function PainelAtendente() {
                   Balcão
                 </div>
               </button>
+              <button
+                onClick={() => setActiveTab('hookah')}
+                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                  activeTab === 'hookah'
+                    ? 'border-transparent'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+                style={activeTab === 'hookah' ? { borderColor: 'var(--theme-primary)', color: 'var(--theme-primary)' } : {}}
+              >
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4" />
+                  Narguilé ({hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0})
+                </div>
+              </button>
             </div>
 
             {/* Tab Content */}
             <AnimatePresence mode="wait">
+              {activeTab === 'new' && (
+                <motion.div
+                  key="new"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  {(!orders.pending || orders.pending.length === 0) && (!orders.preparing || orders.preparing.length === 0) ? (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Clock className="w-10 h-10 text-gray-600" />
+                      </div>
+                      <p className="text-gray-400">Nenhum pedido em andamento</p>
+                      <p className="text-gray-500 text-sm mt-2">Os novos pedidos aparecerão aqui</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Pedidos aguardando (pending) */}
+                      {orders.pending && orders.pending.length > 0 && (
+                        <>
+                          <div className="mb-4 px-2">
+                            <p className="text-sm font-semibold text-yellow-400">AGUARDANDO PREPARO ({orders.pending.length})</p>
+                          </div>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence>
+                              {orders.pending.map((order) => (
+                                <StaffOrderCard
+                                  key={order.id}
+                                  order={order}
+                                  onStatusUpdate={handleStatusUpdate}
+                                  onTimerAlert={handleTimerAlert}
+                                  userRole="atendente"
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Pedidos em preparo (preparing) */}
+                      {orders.preparing && orders.preparing.length > 0 && (
+                        <>
+                          <div className="mb-4 px-2 mt-6">
+                            <p className="text-sm font-semibold text-orange-400">EM PREPARO ({orders.preparing.length})</p>
+                          </div>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence>
+                              {orders.preparing.map((order) => (
+                                <StaffOrderCard
+                                  key={order.id}
+                                  order={order}
+                                  onStatusUpdate={handleStatusUpdate}
+                                  onTimerAlert={handleTimerAlert}
+                                  userRole="atendente"
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {activeTab === 'ready' && (
                 <motion.div
                   key="ready"
@@ -308,7 +425,7 @@ export default function PainelAtendente() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                 >
-                  {!orders.ready || orders.ready.length === 0 ? (
+                  {(!orders.ready || orders.ready.length === 0) && (!orders.on_way || orders.on_way.length === 0) ? (
                     <div className="text-center py-12">
                       <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                         <CheckCircle className="w-10 h-10 text-gray-600" />
@@ -316,17 +433,50 @@ export default function PainelAtendente() {
                       <p className="text-gray-400">Nenhum pedido pronto</p>
                     </div>
                   ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <AnimatePresence>
-                        {orders.ready.map((order) => (
-                          <StaffOrderCard
-                            key={order.id}
-                            order={order}
-                            onStatusUpdate={handleStatusUpdate}
-                            onTimerAlert={handleTimerAlert}
-                          />
-                        ))}
-                      </AnimatePresence>
+                    <div className="space-y-6">
+                      {/* Pedidos em entrega (on_way) - mostrar primeiro */}
+                      {orders.on_way && orders.on_way.length > 0 && (
+                        <>
+                          <div className="mb-4 px-2">
+                            <p className="text-sm font-semibold text-purple-400">EM ENTREGA ({orders.on_way.length})</p>
+                          </div>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence>
+                              {orders.on_way.map((order) => (
+                                <StaffOrderCard
+                                  key={order.id}
+                                  order={order}
+                                  onStatusUpdate={handleStatusUpdate}
+                                  onTimerAlert={handleTimerAlert}
+                                  userRole="atendente"
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Pedidos prontos para retirar */}
+                      {orders.ready && orders.ready.length > 0 && (
+                        <>
+                          <div className="mb-4 px-2">
+                            <p className="text-sm font-semibold text-green-400">PRONTOS PARA RETIRAR ({orders.ready.length})</p>
+                          </div>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <AnimatePresence>
+                              {orders.ready.map((order) => (
+                                <StaffOrderCard
+                                  key={order.id}
+                                  order={order}
+                                  onStatusUpdate={handleStatusUpdate}
+                                  onTimerAlert={handleTimerAlert}
+                                  userRole="atendente"
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -363,6 +513,107 @@ export default function PainelAtendente() {
                     <p className="text-gray-400">Pedidos para retirada no balcão</p>
                     <p className="text-gray-500 text-sm mt-2">Nenhum pedido agora</p>
                   </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'hookah' && (
+                <motion.div
+                  key="hookah"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  {/* Ações Rápidas */}
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    <button
+                      onClick={() => {
+                        const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
+                        if (activeSessions.length === 0) {
+                          toast('Nenhuma sessão ativa', { icon: 'ℹ️' });
+                          return;
+                        }
+                        activeSessions.forEach(s => registerCoalChange(s.id));
+                        toast.success(`Carvão registrado para ${activeSessions.length} sessão(ões)`);
+                        playSuccess();
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-colors hover:opacity-90"
+                      style={{ background: 'var(--theme-primary)' }}
+                    >
+                      <Zap className="w-4 h-4" />
+                      Trocar Carvão (Todas)
+                    </button>
+                    <button
+                      onClick={() => {
+                        const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
+                        if (activeSessions.length === 0) {
+                          toast('Nenhuma sessão ativa para pausar', { icon: 'ℹ️' });
+                          return;
+                        }
+                        activeSessions.forEach(s => pauseSession(s.id));
+                        toast.success(`${activeSessions.length} sessão(ões) pausada(s)`);
+                      }}
+                      className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-white transition-colors"
+                    >
+                      <Pause className="w-4 h-4" />
+                      Pausar Todas
+                    </button>
+                    <button
+                      onClick={() => {
+                        const pausedSessions = hookahSessions?.filter(s => s.status === 'paused') || [];
+                        if (pausedSessions.length === 0) {
+                          toast('Nenhuma sessão pausada para retomar', { icon: 'ℹ️' });
+                          return;
+                        }
+                        pausedSessions.forEach(s => resumeSession(s.id));
+                        toast.success(`${pausedSessions.length} sessão(ões) retomada(s)`);
+                      }}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+                    >
+                      <Play className="w-4 h-4" />
+                      Retomar Todas
+                    </button>
+                  </div>
+
+                  {/* Lista de Sessões */}
+                  {(!hookahSessions || hookahSessions.filter(s => s.status === 'active' || s.status === 'paused').length === 0) ? (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Flame className="w-10 h-10 text-gray-600" />
+                      </div>
+                      <p className="text-gray-400">Nenhuma sessão de narguilé ativa</p>
+                      <p className="text-gray-500 text-sm mt-2">As sessões aparecerão aqui quando iniciadas</p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {hookahSessions
+                        .filter(s => s.status === 'active' || s.status === 'paused')
+                        .map((session) => (
+                          <HookahSessionCard
+                            key={session.id}
+                            session={session}
+                            onCoalChange={() => {
+                              registerCoalChange(session.id);
+                              toast.success('Troca de carvão registrada!');
+                              playSuccess();
+                            }}
+                            onPause={() => {
+                              pauseSession(session.id);
+                              toast.success('Sessão pausada');
+                            }}
+                            onResume={() => {
+                              resumeSession(session.id);
+                              toast.success('Sessão retomada');
+                            }}
+                            onEnd={() => {
+                              if (confirm('Finalizar esta sessão de narguilé?')) {
+                                endSession(session.id);
+                                toast.success('Sessão finalizada');
+                              }
+                            }}
+                          />
+                        ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

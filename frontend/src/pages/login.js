@@ -170,7 +170,7 @@ export default function Login() {
         <meta name="description" content="Faça login na sua conta do FLAME Lounge Bar" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-[var(--theme-primary)] via-black to-neutral-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[var(--theme-primary)] via-black to-gray-900 flex items-center justify-center p-4">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[var(--theme-primary)] rounded-full blur-3xl" />
@@ -185,7 +185,7 @@ export default function Login() {
         >
           {/* Logo */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center space-x-3 text-neutral-300 hover:text-white transition-colors">
+            <Link href="/" className="inline-flex items-center space-x-3 text-gray-300 hover:text-white transition-colors">
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </Link>
@@ -195,26 +195,26 @@ export default function Login() {
                 <FlameLogo supreme size={80} />
               </div>
               <h1 className="text-3xl font-bold text-white mb-2">Bem-vindo de volta!</h1>
-              <p className="text-neutral-400">Entre na sua conta para continuar</p>
+              <p className="text-gray-400">Entre na sua conta para continuar</p>
             </div>
           </div>
 
           {/* Login Form */}
           <motion.div
             variants={formVariants}
-            className="bg-neutral-900/80 backdrop-blur-lg rounded-2xl p-8 border border-neutral-700 shadow-2xl"
+            className="bg-gray-900/80 backdrop-blur-lg rounded-2xl p-8 border border-gray-700 shadow-2xl"
           >
             {!isCodeStep ? (
               <>
                 {/* Method Toggle */}
-                <div className="flex bg-neutral-800 rounded-lg p-1 mb-8">
+                <div className="flex bg-gray-800 rounded-lg p-1 mb-8">
                   <button
                     type="button"
                     onClick={() => setLoginMethod('sms')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-all ${
                       loginMethod === 'sms'
-                        ? 'bg-neutral-700 text-white'
-                        : 'text-neutral-400 hover:text-white'
+                        ? 'bg-gray-700 text-white'
+                        : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     <Phone className="w-4 h-4" />
@@ -225,8 +225,8 @@ export default function Login() {
                     onClick={() => setLoginMethod('password')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium transition-all ${
                       loginMethod === 'password'
-                        ? 'bg-neutral-700 text-white'
-                        : 'text-neutral-400 hover:text-white'
+                        ? 'bg-gray-700 text-white'
+                        : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     <Mail className="w-4 h-4" />
@@ -264,12 +264,12 @@ export default function Login() {
                 {loginMethod === 'password' && (
                   <form onSubmit={(e) => { e.preventDefault(); if (!isLoading) handlePasswordLogin(passwordForm.values); }}>
                     <div className="mb-4">
-                      <label htmlFor="email" className="block text-sm font-medium text-neutral-300 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                         Email
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail className="h-5 w-5 text-neutral-400" />
+                          <Mail className="h-5 w-5 text-gray-400" />
                         </div>
                         <input
                           id="email"
@@ -278,20 +278,20 @@ export default function Login() {
                           onChange={(e) => passwordForm.setValue('email', e.target.value)}
                           onBlur={() => passwordForm.setFieldTouched('email')}
                           placeholder="seu@email.com"
-                          className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                             passwordForm.isFieldInvalid('email')
-                              ? 'border-magenta-500 focus:ring-magenta-500'
-                              : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-gray-600 focus:ring-0'
                           }`}
                         />
                       </div>
                       {passwordForm.isFieldInvalid('email') && (
-                        <p className="mt-2 text-sm text-magenta-400">{passwordForm.errors.email}</p>
+                        <p className="mt-2 text-sm text-red-400">{passwordForm.errors.email}</p>
                       )}
                     </div>
 
                     <div className="mb-6">
-                      <label htmlFor="password" className="block text-sm font-medium text-neutral-300 mb-2">
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                         Senha
                       </label>
                       <div className="relative">
@@ -302,22 +302,22 @@ export default function Login() {
                           onChange={(e) => passwordForm.setValue('password', e.target.value)}
                           onBlur={() => passwordForm.setFieldTouched('password')}
                           placeholder="Sua senha"
-                          className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                          className={`block w-full pr-10 pl-3 py-3 border rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                             passwordForm.isFieldInvalid('password')
-                              ? 'border-magenta-500 focus:ring-magenta-500'
-                              : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-gray-600 focus:ring-0'
                           }`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-white transition-colors"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
                         >
                           {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                         </button>
                       </div>
                       {passwordForm.isFieldInvalid('password') && (
-                        <p className="mt-2 text-sm text-magenta-400">{passwordForm.errors.password}</p>
+                        <p className="mt-2 text-sm text-red-400">{passwordForm.errors.password}</p>
                       )}
                     </div>
 
@@ -336,9 +336,9 @@ export default function Login() {
 
                 {/* Divider */}
                 <div className="mt-8 mb-8 flex items-center">
-                  <div className="flex-1 border-t border-neutral-700"></div>
-                  <span className="px-4 text-neutral-500 text-sm">ou</span>
-                  <div className="flex-1 border-t border-neutral-700"></div>
+                  <div className="flex-1 border-t border-gray-700"></div>
+                  <span className="px-4 text-gray-500 text-sm">ou</span>
+                  <div className="flex-1 border-t border-gray-700"></div>
                 </div>
 
                 {/* Google Login Button */}
@@ -356,13 +356,13 @@ export default function Login() {
 
                 {/* Links */}
                 <div className="mt-8 text-center space-y-4">
-                  <Link href="/register" className="text-neutral-400 hover:text-white font-medium transition-colors">
+                  <Link href="/register" className="text-gray-400 hover:text-white font-medium transition-colors">
                     Não tem uma conta? Cadastre-se
                   </Link>
 
                   {loginMethod === 'password' && (
                     <div>
-                      <Link href="/recuperar-senha" className="text-neutral-400 hover:text-white text-sm transition-colors">
+                      <Link href="/recuperar-senha" className="text-gray-400 hover:text-white text-sm transition-colors">
                         Esqueceu a senha?
                       </Link>
                     </div>
@@ -377,7 +377,7 @@ export default function Login() {
                     <Phone className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-2xl font-bold text-white mb-2">Código Enviado!</h2>
-                  <p className="text-neutral-400">
+                  <p className="text-gray-400">
                     Digite o código de 6 dígitos enviado para
                   </p>
                   <p className="text-white font-medium">{sentTo}</p>
@@ -385,7 +385,7 @@ export default function Login() {
 
                 <form onSubmit={(e) => { e.preventDefault(); codeForm.handleSubmit(handleCodeVerification); }}>
                   <div className="mb-6">
-                    <label htmlFor="codigo" className="block text-sm font-medium text-neutral-300 mb-2">
+                    <label htmlFor="codigo" className="block text-sm font-medium text-gray-300 mb-2">
                       Código de Verificação
                     </label>
                     <input
@@ -396,14 +396,14 @@ export default function Login() {
                       onBlur={() => codeForm.setFieldTouched('codigo')}
                       placeholder="000000"
                       maxLength={6}
-                      className={`block w-full px-3 py-3 border rounded-lg bg-neutral-800 text-white text-center text-2xl font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 transition-colors ${
+                      className={`block w-full px-3 py-3 border rounded-lg bg-gray-800 text-white text-center text-2xl font-mono tracking-widest placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors ${
                         codeForm.isFieldInvalid('codigo')
-                          ? 'border-magenta-500 focus:ring-magenta-500'
-                          : 'border-neutral-600 focus:ring-magenta-500 focus:border-magenta-500'
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-gray-600 focus:ring-0'
                       }`}
                     />
                     {codeForm.isFieldInvalid('codigo') && (
-                      <p className="mt-2 text-sm text-magenta-400 text-center">{codeForm.errors.codigo}</p>
+                      <p className="mt-2 text-sm text-red-400 text-center">{codeForm.errors.codigo}</p>
                     )}
                   </div>
 
@@ -422,7 +422,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={goBackToMethod}
-                      className="w-full bg-transparent border border-neutral-600 hover:border-neutral-500 text-neutral-300 hover:text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                      className="w-full bg-transparent border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-medium py-3 px-6 rounded-lg transition-colors"
                     >
                       Voltar
                     </button>
@@ -437,7 +437,7 @@ export default function Login() {
                       loginWithSMS(sentTo);
                     }}
                     disabled={isLoading}
-                    className="text-neutral-400 hover:text-white text-sm disabled:opacity-50"
+                    className="text-gray-400 hover:text-white text-sm disabled:opacity-50"
                   >
                     Não recebeu o código? Reenviar
                   </button>
@@ -447,7 +447,7 @@ export default function Login() {
           </motion.div>
 
           {/* Footer */}
-          <div className="mt-8 text-center text-neutral-500 text-sm">
+          <div className="mt-8 text-center text-gray-500 text-sm">
             <p>FLAME Lounge Bar - Botafogo, RJ</p>
           </div>
         </motion.div>

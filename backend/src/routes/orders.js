@@ -8,13 +8,13 @@ const { handleValidationErrors } = require('../middlewares/validation.middleware
 
 // Validações
 const createOrderValidation = [
-  body('tableId').isUUID().withMessage('ID da mesa é obrigatório'),
+  body('tableId').optional({ nullable: true }).isUUID().withMessage('ID da mesa inválido'), // tableId é opcional para pedidos de balcão
   body('items').isArray({ min: 1 }).withMessage('Pelo menos um item é obrigatório'),
   body('items.*.productId').isUUID().withMessage('ID do produto é obrigatório'),
   body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantidade deve ser maior que zero'),
-  body('items.*.notes').optional().isString(),
-  body('paymentMethod').optional().isIn(['cash', 'card', 'pix']).withMessage('Método de pagamento inválido'),
-  body('notes').optional().isString()
+  body('items.*.notes').optional({ nullable: true }).isString(),
+  body('paymentMethod').optional({ nullable: true }).isIn(['cash', 'card', 'pix', 'credit_card', 'debit_card']).withMessage('Método de pagamento inválido'),
+  body('notes').optional({ nullable: true }).isString()
 ];
 
 const updateOrderStatusValidation = [
@@ -38,7 +38,25 @@ const confirmPaymentValidation = [
 router.post('/',
   authenticate,
   requireCompleteProfile, // Requer perfil completo para fazer pedidos
+  // Debug: logar o body antes da validação
+  (req, res, next) => {
+    console.log('🔍 [DEBUG ORDER] Body recebido:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 [DEBUG ORDER] Headers:', JSON.stringify({
+      contentType: req.headers['content-type'],
+      authorization: req.headers.authorization ? 'Bearer ***' : 'MISSING'
+    }));
+    next();
+  },
   createOrderValidation,
+  // Debug: logar erros de validação antes de retornar
+  (req, res, next) => {
+    const { validationResult } = require('express-validator');
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('❌ [VALIDATION ERROR] Erros:', JSON.stringify(errors.array(), null, 2));
+    }
+    next();
+  },
   handleValidationErrors,
   orderController.createOrder
 );
@@ -70,7 +88,13 @@ router.post('/:id/rate',
 );
 
 // Rotas para funcionários
-router.get('/', 
+// IMPORTANTE: Rotas específicas devem vir antes de rotas com parâmetros (:id)
+router.get('/dashboard/metrics',
+  authenticate,
+  orderController.getDashboardMetrics
+);
+
+router.get('/',
   authenticate,
   orderController.getAllOrders
 );
@@ -82,13 +106,10 @@ router.patch('/:id/status',
   orderController.updateOrderStatus
 );
 
-router.get('/dashboard/metrics',
-  authenticate,
-  orderController.getDashboardMetrics
-);
-
 // Webhook para confirmação de pagamento
+// SEGURANÇA: Requer autenticação de admin/sistema ou Stripe webhook signature
 router.post('/payment/confirm',
+  authenticate, // Agora requer autenticação
   confirmPaymentValidation,
   handleValidationErrors,
   orderController.confirmPayment

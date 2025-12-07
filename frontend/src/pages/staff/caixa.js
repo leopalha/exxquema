@@ -2,8 +2,19 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import {
+  DollarSign,
+  LogOut,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  Plus,
+  Minus,
+  Lock,
+  Unlock,
+  X,
+  Eye
+} from 'lucide-react';
 import useCashierStore from '../../stores/cashierStore';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -66,6 +77,10 @@ export default function CaixaPage() {
     fetchCashierHistory(1);
     fetchCashierStats(30);
   }, [isAuthenticated, user, router]);
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
 
   const handleOpenCashier = async (e) => {
     e.preventDefault();
@@ -151,25 +166,44 @@ export default function CaixaPage() {
         <meta name="description" content="Gerencie aberturas, fechamentos e movimentações de caixa" />
       </Head>
 
-      <div className="min-h-screen bg-black text-white">
-        <Header />
+      <div className="min-h-screen bg-black">
+        {/* Header */}
+        <div className="bg-gray-900 border-b border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <DollarSign className="w-7 h-7" style={{ color: 'var(--theme-primary)' }} />
+                  FLAME - Gestão de Caixa
+                </h1>
+                <p className="text-gray-400 text-sm mt-1">
+                  Aberturas, fechamentos e movimentações
+                </p>
+              </div>
 
-        <main className="max-w-7xl mx-auto px-4 py-24">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <h1 className="text-4xl font-bold mb-4">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
-                Gestão de Caixa
-              </span>
-            </h1>
-            <p className="text-zinc-400">
-              Gerencie aberturas, fechamentos e movimentações de caixa
-            </p>
-          </motion.div>
+              <div className="flex items-center gap-4">
+                {/* Current Time */}
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">
+                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Error Alert */}
           <AnimatePresence>
@@ -196,17 +230,17 @@ export default function CaixaPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-8 p-6 bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-xl border border-zinc-700"
+            className="mb-8 p-6 bg-gray-900 rounded-xl border border-gray-700"
           >
             {currentCashier ? (
               <div>
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">Caixa Aberto</h2>
-                    <p className="text-zinc-400">
+                    <h2 className="text-2xl font-bold text-white mb-2">Caixa Aberto</h2>
+                    <p className="text-gray-400">
                       Operador: {currentCashier.operatorName}
                     </p>
-                    <p className="text-zinc-400 text-sm">
+                    <p className="text-gray-400 text-sm">
                       Aberto em: {formatDate(currentCashier.openedAt)}
                     </p>
                   </div>
@@ -225,41 +259,43 @@ export default function CaixaPage() {
                     </button>
                     <button
                       onClick={() => setShowCloseModal(true)}
-                      className="px-4 py-2 bg-[var(--theme-primary)] hover:bg-[var(--theme-secondary)] rounded-lg transition-colors"
+                      className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
+                      style={{ background: 'var(--theme-primary)' }}
                     >
-                      🔒 Fechar Caixa
+                      <Lock className="w-4 h-4 inline mr-1" />
+                      Fechar Caixa
                     </button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-1">Abertura</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-gray-400 text-sm mb-1">Abertura</p>
                     <p className="text-xl font-bold text-blue-400">
                       {formatCurrency(currentCashier.summary.opening)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-1">Vendas</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-gray-400 text-sm mb-1">Vendas</p>
                     <p className="text-xl font-bold text-green-400">
                       {formatCurrency(currentCashier.summary.sales)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-1">Suprimentos</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-gray-400 text-sm mb-1">Suprimentos</p>
                     <p className="text-xl font-bold text-green-400">
                       {formatCurrency(currentCashier.summary.deposits)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-1">Sangrias</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-gray-400 text-sm mb-1">Sangrias</p>
                     <p className="text-xl font-bold text-yellow-400">
                       {formatCurrency(currentCashier.summary.withdrawals)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-zinc-400 text-sm mb-1">Esperado</p>
-                    <p className="text-xl font-bold text-orange-400">
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-gray-400 text-sm mb-1">Esperado</p>
+                    <p className="text-xl font-bold" style={{ color: 'var(--theme-primary)' }}>
                       {formatCurrency(currentCashier.summary.expected)}
                     </p>
                   </div>
@@ -273,11 +309,11 @@ export default function CaixaPage() {
                       {currentCashier.movements.slice(0, 10).map((movement) => (
                         <div
                           key={movement.id}
-                          className="p-3 bg-zinc-800 rounded-lg flex justify-between items-center"
+                          className="p-3 bg-gray-800 rounded-lg flex justify-between items-center"
                         >
                           <div>
                             <p className="font-semibold">{movement.description}</p>
-                            <p className="text-xs text-zinc-400">
+                            <p className="text-xs text-gray-400">
                               {formatDate(movement.createdAt)} - {movement.createdByName}
                             </p>
                           </div>
@@ -299,12 +335,14 @@ export default function CaixaPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-zinc-400 mb-4">Nenhum caixa aberto no momento</p>
+                <p className="text-gray-400 mb-4">Nenhum caixa aberto no momento</p>
                 <button
                   onClick={() => setShowOpenModal(true)}
-                  className="px-6 py-3 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 rounded-lg font-semibold transition-all"
+                  className="px-6 py-3 rounded-lg text-white font-semibold transition-all hover:opacity-90"
+                  style={{ background: 'var(--theme-primary)' }}
                 >
-                  🔓 Abrir Caixa
+                  <Unlock className="w-4 h-4 inline mr-1" />
+                  Abrir Caixa
                 </button>
               </div>
             )}
@@ -314,21 +352,23 @@ export default function CaixaPage() {
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => setActiveTab('history')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-3 rounded-lg font-semibold transition-colors text-white ${
                 activeTab === 'history'
-                  ? 'bg-gradient-to-r from-orange-600 to-pink-600'
-                  : 'bg-zinc-800 hover:bg-zinc-700'
+                  ? ''
+                  : 'bg-gray-800 hover:bg-gray-700'
               }`}
+              style={activeTab === 'history' ? { background: 'var(--theme-primary)' } : {}}
             >
               📋 Histórico
             </button>
             <button
               onClick={() => setActiveTab('stats')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-3 rounded-lg font-semibold transition-colors text-white ${
                 activeTab === 'stats'
-                  ? 'bg-gradient-to-r from-orange-600 to-pink-600'
-                  : 'bg-zinc-800 hover:bg-zinc-700'
+                  ? ''
+                  : 'bg-gray-800 hover:bg-gray-700'
               }`}
+              style={activeTab === 'stats' ? { background: 'var(--theme-primary)' } : {}}
             >
               📊 Estatísticas
             </button>
@@ -344,38 +384,38 @@ export default function CaixaPage() {
               {loading ? (
                 <div className="space-y-3">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-20 bg-zinc-800 rounded-lg animate-pulse" />
+                    <div key={i} className="h-20 bg-gray-800 rounded-lg animate-pulse" />
                   ))}
                 </div>
               ) : cashierHistory.length === 0 ? (
-                <div className="text-center py-12 bg-zinc-900 rounded-lg border border-zinc-800">
-                  <p className="text-zinc-400">Nenhum registro encontrado</p>
+                <div className="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+                  <p className="text-gray-400">Nenhum registro encontrado</p>
                 </div>
               ) : (
                 <>
                   {cashierHistory.map((cashier) => (
                     <div
                       key={cashier.id}
-                      className="p-4 bg-zinc-900 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors"
+                      className="p-4 bg-gray-900 rounded-lg border border-gray-800 hover:border-gray-700 transition-colors"
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-bold text-lg">
                             {cashier.summary.operator}
                           </h3>
-                          <p className="text-sm text-zinc-400">
+                          <p className="text-sm text-gray-400">
                             {formatDate(cashier.openedAt)} -{' '}
                             {cashier.closedAt ? formatDate(cashier.closedAt) : 'Em aberto'}
                           </p>
                           {cashier.summary.duration && (
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-xs text-gray-500">
                               Duração: {formatDuration(cashier.summary.duration)}
                             </p>
                           )}
                         </div>
                         <button
                           onClick={() => handleViewDetails(cashier.id)}
-                          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors"
+                          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition-colors"
                         >
                           Ver Detalhes
                         </button>
@@ -383,32 +423,32 @@ export default function CaixaPage() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
-                          <p className="text-xs text-zinc-500">Vendas</p>
+                          <p className="text-xs text-gray-500">Vendas</p>
                           <p className="text-green-400 font-semibold">
                             {formatCurrency(cashier.summary.sales)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-zinc-500">Esperado</p>
+                          <p className="text-xs text-gray-500">Esperado</p>
                           <p className="text-orange-400 font-semibold">
                             {formatCurrency(cashier.summary.expected)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-zinc-500">Contado</p>
+                          <p className="text-xs text-gray-500">Contado</p>
                           <p className="text-blue-400 font-semibold">
                             {formatCurrency(cashier.summary.closing)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-zinc-500">Diferença</p>
+                          <p className="text-xs text-gray-500">Diferença</p>
                           <p
                             className={`font-semibold ${
                               cashier.summary.differenceType === 'sobra'
                                 ? 'text-green-400'
                                 : cashier.summary.differenceType === 'falta'
                                 ? 'text-[var(--theme-primary)]'
-                                : 'text-zinc-400'
+                                : 'text-gray-400'
                             }`}
                           >
                             {cashier.summary.differenceType === 'sobra' && '+'}
@@ -429,11 +469,11 @@ export default function CaixaPage() {
                           fetchCashierHistory(currentPage - 1);
                         }}
                         disabled={currentPage === 1}
-                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Anterior
                       </button>
-                      <span className="px-4 py-2 text-zinc-400">
+                      <span className="px-4 py-2 text-gray-400">
                         Página {currentPage} de {historyPagination.totalPages}
                       </span>
                       <button
@@ -442,7 +482,7 @@ export default function CaixaPage() {
                           fetchCashierHistory(currentPage + 1);
                         }}
                         disabled={currentPage === historyPagination.totalPages}
-                        className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Próxima
                       </button>
@@ -467,11 +507,12 @@ export default function CaixaPage() {
                       setStatsFilter(days);
                       fetchCashierStats(days);
                     }}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-lg transition-colors text-white ${
                       statsFilter === days
-                        ? 'bg-orange-600'
-                        : 'bg-zinc-800 hover:bg-zinc-700'
+                        ? ''
+                        : 'bg-gray-800 hover:bg-gray-700'
                     }`}
+                    style={statsFilter === days ? { background: 'var(--theme-primary)' } : {}}
                   >
                     {days} dias
                   </button>
@@ -480,63 +521,63 @@ export default function CaixaPage() {
 
               {cashierStats && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Total de Caixas</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Total de Caixas</p>
                     <p className="text-3xl font-bold">{cashierStats.totalCashiers}</p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Total em Vendas</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Total em Vendas</p>
                     <p className="text-3xl font-bold text-green-400">
                       {formatCurrency(cashierStats.totalSales)}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Média de Vendas</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Média de Vendas</p>
                     <p className="text-3xl font-bold text-blue-400">
                       {formatCurrency(cashierStats.averageSales)}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Diferença Total</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Diferença Total</p>
                     <p
                       className={`text-3xl font-bold ${
                         cashierStats.totalDifference > 0
                           ? 'text-green-400'
                           : cashierStats.totalDifference < 0
                           ? 'text-[var(--theme-primary)]'
-                          : 'text-zinc-400'
+                          : 'text-gray-400'
                       }`}
                     >
                       {formatCurrency(cashierStats.totalDifference)}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Caixas com Sobra</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Caixas com Sobra</p>
                     <p className="text-3xl font-bold text-green-400">
                       {cashierStats.positiveCount}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Caixas com Falta</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Caixas com Falta</p>
                     <p className="text-3xl font-bold text-[var(--theme-primary)]">
                       {cashierStats.negativeCount}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Caixas Exatos</p>
-                    <p className="text-3xl font-bold text-zinc-400">
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Caixas Exatos</p>
+                    <p className="text-3xl font-bold text-gray-400">
                       {cashierStats.exactCount}
                     </p>
                   </div>
-                  <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
-                    <p className="text-zinc-400 mb-2">Diferença Média</p>
+                  <div className="p-6 bg-gray-900 rounded-xl border border-gray-800">
+                    <p className="text-gray-400 mb-2">Diferença Média</p>
                     <p
                       className={`text-3xl font-bold ${
                         cashierStats.averageDifference > 0
                           ? 'text-green-400'
                           : cashierStats.averageDifference < 0
                           ? 'text-[var(--theme-primary)]'
-                          : 'text-zinc-400'
+                          : 'text-gray-400'
                       }`}
                     >
                       {formatCurrency(cashierStats.averageDifference)}
@@ -548,7 +589,6 @@ export default function CaixaPage() {
           )}
         </main>
 
-        <Footer />
 
         {/* Modal Abrir Caixa */}
         <AnimatePresence>
@@ -565,7 +605,7 @@ export default function CaixaPage() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-zinc-800"
+                className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-800"
               >
                 <h2 className="text-2xl font-bold mb-4">Abrir Caixa</h2>
                 <form onSubmit={handleOpenCashier} className="space-y-4">
@@ -578,7 +618,7 @@ export default function CaixaPage() {
                       step="0.01"
                       value={openingAmount}
                       onChange={(e) => setOpeningAmount(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       required
                     />
                   </div>
@@ -589,7 +629,7 @@ export default function CaixaPage() {
                     <textarea
                       value={openingNotes}
                       onChange={(e) => setOpeningNotes(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       rows={3}
                     />
                   </div>
@@ -597,14 +637,15 @@ export default function CaixaPage() {
                     <button
                       type="button"
                       onClick={() => setShowOpenModal(false)}
-                      className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-4 py-2 bg-gradient-to-r from-orange-600 to-pink-600 hover:from-orange-700 hover:to-pink-700 rounded-lg transition-all disabled:opacity-50"
+                      className="flex-1 px-4 py-2 text-white rounded-lg transition-all disabled:opacity-50 hover:opacity-90"
+                      style={{ background: 'var(--theme-primary)' }}
                     >
                       {loading ? 'Abrindo...' : 'Abrir'}
                     </button>
@@ -630,12 +671,12 @@ export default function CaixaPage() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-zinc-800"
+                className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-800"
               >
                 <h2 className="text-2xl font-bold mb-4">Fechar Caixa</h2>
-                <div className="mb-4 p-4 bg-zinc-800 rounded-lg">
-                  <p className="text-sm text-zinc-400 mb-1">Valor Esperado</p>
-                  <p className="text-2xl font-bold text-orange-400">
+                <div className="mb-4 p-4 bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-400 mb-1">Valor Esperado</p>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--theme-primary)' }}>
                     {formatCurrency(currentCashier.summary.expected)}
                   </p>
                 </div>
@@ -649,7 +690,7 @@ export default function CaixaPage() {
                       step="0.01"
                       value={closingAmount}
                       onChange={(e) => setClosingAmount(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       required
                     />
                   </div>
@@ -685,7 +726,7 @@ export default function CaixaPage() {
                     <textarea
                       value={closingNotes}
                       onChange={(e) => setClosingNotes(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       rows={3}
                     />
                   </div>
@@ -693,14 +734,15 @@ export default function CaixaPage() {
                     <button
                       type="button"
                       onClick={() => setShowCloseModal(false)}
-                      className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-4 py-2 bg-[var(--theme-primary)] hover:bg-[var(--theme-secondary)] rounded-lg transition-all disabled:opacity-50"
+                      className="flex-1 px-4 py-2 text-white rounded-lg transition-all disabled:opacity-50 hover:opacity-90"
+                      style={{ background: 'var(--theme-primary)' }}
                     >
                       {loading ? 'Fechando...' : 'Fechar'}
                     </button>
@@ -726,7 +768,7 @@ export default function CaixaPage() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-zinc-800"
+                className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-800"
               >
                 <h2 className="text-2xl font-bold mb-4">Registrar Suprimento</h2>
                 <form onSubmit={handleDeposit} className="space-y-4">
@@ -737,7 +779,7 @@ export default function CaixaPage() {
                       step="0.01"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       required
                     />
                   </div>
@@ -747,7 +789,7 @@ export default function CaixaPage() {
                       type="text"
                       value={depositDescription}
                       onChange={(e) => setDepositDescription(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       placeholder="Ex: Troco, Fundo inicial..."
                     />
                   </div>
@@ -755,7 +797,7 @@ export default function CaixaPage() {
                     <button
                       type="button"
                       onClick={() => setShowDepositModal(false)}
-                      className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>
@@ -788,7 +830,7 @@ export default function CaixaPage() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-zinc-900 rounded-xl p-6 max-w-md w-full border border-zinc-800"
+                className="bg-gray-900 rounded-xl p-6 max-w-md w-full border border-gray-800"
               >
                 <h2 className="text-2xl font-bold mb-4">Registrar Sangria</h2>
                 <form onSubmit={handleWithdrawal} className="space-y-4">
@@ -799,7 +841,7 @@ export default function CaixaPage() {
                       step="0.01"
                       value={withdrawalAmount}
                       onChange={(e) => setWithdrawalAmount(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       required
                     />
                   </div>
@@ -809,7 +851,7 @@ export default function CaixaPage() {
                       type="text"
                       value={withdrawalDescription}
                       onChange={(e) => setWithdrawalDescription(e.target.value)}
-                      className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-orange-500"
                       placeholder="Ex: Despesa, Retirada..."
                     />
                   </div>
@@ -817,7 +859,7 @@ export default function CaixaPage() {
                     <button
                       type="button"
                       onClick={() => setShowWithdrawalModal(false)}
-                      className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+                      className="flex-1 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>
@@ -853,12 +895,12 @@ export default function CaixaPage() {
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-zinc-900 rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-zinc-800"
+                className="bg-gray-900 rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-800"
               >
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h2 className="text-2xl font-bold mb-2">Detalhes do Caixa</h2>
-                    <p className="text-zinc-400">
+                    <p className="text-gray-400">
                       {cashierDetails.operator.nome} - {formatDate(cashierDetails.openedAt)}
                     </p>
                   </div>
@@ -867,33 +909,33 @@ export default function CaixaPage() {
                       setShowDetailsModal(false);
                       clearCashierDetails();
                     }}
-                    className="text-zinc-400 hover:text-white text-2xl"
+                    className="text-gray-400 hover:text-white text-2xl"
                   >
                     ✕
                   </button>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Abertura</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">Abertura</p>
                     <p className="text-lg font-bold text-blue-400">
                       {formatCurrency(cashierDetails.summary.opening)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Vendas</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">Vendas</p>
                     <p className="text-lg font-bold text-green-400">
                       {formatCurrency(cashierDetails.summary.sales)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Esperado</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">Esperado</p>
                     <p className="text-lg font-bold text-orange-400">
                       {formatCurrency(cashierDetails.summary.expected)}
                     </p>
                   </div>
-                  <div className="p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-xs text-zinc-400 mb-1">Contado</p>
+                  <div className="p-4 bg-gray-800 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-1">Contado</p>
                     <p className="text-lg font-bold text-purple-400">
                       {formatCurrency(cashierDetails.summary.closing)}
                     </p>
@@ -926,7 +968,7 @@ export default function CaixaPage() {
                   {cashierDetails.movements.map((movement) => (
                     <div
                       key={movement.id}
-                      className="p-3 bg-zinc-800 rounded-lg flex justify-between items-center"
+                      className="p-3 bg-gray-800 rounded-lg flex justify-between items-center"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -938,14 +980,14 @@ export default function CaixaPage() {
                                 ? 'bg-blue-500/20 text-blue-400'
                                 : movement.typeLabel === 'Sangria'
                                 ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-zinc-700 text-zinc-300'
+                                : 'bg-gray-700 text-gray-300'
                             }`}
                           >
                             {movement.typeLabel}
                           </span>
                         </div>
                         <p className="text-sm font-semibold">{movement.description}</p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-gray-500">
                           {formatDate(movement.createdAt)} - {movement.createdBy}
                         </p>
                       </div>
@@ -962,8 +1004,8 @@ export default function CaixaPage() {
                 </div>
 
                 {cashierDetails.notes && (
-                  <div className="mt-6 p-4 bg-zinc-800 rounded-lg">
-                    <p className="text-sm text-zinc-400 mb-2">Observações</p>
+                  <div className="mt-6 p-4 bg-gray-800 rounded-lg">
+                    <p className="text-sm text-gray-400 mb-2">Observações</p>
                     <p className="text-sm">{cashierDetails.notes}</p>
                   </div>
                 )}

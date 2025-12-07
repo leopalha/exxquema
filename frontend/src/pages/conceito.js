@@ -426,7 +426,8 @@ export default function Conceito() {
                 </Link>
                 <Link
                   href="/cardapio"
-                  className="bg-black border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all"
+                  className="bg-black border-2 border-white px-8 py-4 rounded-lg font-semibold text-lg transition-all"
+                  style={{ color: 'white' }}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = 'black'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'black'; e.currentTarget.style.color = 'white'; }}
                 >

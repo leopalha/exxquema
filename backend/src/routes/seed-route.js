@@ -289,4 +289,73 @@ router.post('/seed-products-bulk', async (req, res) => {
   }
 });
 
+// Seed tables endpoint - mesas do restaurante
+router.post('/seed-tables', async (req, res) => {
+  const secretKey = req.headers['x-seed-key'] || req.body.secretKey;
+  if (secretKey !== 'FLAME2024SEED') {
+    return res.status(403).json({ success: false, message: 'Chave inválida' });
+  }
+
+  try {
+    const { Table } = require('../models');
+
+    // Criar 20 mesas
+    const tables = [];
+    for (let i = 1; i <= 20; i++) {
+      tables.push({
+        number: i,
+        name: `Mesa ${i}`,
+        capacity: i <= 5 ? 2 : (i <= 15 ? 4 : 8), // Mesas 1-5: 2 pessoas, 6-15: 4 pessoas, 16-20: 8 pessoas
+        location: i <= 10 ? 'interno' : 'externo', // Usar location ao invés de area
+        status: 'available',
+        isActive: true
+      });
+    }
+
+    const results = [];
+    for (const t of tables) {
+      const [table, created] = await Table.findOrCreate({
+        where: { number: t.number },
+        defaults: t
+      });
+      results.push({ number: t.number, created });
+    }
+
+    const createdCount = results.filter(r => r.created).length;
+    const existingCount = results.length - createdCount;
+
+    res.json({
+      success: true,
+      message: `${createdCount} mesas criadas, ${existingCount} já existiam`,
+      data: { created: createdCount, existing: existingCount, total: results.length }
+    });
+  } catch (error) {
+    console.error('Seed tables error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Fix tableId column to allow null
+router.post('/fix-tableid-null', async (req, res) => {
+  const secretKey = req.headers['x-seed-key'] || req.body.secretKey;
+  if (secretKey !== 'FLAME2024SEED') {
+    return res.status(403).json({ success: false, message: 'Chave inválida' });
+  }
+
+  try {
+    const { sequelize } = require('../config/database');
+
+    // PostgreSQL: ALTER COLUMN to allow NULL
+    await sequelize.query('ALTER TABLE orders ALTER COLUMN "tableId" DROP NOT NULL;');
+
+    res.json({
+      success: true,
+      message: 'Coluna tableId agora permite NULL. Pedidos de balcão/pickup agora funcionam!'
+    });
+  } catch (error) {
+    console.error('Fix tableId error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

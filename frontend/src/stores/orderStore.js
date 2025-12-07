@@ -1,15 +1,28 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { toast } from 'react-hot-toast';
+import { api } from '../services/api';
 
-// Status dos pedidos
+// Status dos pedidos (valores em inglês para match com backend)
 export const ORDER_STATUS = {
-  PENDING: 'pendente',
-  CONFIRMED: 'confirmado',
-  PREPARING: 'preparando',
-  READY: 'pronto',
-  DELIVERED: 'entregue',
-  CANCELLED: 'cancelado'
+  PENDING: 'pending',
+  CONFIRMED: 'confirmed',
+  PREPARING: 'preparing',
+  READY: 'ready',
+  ON_WAY: 'on_way',
+  DELIVERED: 'delivered',
+  CANCELLED: 'cancelled'
+};
+
+// Labels em português para exibição
+export const ORDER_STATUS_LABELS = {
+  pending: 'Aguardando',
+  confirmed: 'Confirmado',
+  preparing: 'Em Preparo',
+  ready: 'Pronto',
+  on_way: 'Saiu para Entrega',
+  delivered: 'Entregue',
+  cancelled: 'Cancelado'
 };
 
 // Formas de pagamento
@@ -148,16 +161,14 @@ export const useOrderStore = create(
         });
       },
 
-      // Criar pedido
-      createOrder: async (cartItems, cartTotal, userId, userName) => {
+      // Criar pedido - Envia para API real
+      createOrder: async (cartItems, cartTotal, userId, userName, useCashback = 0) => {
         set({ loading: true });
 
         try {
-          await new Promise(resolve => setTimeout(resolve, 1500));
-
           const { checkoutData } = get();
 
-          // Validacoes
+          // Validacoes locais
           if (!checkoutData.consumptionType) {
             toast.error('Selecione o tipo de consumo');
             return { success: false, error: 'Tipo de consumo nao selecionado' };
@@ -173,53 +184,105 @@ export const useOrderStore = create(
             return { success: false, error: 'Forma de pagamento nao selecionada' };
           }
 
-          // Calcular taxas
-          const subtotal = cartTotal;
-          const taxaServico = checkoutData.consumptionType === 'table' ? subtotal * 0.10 : 0;
-          const taxaEntrega = checkoutData.consumptionType === 'delivery' ? 8.00 : 0;
-          const total = subtotal + taxaServico + taxaEntrega;
+          // Se for mesa, buscar o tableId (UUID) pelo numero da mesa
+          let tableId = null;
+          if (checkoutData.consumptionType === 'table' && checkoutData.tableNumber) {
+            try {
+              const tableResponse = await api.get(`/tables/number/${checkoutData.tableNumber}`);
+              if (tableResponse.data.success && tableResponse.data.data?.table?.id) {
+                tableId = tableResponse.data.data.table.id;
+              } else {
+                toast.error('Mesa nao encontrada');
+                return { success: false, error: 'Mesa nao encontrada' };
+              }
+            } catch (tableError) {
+              console.error('Erro ao buscar mesa:', tableError);
+              toast.error('Mesa nao encontrada ou indisponivel');
+              return { success: false, error: 'Mesa nao encontrada' };
+            }
+          }
 
-          const newOrder = {
-            id: `ORD-${Date.now().toString().slice(-6)}`,
-            userId,
-            userName,
-            items: cartItems.map(item => ({
-              productId: item.product.id,
-              nome: item.product.name,
-              quantidade: item.quantity,
-              precoUnitario: item.product.price,
-              observacoes: item.notes
-            })),
-            subtotal,
-            taxaServico,
-            taxaEntrega,
-            total,
-            status: ORDER_STATUS.PENDING,
-            consumptionType: checkoutData.consumptionType,
-            tableNumber: checkoutData.tableNumber,
-            paymentMethod: checkoutData.paymentMethod,
-            paymentStatus: checkoutData.paymentMethod === 'cash' ? 'pendente' : 'processando',
-            address: checkoutData.address,
-            observacoes: checkoutData.observacoes,
-            createdAt: new Date().toISOString(),
-            estimatedTime: 25 // minutos
-          };
-
-          set(state => ({
-            orders: [newOrder, ...state.orders],
-            currentOrder: newOrder
+          // Preparar itens para a API
+          const items = cartItems.map(item => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            notes: item.notes || null
           }));
 
-          // Simular confirmacao do pedido apos 3 segundos
-          setTimeout(() => {
-            get().updateOrderStatus(newOrder.id, ORDER_STATUS.CONFIRMED);
-          }, 3000);
+          // Mapear metodo de pagamento para formato backend
+          const paymentMethodMap = {
+            'pix': 'pix',
+            'credit': 'credit_card',
+            'debit': 'debit_card',
+            'cash': 'cash'
+          };
 
-          toast.success('Pedido realizado com sucesso!');
-          return { success: true, order: newOrder };
+          // Criar pedido via API
+          console.log('📦 Enviando pedido para API:', {
+            tableId,
+            items,
+            notes: checkoutData.observacoes,
+            paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
+            useCashback: useCashback || 0
+          });
+
+          const response = await api.post('/orders', {
+            tableId,
+            items,
+            notes: checkoutData.observacoes || null,
+            paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
+            useCashback: useCashback || 0 // Cashback a ser usado como desconto
+          });
+
+          console.log('📥 Resposta do servidor:', response.data);
+
+          if (response.data.success) {
+            const order = response.data.data.order;
+
+            // Formatar pedido para o estado local
+            const formattedOrder = {
+              id: order.orderNumber || order.id,
+              orderId: order.id,
+              userId,
+              userName,
+              items: order.items?.map(item => ({
+                productId: item.productId,
+                nome: item.productName || item.product?.name,
+                quantidade: item.quantity,
+                precoUnitario: parseFloat(item.unitPrice),
+                observacoes: item.notes
+              })) || [],
+              subtotal: parseFloat(order.subtotal),
+              taxaServico: parseFloat(order.serviceFee || 0),
+              taxaEntrega: 0,
+              total: parseFloat(order.total),
+              status: order.status || ORDER_STATUS.PENDING,
+              consumptionType: checkoutData.consumptionType,
+              tableNumber: checkoutData.tableNumber,
+              paymentMethod: checkoutData.paymentMethod,
+              paymentStatus: order.paymentStatus || 'pendente',
+              address: checkoutData.address,
+              observacoes: checkoutData.observacoes,
+              createdAt: order.createdAt,
+              estimatedTime: order.estimatedTime || 25
+            };
+
+            set(state => ({
+              orders: [formattedOrder, ...state.orders],
+              currentOrder: formattedOrder
+            }));
+
+            toast.success(`Pedido #${formattedOrder.id} realizado com sucesso!`);
+            return { success: true, order: formattedOrder };
+          } else {
+            toast.error(response.data.message || 'Erro ao criar pedido');
+            return { success: false, error: response.data.message };
+          }
         } catch (error) {
-          toast.error('Erro ao criar pedido');
-          return { success: false, error: 'Erro ao criar pedido' };
+          console.error('❌ Erro ao criar pedido:', error);
+          const message = error.response?.data?.message || 'Erro ao criar pedido';
+          toast.error(message);
+          return { success: false, error: message };
         } finally {
           set({ loading: false });
         }
@@ -243,6 +306,7 @@ export const useOrderStore = create(
           [ORDER_STATUS.CONFIRMED]: 'Pedido confirmado!',
           [ORDER_STATUS.PREPARING]: 'Seu pedido esta sendo preparado!',
           [ORDER_STATUS.READY]: 'Seu pedido esta pronto!',
+          [ORDER_STATUS.ON_WAY]: 'Seu pedido saiu para entrega!',
           [ORDER_STATUS.DELIVERED]: 'Pedido entregue! Obrigado pela preferencia!'
         };
 

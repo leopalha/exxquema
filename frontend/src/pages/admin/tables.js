@@ -99,7 +99,7 @@ export default function AdminTables() {
 
   const statusColors = {
     available: 'bg-green-500',
-    occupied: 'bg-orange-500',
+    occupied: 'bg-orange-500', // Keep semantic color for "occupied" status
     reserved: 'bg-yellow-500',
     cleaning: 'bg-blue-500',
     inactive: 'bg-gray-500'
@@ -325,16 +325,18 @@ export default function AdminTables() {
                     <button
                       onClick={() => setViewMode('grid')}
                       className={`p-2 rounded transition-colors ${
-                        viewMode === 'grid' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'
+                        viewMode === 'grid' ? 'text-white' : 'text-gray-400 hover:text-white'
                       }`}
+                      style={viewMode === 'grid' ? { background: 'var(--theme-primary)' } : {}}
                     >
                       <Grid className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
                       className={`p-2 rounded transition-colors ${
-                        viewMode === 'list' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'
+                        viewMode === 'list' ? 'text-white' : 'text-gray-400 hover:text-white'
                       }`}
+                      style={viewMode === 'list' ? { background: 'var(--theme-primary)' } : {}}
                     >
                       <List className="w-4 h-4" />
                     </button>
@@ -342,7 +344,8 @@ export default function AdminTables() {
 
                   <button
                     onClick={openCreateModal}
-                    className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                    className="text-white px-4 py-2 rounded-lg transition-all hover:opacity-90 flex items-center gap-2"
+                    style={{ background: 'var(--theme-primary)' }}
                   >
                     <Plus className="w-4 h-4" />
                     Nova Mesa
@@ -364,7 +367,10 @@ export default function AdminTables() {
                     placeholder="Buscar mesas..."
                     value={filters.search}
                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--theme-primary)' }}
+                    onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                    onBlur={(e) => e.target.style.boxShadow = ''}
                   />
                 </div>
 
@@ -372,7 +378,9 @@ export default function AdminTables() {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none"
+                  onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                  onBlur={(e) => e.target.style.boxShadow = ''}
                 >
                   <option value="all">Todos os Status</option>
                   <option value="available">Disponível</option>
@@ -386,7 +394,9 @@ export default function AdminTables() {
                 <select
                   value={filters.capacity}
                   onChange={(e) => setFilters(prev => ({ ...prev, capacity: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none"
+                  onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                  onBlur={(e) => e.target.style.boxShadow = ''}
                 >
                   <option value="all">Todas as Capacidades</option>
                   <option value="1-2">1-2 pessoas</option>
@@ -420,7 +430,8 @@ export default function AdminTables() {
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-orange-600 rounded-lg p-4 mb-6 flex items-center justify-between"
+                className="rounded-lg p-4 mb-6 flex items-center justify-between"
+                style={{ background: 'var(--theme-primary)' }}
               >
                 <div className="flex items-center gap-4">
                   <span className="text-white font-medium">
@@ -447,7 +458,7 @@ export default function AdminTables() {
                     </button>
                     <button
                       onClick={() => handleBulkAction('delete')}
-                      className="bg-orange-800 hover:bg-orange-900 text-white px-3 py-1 rounded text-sm transition-colors"
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
                     >
                       Excluir
                     </button>
@@ -476,9 +487,12 @@ export default function AdminTables() {
                     key={table._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`bg-gray-900 rounded-xl border border-gray-700 overflow-hidden hover:border-orange-500 transition-colors ${
+                    className={`bg-gray-900 rounded-xl border border-gray-700 overflow-hidden transition-colors ${
                       viewMode === 'list' ? 'flex' : ''
                     }`}
+                    style={{ '--hover-border': 'var(--theme-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = ''}
                   >
                     {/* Table Visual */}
                     <div className={`relative ${viewMode === 'list' ? 'w-32 h-24' : 'h-40'} bg-gray-800 flex items-center justify-center`}>
@@ -525,7 +539,11 @@ export default function AdminTables() {
                               setSelectedTables(prev => prev.filter(id => id !== table._id));
                             }
                           }}
-                          className="rounded border-gray-600 text-orange-600 focus:ring-orange-500"
+                          className="rounded border-gray-600"
+                          style={{
+                            accentColor: 'var(--theme-primary)',
+                            '--tw-ring-color': 'var(--theme-primary)'
+                          }}
                         />
                       </div>
 
@@ -535,7 +553,9 @@ export default function AdminTables() {
                           <select
                             value={table.status}
                             onChange={(e) => updateTableStatus(table._id, e.target.value)}
-                            className="bg-gray-700 border border-gray-600 text-white rounded text-xs px-2 py-1 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                            className="bg-gray-700 border border-gray-600 text-white rounded text-xs px-2 py-1 focus:outline-none"
+                            onFocus={(e) => e.target.style.boxShadow = '0 0 0 1px var(--theme-primary)'}
+                            onBlur={(e) => e.target.style.boxShadow = ''}
                           >
                             <option value="available">Disponível</option>
                             <option value="reserved">Reservada</option>
@@ -600,7 +620,7 @@ export default function AdminTables() {
                           
                           <button
                             onClick={() => handleDeleteTable(table._id)}
-                            className="text-gray-400 hover:text-orange-400 transition-colors p-1"
+                            className="text-gray-400 hover:text-red-400 transition-colors p-1"
                             title="Excluir mesa"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -648,7 +668,8 @@ export default function AdminTables() {
                 </p>
                 <button
                   onClick={openCreateModal}
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2 mx-auto"
+                  className="text-white px-6 py-3 rounded-lg transition-all hover:opacity-90 flex items-center gap-2 mx-auto"
+                  style={{ background: 'var(--theme-primary)' }}
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Primeira Mesa
@@ -702,12 +723,14 @@ export default function AdminTables() {
                           value={values.numero}
                           onChange={handleChange}
                           className={`w-full bg-gray-800 border ${
-                            errors.numero ? 'border-orange-500' : 'border-gray-700'
-                          } rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500`}
+                            errors.numero ? 'border-red-500' : 'border-gray-700'
+                          } rounded-lg px-4 py-2 text-white focus:outline-none`}
+                          onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                          onBlur={(e) => e.target.style.boxShadow = ''}
                           placeholder="Ex: 1"
                         />
                         {errors.numero && (
-                          <p className="text-orange-400 text-sm mt-1">{errors.numero}</p>
+                          <p className="text-red-400 text-sm mt-1">{errors.numero}</p>
                         )}
                       </div>
 
@@ -721,12 +744,14 @@ export default function AdminTables() {
                           value={values.capacidade}
                           onChange={handleChange}
                           className={`w-full bg-gray-800 border ${
-                            errors.capacidade ? 'border-orange-500' : 'border-gray-700'
-                          } rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500`}
+                            errors.capacidade ? 'border-red-500' : 'border-gray-700'
+                          } rounded-lg px-4 py-2 text-white focus:outline-none`}
+                          onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                          onBlur={(e) => e.target.style.boxShadow = ''}
                           placeholder="Ex: 4"
                         />
                         {errors.capacidade && (
-                          <p className="text-orange-400 text-sm mt-1">{errors.capacidade}</p>
+                          <p className="text-red-400 text-sm mt-1">{errors.capacidade}</p>
                         )}
                       </div>
                     </div>
@@ -740,7 +765,9 @@ export default function AdminTables() {
                         name="descricao"
                         value={values.descricao}
                         onChange={handleChange}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none"
+                        onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                        onBlur={(e) => e.target.style.boxShadow = ''}
                         placeholder="Ex: Mesa próxima à janela"
                       />
                     </div>
@@ -754,7 +781,9 @@ export default function AdminTables() {
                         name="localizacao"
                         value={values.localizacao}
                         onChange={handleChange}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none"
+                        onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                        onBlur={(e) => e.target.style.boxShadow = ''}
                         placeholder="Ex: Área externa, Salão principal"
                       />
                     </div>
@@ -768,7 +797,9 @@ export default function AdminTables() {
                         value={values.observacoes}
                         onChange={handleChange}
                         rows={3}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none"
+                        onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px var(--theme-primary)'}
+                        onBlur={(e) => e.target.style.boxShadow = ''}
                         placeholder="Observações especiais sobre a mesa..."
                       />
                     </div>
@@ -784,7 +815,11 @@ export default function AdminTables() {
                           name="ativo"
                           checked={values.ativo}
                           onChange={handleChange}
-                          className="rounded border-gray-600 text-orange-600 focus:ring-orange-500"
+                          className="rounded border-gray-600"
+                          style={{
+                            accentColor: 'var(--theme-primary)',
+                            '--tw-ring-color': 'var(--theme-primary)'
+                          }}
                         />
                       </div>
 
@@ -797,7 +832,11 @@ export default function AdminTables() {
                           name="reservavel"
                           checked={values.reservavel}
                           onChange={handleChange}
-                          className="rounded border-gray-600 text-orange-600 focus:ring-orange-500"
+                          className="rounded border-gray-600"
+                          style={{
+                            accentColor: 'var(--theme-primary)',
+                            '--tw-ring-color': 'var(--theme-primary)'
+                          }}
                         />
                       </div>
                     </div>
@@ -814,7 +853,8 @@ export default function AdminTables() {
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                      className="px-6 py-2 text-white rounded-lg transition-all hover:opacity-90 flex items-center gap-2"
+                      style={{ background: 'var(--theme-primary)' }}
                     >
                       <Save className="w-4 h-4" />
                       {editingTable ? 'Atualizar' : 'Criar'} Mesa

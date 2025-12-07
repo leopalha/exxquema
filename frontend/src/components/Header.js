@@ -66,7 +66,7 @@ const Header = () => {
       transition={{ duration: 0.3 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-black/90 backdrop-blur-lg border-b border-neutral-800'
+          ? 'bg-black/90 backdrop-blur-lg border-b border-gray-800'
           : 'bg-transparent'
       }`}
     >
@@ -86,7 +86,7 @@ const Header = () => {
                 className={`text-sm font-medium transition-all ${
                   item.active
                     ? 'font-semibold'
-                    : 'text-neutral-300 hover:text-white'
+                    : 'text-gray-300 hover:text-white'
                 }`}
                 style={item.active ? {
                   background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`,
@@ -106,7 +106,7 @@ const Header = () => {
             <div className="relative">
               <button
                 onClick={() => setIsPaletteOpen(!isPaletteOpen)}
-                className="p-2 text-neutral-300 hover:text-white transition-colors"
+                className="p-2 text-gray-300 hover:text-white transition-colors"
                 title="Trocar tema de cores"
               >
                 <Palette className="w-5 h-5" />
@@ -119,11 +119,11 @@ const Header = () => {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-56 bg-neutral-900 rounded-lg shadow-xl border border-neutral-700 py-2 z-50"
+                    className="absolute right-0 mt-2 w-56 bg-gray-900 rounded-lg shadow-xl border border-gray-700 py-2 z-50"
                   >
-                    <div className="px-4 py-2 border-b border-neutral-700">
+                    <div className="px-4 py-2 border-b border-gray-700">
                       <p className="text-sm font-semibold text-white">Tema de Cores</p>
-                      <p className="text-xs text-neutral-400">Escolha sua paleta preferida</p>
+                      <p className="text-xs text-gray-400">Escolha sua paleta preferida</p>
                     </div>
 
                     {Object.values(COLOR_PALETTES).map((palette) => (
@@ -135,8 +135,8 @@ const Header = () => {
                         }}
                         className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors ${
                           currentPalette === palette.id
-                            ? 'bg-neutral-800 text-white'
-                            : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
+                            ? 'bg-gray-800 text-white'
+                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -151,11 +151,11 @@ const Header = () => {
                           </div>
                           <div className="text-left">
                             <div className="font-medium">{palette.name}</div>
-                            <div className="text-xs text-neutral-400">{palette.description}</div>
+                            <div className="text-xs text-gray-400">{palette.description}</div>
                           </div>
                         </div>
                         {currentPalette === palette.id && (
-                          <Check className="w-4 h-4 text-cyan-400" />
+                          <Check className="w-4 h-4" style={{ color: 'var(--theme-secondary)' }} />
                         )}
                       </button>
                     ))}
@@ -166,7 +166,7 @@ const Header = () => {
 
             {/* Cart Icon */}
             {!isAdminRoute && (
-              <Link href="/checkout" className="relative p-2 text-neutral-300 hover:text-white transition-colors">
+              <Link href="/checkout" className="relative p-2 text-gray-300 hover:text-white transition-colors">
                 <ShoppingBag className="w-6 h-6" />
                 {totalItems > 0 && (
                   <motion.span
@@ -185,7 +185,7 @@ const Header = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 p-2 text-neutral-300 hover:text-white transition-colors"
+                  className="flex items-center space-x-2 p-2 text-gray-300 hover:text-white transition-colors"
                 >
                   <div className={`w-8 h-8 bg-gradient-to-br ${palette.gradient} rounded-full flex items-center justify-center`}>
                     <User className="w-4 h-4 text-white" />
@@ -202,16 +202,16 @@ const Header = () => {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.1 }}
-                      className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-lg shadow-xl border border-neutral-700 py-1 z-50"
+                      className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-xl border border-gray-700 py-1 z-50"
                     >
-                      <div className="px-4 py-3 border-b border-neutral-700">
+                      <div className="px-4 py-3 border-b border-gray-700">
                         <p className="text-sm font-medium text-white">{user?.nome}</p>
-                        <p className="text-xs text-neutral-400">{user?.email}</p>
+                        <p className="text-xs text-gray-400">{user?.email}</p>
                       </div>
 
                       <Link
                         href="/perfil"
-                        className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <Settings className="w-4 h-4 mr-3" />
@@ -220,7 +220,7 @@ const Header = () => {
 
                       <Link
                         href="/pedidos"
-                        className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <Package className="w-4 h-4 mr-3" />
@@ -229,7 +229,7 @@ const Header = () => {
 
                       <Link
                         href="/cashback"
-                        className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <Star className="w-4 h-4 mr-3" style={{ color: 'var(--theme-accent)' }} />
@@ -238,20 +238,20 @@ const Header = () => {
 
                       <Link
                         href="/reservas"
-                        className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <CalendarDays className="w-4 h-4 mr-3 text-cyan-400" />
+                        <CalendarDays className="w-4 h-4 mr-3" style={{ color: 'var(--theme-secondary)' }} />
                         Minhas Reservas
                       </Link>
 
                       {/* Admin Links */}
                       {user?.role === 'admin' && (
                         <>
-                          <div className="border-t border-neutral-700 my-1" />
+                          <div className="border-t border-gray-700 my-1" />
                           <Link
                             href="/admin"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <BarChart3 className="w-4 h-4 mr-3" />
@@ -259,7 +259,7 @@ const Header = () => {
                           </Link>
                           <Link
                             href="/apresentacao"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <Presentation className="w-4 h-4 mr-3" />
@@ -267,7 +267,7 @@ const Header = () => {
                           </Link>
                           <Link
                             href="/roadmap"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <Calendar className="w-4 h-4 mr-3" />
@@ -275,7 +275,7 @@ const Header = () => {
                           </Link>
                           <Link
                             href="/qr-codes"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <QrCode className="w-4 h-4 mr-3" />
@@ -283,7 +283,7 @@ const Header = () => {
                           </Link>
                           <Link
                             href="/atendente"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <Truck className="w-4 h-4 mr-3" />
@@ -291,7 +291,7 @@ const Header = () => {
                           </Link>
                           <Link
                             href="/cozinha"
-                            className="flex items-center px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                            className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
                             onClick={() => setIsProfileOpen(false)}
                           >
                             <ChefHat className="w-4 h-4 mr-3" />
@@ -300,10 +300,10 @@ const Header = () => {
                         </>
                       )}
 
-                      <div className="border-t border-neutral-700 my-1" />
+                      <div className="border-t border-gray-700 my-1" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-2 text-sm hover:bg-neutral-800"
+                        className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-800"
                         style={{ color: 'var(--theme-primary)' }}
                       >
                         <LogOut className="w-4 h-4 mr-3" />
@@ -316,9 +316,10 @@ const Header = () => {
             ) : (
               <Link
                 href="/login"
-                className="text-white px-6 py-2 rounded-lg font-medium text-sm transition-all shadow-lg hover:opacity-90"
+                className="px-6 py-2 rounded-lg font-medium text-sm transition-all shadow-lg hover:opacity-90"
                 style={{
-                  background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
+                  background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`,
+                  color: 'white'
                 }}
               >
                 Entrar
@@ -328,7 +329,7 @@ const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-neutral-300 hover:text-white transition-colors"
+              className="md:hidden p-2 text-gray-300 hover:text-white transition-colors"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -344,7 +345,7 @@ const Header = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden bg-neutral-900 border-t border-neutral-700 relative z-50"
+            className="md:hidden bg-gray-900 border-t border-gray-700 relative z-50"
           >
             <div className="px-4 py-6 space-y-4">
               {navItems.map((item) => (
@@ -355,7 +356,7 @@ const Header = () => {
                   className={`block text-base font-medium transition-colors ${
                     item.active
                       ? 'font-semibold'
-                      : 'text-neutral-300 hover:text-white'
+                      : 'text-gray-300 hover:text-white'
                   }`}
                   style={item.active ? {
                     background: `linear-gradient(to right, var(--theme-primary), var(--theme-secondary))`,
@@ -372,9 +373,10 @@ const Header = () => {
                 <Link
                   href="/login"
                   onClick={closeMenu}
-                  className="block w-full text-white text-center px-4 py-3 rounded-lg font-medium transition-all shadow-lg hover:opacity-90"
+                  className="block w-full text-center px-4 py-3 rounded-lg font-medium transition-all shadow-lg hover:opacity-90"
                   style={{
-                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`,
+                    color: 'white'
                   }}
                 >
                   Entrar

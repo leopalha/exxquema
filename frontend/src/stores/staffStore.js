@@ -6,7 +6,8 @@ const useStaffStore = create((set, get) => ({
   orders: {
     pending: [],
     preparing: [],
-    ready: []
+    ready: [],
+    on_way: []
   },
   alerts: {
     delayed: [],
@@ -72,7 +73,8 @@ const useStaffStore = create((set, get) => ({
         const organized = {
           pending: orders.filter(o => o.status === 'pending'),
           preparing: orders.filter(o => o.status === 'preparing'),
-          ready: orders.filter(o => o.status === 'ready')
+          ready: orders.filter(o => o.status === 'ready'),
+          on_way: orders.filter(o => o.status === 'on_way')
         };
 
         set({
@@ -232,7 +234,7 @@ const useStaffStore = create((set, get) => ({
   // Ações: Reset do estado
   reset: () => {
     set({
-      orders: { pending: [], preparing: [], ready: [] },
+      orders: { pending: [], preparing: [], ready: [], on_way: [] },
       alerts: { delayed: [], lowStock: [] },
       currentUser: null,
       stats: { total: 0, completedToday: 0, delayed: 0, pending: 0, preparing: 0, ready: 0 },

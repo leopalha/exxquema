@@ -15,23 +15,19 @@ console.log('🔍 PRODUCTSTORE: Último ID:', mockProducts[mockProducts.length-1
 
 // Função para verificar se deve usar dados mockados
 const shouldUseMockData = () => {
-  // SEMPRE USAR MOCK DATA (não há backend rodando)
-  return true;
-
-  // Código antigo comentado para referência futura
-  /*
-  // Verificar se está no ambiente de browser
+  // Em produção, SEMPRE usar a API real (temos o backend Railway funcionando)
+  // Só usa mock em desenvolvimento SE explicitamente configurado
   if (typeof window === 'undefined') {
-    return process.env.NODE_ENV === 'development';
+    return false; // SSR sempre usa API
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    const mockDataSetting = safeLocalStorage.getItem('useMockData');
-    return mockDataSetting === null || mockDataSetting === 'true';
-  }
+  // Verificar se há API URL configurada (em produção há)
+  const hasApiUrl = process.env.NEXT_PUBLIC_API_URL || true; // Flame sempre tem API
 
-  return !process.env.NEXT_PUBLIC_API_URL || safeLocalStorage.getItem('useMockData') === 'true';
-  */
+  // Só usa mock se explicitamente marcado no localStorage
+  const forceMock = safeLocalStorage.getItem('useMockData') === 'true';
+
+  return forceMock && !hasApiUrl;
 };
 
 // Função para simular delay de rede

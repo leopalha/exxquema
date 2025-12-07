@@ -306,6 +306,17 @@ User.init({
     },
     comment: 'Tier calculado baseado em totalSpent'
   },
+  // Data de nascimento para bônus de aniversário
+  birthDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+    comment: 'Data de nascimento do usuário'
+  },
+  lastBirthdayBonusYear: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Último ano em que recebeu bônus de aniversário'
+  },
   // Google OAuth Fields
   googleId: {
     type: DataTypes.STRING,

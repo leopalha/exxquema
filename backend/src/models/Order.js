@@ -65,9 +65,9 @@ Order.init({
   },
   tableId: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true, // Permite null para pedidos de balcão/pickup
     references: {
-      model: 'tables', 
+      model: 'tables',
       key: 'id'
     }
   },
@@ -139,6 +139,11 @@ Order.init({
     allowNull: true,
     defaultValue: 20
   },
+  // Timeline de status - quando cada etapa aconteceu
+  confirmedAt: {
+    type: DataTypes.DATE,
+    allowNull: true // quando pagamento foi confirmado
+  },
   startedAt: {
     type: DataTypes.DATE,
     allowNull: true // quando iniciou o preparo
@@ -147,9 +152,25 @@ Order.init({
     type: DataTypes.DATE,
     allowNull: true // quando ficou pronto
   },
+  pickedUpAt: {
+    type: DataTypes.DATE,
+    allowNull: true // quando atendente buscou
+  },
   deliveredAt: {
     type: DataTypes.DATE,
     allowNull: true // quando foi entregue
+  },
+  cancelledAt: {
+    type: DataTypes.DATE,
+    allowNull: true // quando foi cancelado
+  },
+  cancelledBy: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   },
   preparationTime: {
     type: DataTypes.INTEGER, // tempo real de preparo em minutos
@@ -186,6 +207,20 @@ Order.init({
   isDelivered: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  // Campo para desconto de cashback
+  cashbackUsed: {
+    type: DataTypes.DECIMAL(8, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Valor de cashback usado como desconto'
+  },
+  // Desconto aplicado (cashback + cupons futuros)
+  discount: {
+    type: DataTypes.DECIMAL(8, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Desconto total aplicado'
   }
 }, {
   sequelize,
@@ -218,8 +253,17 @@ Order.init({
       const serviceFeePercentage = parseFloat(process.env.SERVICE_FEE_PERCENTAGE) || 10;
       order.serviceFee = (parseFloat(order.subtotal) * serviceFeePercentage / 100).toFixed(2);
 
-      // Calcular total
-      order.total = (parseFloat(order.subtotal) + parseFloat(order.serviceFee) + parseFloat(order.taxes || 0)).toFixed(2);
+      // Garantir que cashbackUsed e discount não sejam null
+      const cashbackUsed = parseFloat(order.cashbackUsed) || 0;
+      const discount = parseFloat(order.discount) || 0;
+
+      // Calcular total (subtotal + taxa - descontos)
+      const subtotal = parseFloat(order.subtotal);
+      const serviceFee = parseFloat(order.serviceFee);
+      const taxes = parseFloat(order.taxes || 0);
+      const totalDiscount = cashbackUsed + discount;
+
+      order.total = Math.max(0, subtotal + serviceFee + taxes - totalDiscount).toFixed(2);
     },
     beforeUpdate: async (order) => {
       // Atualizar timestamps baseado no status
@@ -227,6 +271,9 @@ Order.init({
         const now = new Date();
 
         switch (order.status) {
+          case 'confirmed':
+            if (!order.confirmedAt) order.confirmedAt = now;
+            break;
           case 'preparing':
             if (!order.startedAt) order.startedAt = now;
             break;
@@ -239,9 +286,15 @@ Order.init({
               }
             }
             break;
+          case 'on_way':
+            if (!order.pickedUpAt) order.pickedUpAt = now;
+            break;
           case 'delivered':
             if (!order.deliveredAt) order.deliveredAt = now;
             order.isDelivered = true;
+            break;
+          case 'cancelled':
+            if (!order.cancelledAt) order.cancelledAt = now;
             break;
         }
       }

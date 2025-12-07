@@ -24,7 +24,6 @@ import {
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonCard } from '../../components/LoadingSpinner';
 import { useAuthStore } from '../../stores/authStore';
-import useThemeStore from '../../stores/themeStore';
 import { formatCurrency, formatRelativeTime } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import { api } from '../../services/api';
@@ -32,7 +31,7 @@ import { api } from '../../services/api';
 const STATUS_CONFIG = {
   pending: { label: 'Pendente', color: 'bg-yellow-500', icon: AlertCircle },
   confirmed: { label: 'Confirmado', color: 'bg-blue-500', icon: CheckCircle },
-  preparing: { label: 'Preparando', color: 'bg-orange-500', icon: ChefHat },
+  preparing: { label: 'Preparando', color: 'bg-orange-500', icon: ChefHat }, // Keep semantic color for "preparing" status
   ready: { label: 'Pronto', color: 'bg-green-500', icon: Utensils },
   on_way: { label: 'A caminho', color: 'bg-purple-500', icon: Truck },
   delivered: { label: 'Entregue', color: 'bg-emerald-600', icon: CheckCircle },
@@ -44,8 +43,6 @@ const STATUS_OPTIONS = ['all', 'pending', 'confirmed', 'preparing', 'ready', 'on
 export default function AdminOrders() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const { getPalette } = useThemeStore();
-  const palette = getPalette();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -220,19 +217,19 @@ export default function AdminOrders() {
       <Layout>
         <div className="min-h-screen pt-24 bg-black">
           {/* Header */}
-          <div className="bg-neutral-900 border-b border-neutral-800">
+          <div className="bg-gray-900 border-b border-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => router.push('/admin')}
-                    className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <ArrowLeft className="w-5 h-5 text-white" />
                   </button>
                   <div>
                     <h1 className="text-2xl font-bold text-white">Gerenciar Pedidos</h1>
-                    <p className="text-neutral-400 text-sm">
+                    <p className="text-gray-400 text-sm">
                       {pagination.totalOrders || orders.length} pedidos encontrados
                     </p>
                   </div>
@@ -241,14 +238,14 @@ export default function AdminOrders() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleRefresh}
-                    className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                     disabled={loading}
                   >
                     <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
                   </button>
                   <button
                     onClick={handleExport}
-                    className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Download className="w-5 h-5 text-white" />
                   </button>
@@ -259,17 +256,17 @@ export default function AdminOrders() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Filters */}
-            <div className="bg-neutral-900 rounded-xl p-4 mb-6 border border-neutral-800">
+            <div className="bg-gray-900 rounded-xl p-4 mb-6 border border-gray-800">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <input
                     type="text"
                     placeholder="Buscar por numero, cliente ou mesa..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-[var(--theme-primary)]"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--theme-primary)]"
                   />
                 </div>
 
@@ -282,7 +279,7 @@ export default function AdminOrders() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         statusFilter === status
                           ? 'bg-[var(--theme-primary)] text-white'
-                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       }`}
                     >
                       {status === 'all' ? 'Todos' : STATUS_CONFIG[status]?.label}
@@ -297,12 +294,12 @@ export default function AdminOrders() {
               {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                 const count = orders.filter(o => o.status === key).length;
                 return (
-                  <div key={key} className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+                  <div key={key} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${config.color}`} />
                       <div>
                         <div className="text-xl font-bold text-white">{count}</div>
-                        <div className="text-xs text-neutral-400">{config.label}</div>
+                        <div className="text-xs text-gray-400">{config.label}</div>
                       </div>
                     </div>
                   </div>
@@ -318,10 +315,10 @@ export default function AdminOrders() {
                 ))}
               </div>
             ) : filteredOrders.length === 0 ? (
-              <div className="bg-neutral-900 rounded-xl p-12 text-center border border-neutral-800">
-                <Package className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
+              <div className="bg-gray-900 rounded-xl p-12 text-center border border-gray-800">
+                <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">Nenhum pedido encontrado</h3>
-                <p className="text-neutral-400">
+                <p className="text-gray-400">
                   {orders.length === 0
                     ? 'Ainda não há pedidos registrados.'
                     : 'Tente ajustar os filtros de busca.'}
@@ -342,7 +339,7 @@ export default function AdminOrders() {
                       key={order.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden hover:border-neutral-700 transition-colors"
+                      className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-gray-700 transition-colors"
                     >
                       <div className="p-4 md:p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -360,7 +357,7 @@ export default function AdminOrders() {
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-4 text-sm text-neutral-400">
+                              <div className="flex items-center gap-4 text-sm text-gray-400">
                                 {order.table && (
                                   <span className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4" />
@@ -390,7 +387,7 @@ export default function AdminOrders() {
                           {/* Order Value & Actions */}
                           <div className="flex items-center gap-4">
                             <div className="text-right">
-                              <div className="text-sm text-neutral-400">
+                              <div className="text-sm text-gray-400">
                                 {orderItems.length} {orderItems.length === 1 ? 'item' : 'itens'}
                               </div>
                               <div className="text-xl font-bold text-[var(--theme-primary)]">
@@ -401,7 +398,7 @@ export default function AdminOrders() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => setSelectedOrder(order)}
-                                className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
                                 title="Ver detalhes"
                               >
                                 <Eye className="w-5 h-5" />
@@ -426,7 +423,7 @@ export default function AdminOrders() {
                                 <button
                                   onClick={() => handleStatusChange(order.id, 'cancelled')}
                                   disabled={updating === order.id}
-                                  className="p-2 bg-neutral-800 rounded-lg hover:bg-red-500/20 text-neutral-400 hover:text-red-400 transition-colors disabled:opacity-50"
+                                  className="p-2 bg-gray-800 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors disabled:opacity-50"
                                   title="Cancelar"
                                 >
                                   <XCircle className="w-5 h-5" />
@@ -452,7 +449,7 @@ export default function AdminOrders() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       pagination.currentPage === page
                         ? 'bg-[var(--theme-primary)] text-white'
-                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                   >
                     {page}
@@ -478,7 +475,7 @@ export default function AdminOrders() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-neutral-900 rounded-xl border border-neutral-800 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                className="bg-gray-900 rounded-xl border border-gray-800 max-w-lg w-full max-h-[90vh] overflow-y-auto"
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
@@ -490,7 +487,7 @@ export default function AdminOrders() {
                     </div>
                     <button
                       onClick={() => setSelectedOrder(null)}
-                      className="p-2 text-neutral-400 hover:text-white transition-colors"
+                      className="p-2 text-gray-400 hover:text-white transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -500,7 +497,7 @@ export default function AdminOrders() {
                   <div className="space-y-4 mb-6">
                     {selectedOrder.table && (
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-400">Mesa</span>
+                        <span className="text-gray-400">Mesa</span>
                         <span className="text-white font-medium">
                           Mesa {selectedOrder.table.number || selectedOrder.table.name}
                         </span>
@@ -508,43 +505,43 @@ export default function AdminOrders() {
                     )}
                     {selectedOrder.customer && (
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-400">Cliente</span>
+                        <span className="text-gray-400">Cliente</span>
                         <span className="text-white font-medium">{selectedOrder.customer.nome}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Status</span>
+                      <span className="text-gray-400">Status</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_CONFIG[selectedOrder.status]?.color || 'bg-gray-500'} text-white`}>
                         {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">Horario</span>
+                      <span className="text-gray-400">Horario</span>
                       <span className="text-white">
                         {formatRelativeTime(new Date(selectedOrder.createdAt))}
                       </span>
                     </div>
                     {selectedOrder.paymentMethod && (
                       <div className="flex items-center justify-between">
-                        <span className="text-neutral-400">Pagamento</span>
+                        <span className="text-gray-400">Pagamento</span>
                         <span className="text-white capitalize">{selectedOrder.paymentMethod}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Items */}
-                  <div className="border-t border-neutral-800 pt-4 mb-6">
+                  <div className="border-t border-gray-800 pt-4 mb-6">
                     <h4 className="text-white font-medium mb-4">Itens do Pedido</h4>
                     <div className="space-y-3">
                       {(selectedOrder.items || []).map((item, index) => (
                         <div key={item.id || index} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="w-6 h-6 bg-neutral-800 rounded-full flex items-center justify-center text-xs text-white">
+                            <span className="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-xs text-white">
                               {item.quantity}
                             </span>
                             <span className="text-white">{item.productName || item.name}</span>
                           </div>
-                          <span className="text-neutral-400">
+                          <span className="text-gray-400">
                             {formatCurrency(parseFloat(item.subtotal || item.unitPrice * item.quantity || 0))}
                           </span>
                         </div>
@@ -554,14 +551,14 @@ export default function AdminOrders() {
 
                   {/* Observations */}
                   {selectedOrder.notes && (
-                    <div className="border-t border-neutral-800 pt-4 mb-6">
+                    <div className="border-t border-gray-800 pt-4 mb-6">
                       <h4 className="text-white font-medium mb-2">Observações</h4>
                       <p className="text-yellow-400 text-sm">{selectedOrder.notes}</p>
                     </div>
                   )}
 
                   {/* Total */}
-                  <div className="border-t border-neutral-800 pt-4">
+                  <div className="border-t border-gray-800 pt-4">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-medium text-white">Total</span>
                       <span className="text-2xl font-bold text-[var(--theme-primary)]">

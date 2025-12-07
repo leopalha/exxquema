@@ -213,7 +213,7 @@ export default function AdminLogs() {
       case 'success': return 'bg-green-500';
       case 'warning': return 'bg-yellow-500';
       case 'error': return 'bg-red-500';
-      default: return 'bg-neutral-500';
+      default: return 'bg-gray-500';
     }
   };
 
@@ -222,7 +222,7 @@ export default function AdminLogs() {
       case 'success': return <CheckCircle className="w-4 h-4 text-green-400" />;
       case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-400" />;
       case 'error': return <XCircle className="w-4 h-4 text-red-400" />;
-      default: return <Activity className="w-4 h-4 text-neutral-400" />;
+      default: return <Activity className="w-4 h-4 text-gray-400" />;
     }
   };
 
@@ -257,41 +257,41 @@ export default function AdminLogs() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => router.push('/admin')}
-                  className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5 text-white" />
                 </button>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Logs de Atividade</h1>
-                  <p className="text-neutral-400 text-sm">Histórico completo de ações no sistema</p>
+                  <p className="text-gray-400 text-sm">Histórico completo de ações no sistema</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleRefresh}
-                  className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                  className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
                 </button>
-                <button className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors">
+                <button className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
                   <Download className="w-5 h-5 text-white" />
                 </button>
               </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-neutral-900 rounded-xl p-4 mb-6 border border-neutral-800">
+            <div className="bg-gray-900 rounded-xl p-4 mb-6 border border-gray-800">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <input
                     type="text"
                     placeholder="Buscar atividades..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-magenta-500"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-magenta-500"
                   />
                 </div>
 
@@ -304,7 +304,7 @@ export default function AdminLogs() {
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         selectedType === type.id
                           ? 'bg-magenta-500 text-white'
-                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       }`}
                     >
                       <type.icon className="w-4 h-4" />
@@ -317,7 +317,7 @@ export default function AdminLogs() {
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-magenta-500"
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-magenta-500"
                 >
                   <option value="today">Hoje</option>
                   <option value="yesterday">Ontem</option>
@@ -330,7 +330,7 @@ export default function AdminLogs() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                     <CheckCircle className="w-5 h-5 text-green-400" />
@@ -339,12 +339,12 @@ export default function AdminLogs() {
                     <div className="text-2xl font-bold text-white">
                       {logs.filter(l => l.status === 'success').length}
                     </div>
-                    <div className="text-sm text-neutral-400">Sucesso</div>
+                    <div className="text-sm text-gray-400">Sucesso</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
                     <AlertTriangle className="w-5 h-5 text-yellow-400" />
@@ -353,12 +353,12 @@ export default function AdminLogs() {
                     <div className="text-2xl font-bold text-white">
                       {logs.filter(l => l.status === 'warning').length}
                     </div>
-                    <div className="text-sm text-neutral-400">Alertas</div>
+                    <div className="text-sm text-gray-400">Alertas</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
                     <XCircle className="w-5 h-5 text-red-400" />
@@ -367,51 +367,51 @@ export default function AdminLogs() {
                     <div className="text-2xl font-bold text-white">
                       {logs.filter(l => l.status === 'error').length}
                     </div>
-                    <div className="text-sm text-neutral-400">Erros</div>
+                    <div className="text-sm text-gray-400">Erros</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-xl p-4 border border-neutral-800">
+              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-magenta-500/20 rounded-lg flex items-center justify-center">
                     <Activity className="w-5 h-5 text-magenta-400" />
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-white">{logs.length}</div>
-                    <div className="text-sm text-neutral-400">Total</div>
+                    <div className="text-sm text-gray-400">Total</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Logs List */}
-            <div className="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
+            <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
               {loading ? (
                 <div className="p-8 text-center">
                   <LoadingSpinner size="medium" text="Carregando logs..." />
                 </div>
               ) : filteredLogs.length === 0 ? (
-                <div className="p-8 text-center text-neutral-400">
+                <div className="p-8 text-center text-gray-400">
                   <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma atividade encontrada</p>
                 </div>
               ) : (
-                <div className="divide-y divide-neutral-800">
+                <div className="divide-y divide-gray-800">
                   {filteredLogs.map((log, index) => (
                     <motion.div
                       key={log.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="p-4 hover:bg-neutral-800/50 transition-colors"
+                      className="p-4 hover:bg-gray-800/50 transition-colors"
                     >
                       <div className="flex items-start gap-4">
                         {/* Status Indicator */}
                         <div className={`w-2 h-2 rounded-full mt-2 ${getStatusColor(log.status)}`} />
 
                         {/* Type Icon */}
-                        <div className="w-10 h-10 bg-neutral-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                           {getTypeIcon(log.type)}
                         </div>
 
@@ -421,8 +421,8 @@ export default function AdminLogs() {
                             <span className="text-white font-medium">{log.description}</span>
                             {getStatusIcon(log.status)}
                           </div>
-                          <p className="text-neutral-400 text-sm">{log.details}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-neutral-500">
+                          <p className="text-gray-400 text-sm">{log.details}</p>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                             <span className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
                               {log.user}
@@ -443,7 +443,7 @@ export default function AdminLogs() {
             {/* Load More */}
             {filteredLogs.length > 0 && (
               <div className="mt-6 text-center">
-                <button className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors">
+                <button className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
                   Carregar mais
                 </button>
               </div>

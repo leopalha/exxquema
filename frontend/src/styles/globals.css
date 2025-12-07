@@ -228,18 +228,18 @@ p {
 }
 
 a {
-  color: var(--flame-magenta);
+  color: var(--theme-primary);
   text-decoration: none;
   transition: all var(--transition-fast);
   position: relative;
 }
 
 a:hover {
-  color: var(--flame-pink);
+  color: var(--theme-secondary);
 }
 
 a:focus-visible {
-  outline: 2px solid var(--flame-magenta);
+  outline: 2px solid var(--theme-primary);
   outline-offset: 4px;
   border-radius: var(--radius-sm);
 }

@@ -598,6 +598,53 @@ router.post('/create-admin-user', async (req, res) => {
   }
 });
 
+// Add birthday fields to users table (Sprint 25 - Bônus Automáticos)
+router.post('/add-birthday-fields', async (req, res) => {
+  try {
+    const columnsToAdd = [
+      { name: 'birthDate', type: 'DATE', default: null },
+      { name: 'lastBirthdayBonusYear', type: 'INTEGER', default: null }
+    ];
+
+    const results = [];
+
+    for (const col of columnsToAdd) {
+      // Check if column exists
+      const [existing] = await sequelize.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'users' AND column_name = '${col.name}';
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already_exists' });
+        continue;
+      }
+
+      // Add column
+      await sequelize.query(`
+        ALTER TABLE "users"
+        ADD COLUMN "${col.name}" ${col.type};
+      `);
+
+      results.push({ column: col.name, status: 'added' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Colunas de aniversário verificadas/adicionadas',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração birthday fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
 // Add Google OAuth columns to users table
 router.post('/add-google-oauth-columns', async (req, res) => {
   try {
@@ -806,6 +853,91 @@ router.post('/reset-user-password', async (req, res) => {
     console.error('Erro ao resetar senha:', error);
     res.status(500).json({
       success: false,
+      error: error.message
+    });
+  }
+});
+
+// Check Google OAuth configuration status
+router.get('/google-oauth-status', async (req, res) => {
+  try {
+    const googleService = require('../services/google.service');
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const isConfigured = googleService.isConfigured();
+
+    // Check users with Google auth
+    const [googleUsers] = await sequelize.query(`
+      SELECT COUNT(*) as count FROM "users" WHERE "googleId" IS NOT NULL;
+    `);
+
+    res.status(200).json({
+      success: true,
+      googleOAuth: {
+        isConfigured,
+        clientIdSet: !!clientId,
+        clientIdPrefix: clientId ? clientId.substring(0, 20) + '...' : null,
+        clientIdLength: clientId ? clientId.length : 0,
+      },
+      database: {
+        usersWithGoogleAuth: parseInt(googleUsers[0].count)
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao verificar Google OAuth:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Add order timeline fields (confirmedAt, pickedUpAt, cancelledAt, cancelledBy)
+router.post('/add-order-timeline-fields', async (req, res) => {
+  try {
+    const columnsToAdd = [
+      { name: 'confirmedAt', type: 'TIMESTAMPTZ', default: null },
+      { name: 'pickedUpAt', type: 'TIMESTAMPTZ', default: null },
+      { name: 'cancelledAt', type: 'TIMESTAMPTZ', default: null },
+      { name: 'cancelledBy', type: 'UUID', default: null, references: 'users(id)' }
+    ];
+
+    const results = [];
+
+    for (const col of columnsToAdd) {
+      // Check if column exists
+      const [existing] = await sequelize.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'orders' AND column_name = '${col.name}';
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already_exists' });
+        continue;
+      }
+
+      // Add column
+      let query = `ALTER TABLE "orders" ADD COLUMN "${col.name}" ${col.type}`;
+      if (col.default !== null) {
+        query += ` DEFAULT ${col.default}`;
+      }
+      query += ';';
+
+      await sequelize.query(query);
+      results.push({ column: col.name, status: 'added' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Colunas de timeline de pedidos verificadas/adicionadas',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração order timeline:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
       error: error.message
     });
   }

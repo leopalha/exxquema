@@ -496,12 +496,22 @@ class AuthController {
   // Login com email e senha
   async loginPassword(req, res) {
     try {
-      const { email, password } = req.body;
+      const { email, password, identifier } = req.body;
+
+      // Aceitar tanto email quanto identifier
+      const loginEmail = email || identifier;
+
+      if (!loginEmail) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email é obrigatório'
+        });
+      }
 
       const user = await User.findOne({
-        where: { 
-          email: email.toLowerCase(),
-          isActive: true 
+        where: {
+          email: loginEmail.toLowerCase(),
+          isActive: true
         }
       });
 

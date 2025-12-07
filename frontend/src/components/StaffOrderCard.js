@@ -5,7 +5,7 @@ import CountdownTimer from './CountdownTimer';
 import useThemeStore from '../stores/themeStore';
 import useStaffStore from '../stores/staffStore';
 
-const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert }) => {
+const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff' }) => {
   const { getPalette } = useThemeStore();
   const { updateOrderStatus } = useStaffStore();
   const [expanded, setExpanded] = useState(false);
@@ -19,6 +19,7 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert }) => {
       confirmed: '#3b82f6', // Azul
       preparing: '#f59e0b', // Âmbar
       ready: '#10b981', // Verde
+      on_way: '#8b5cf6', // Roxo
       delivered: '#6b7280', // Cinza
       cancelled: '#ef4444' // Vermelho
     };
@@ -32,27 +33,81 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert }) => {
       confirmed: 'Confirmado',
       preparing: 'Preparando',
       ready: 'Pronto',
+      on_way: 'Em Entrega',
       delivered: 'Entregue',
       cancelled: 'Cancelado'
     };
     return labels[status] || status;
   };
 
-  // Passar para próximo status
-  const handleNextStatus = async () => {
-    const statusFlow = {
+  // Configuração de botões por role
+  const getRoleActionConfig = () => {
+    const status = order.status;
+
+    // Bar e Cozinha: podem Preparar (pending→preparing) e marcar Pronto (preparing→ready)
+    if (userRole === 'bar' || userRole === 'cozinha') {
+      if (status === 'pending' || status === 'confirmed') {
+        return { nextStatus: 'preparing', label: 'Preparar', enabled: true, color: '#f59e0b' };
+      }
+      if (status === 'preparing') {
+        return { nextStatus: 'ready', label: 'Pronto', enabled: true, color: '#10b981' };
+      }
+      return { enabled: false };
+    }
+
+    // Atendente: botão bloqueado até estar pronto, depois Retirar e Entregar
+    if (userRole === 'atendente') {
+      if (status === 'pending' || status === 'confirmed' || status === 'preparing') {
+        return { enabled: false, label: 'Aguardando preparo...', color: '#6b7280' };
+      }
+      if (status === 'ready') {
+        return { nextStatus: 'on_way', label: 'Retirar', enabled: true, color: '#3b82f6' };
+      }
+      if (status === 'on_way') {
+        return { nextStatus: 'delivered', label: 'Entregar', enabled: true, color: '#10b981' };
+      }
+      return { enabled: false };
+    }
+
+    // Admin/Gerente: podem fazer todas as transições
+    if (userRole === 'admin' || userRole === 'gerente') {
+      const statusFlow = {
+        pending: { nextStatus: 'preparing', label: 'Preparar' },
+        confirmed: { nextStatus: 'preparing', label: 'Preparar' },
+        preparing: { nextStatus: 'ready', label: 'Pronto' },
+        ready: { nextStatus: 'on_way', label: 'Retirar' },
+        on_way: { nextStatus: 'delivered', label: 'Entregar' }
+      };
+      const config = statusFlow[status];
+      if (config) {
+        return { ...config, enabled: true, color: getStatusColor(config.nextStatus) };
+      }
+      return { enabled: false };
+    }
+
+    // Default: fluxo completo
+    const defaultFlow = {
       pending: 'confirmed',
       confirmed: 'preparing',
       preparing: 'ready',
-      ready: 'delivered'
+      ready: 'on_way',
+      on_way: 'delivered'
     };
+    const nextStatus = defaultFlow[status];
+    if (nextStatus) {
+      return { nextStatus, label: getStatusLabel(nextStatus), enabled: true, color: getStatusColor(nextStatus) };
+    }
+    return { enabled: false };
+  };
 
-    const nextStatus = statusFlow[order.status];
-    if (!nextStatus) return;
+  // Passar para próximo status
+  const handleNextStatus = async () => {
+    const config = getRoleActionConfig();
+    if (!config.enabled || !config.nextStatus) return;
 
     setUpdatingStatus(true);
     try {
-      await updateOrderStatus(order.id, nextStatus);
+      await updateOrderStatus(order.id, config.nextStatus);
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
     } finally {
@@ -178,22 +233,20 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert }) => {
             </div>
           </div>
 
-          {/* Botão de Ação */}
-          {order.status !== 'delivered' && order.status !== 'cancelled' && (
-            <button
-              onClick={handleNextStatus}
-              disabled={updatingStatus}
-              className="w-full py-2 px-4 rounded-lg font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
-              style={{ backgroundColor: statusColor }}
-            >
-              {updatingStatus ? 'Atualizando...' : `Marcar como ${getStatusLabel(Object.values({
-                pending: 'confirmed',
-                confirmed: 'preparing',
-                preparing: 'ready',
-                ready: 'delivered'
-              })[order.status]) || 'Pronto'}`}
-            </button>
-          )}
+          {/* Botão de Ação baseado no Role */}
+          {order.status !== 'delivered' && order.status !== 'cancelled' && (() => {
+            const config = getRoleActionConfig();
+            return (
+              <button
+                onClick={handleNextStatus}
+                disabled={updatingStatus || !config.enabled}
+                className={`w-full py-2 px-4 rounded-lg font-semibold text-white transition-all disabled:opacity-50 ${config.enabled ? 'hover:scale-105 cursor-pointer' : 'cursor-not-allowed'}`}
+                style={{ backgroundColor: config.color || statusColor }}
+              >
+                {updatingStatus ? 'Atualizando...' : config.label || 'Aguardando...'}
+              </button>
+            );
+          })()}
         </motion.div>
       )}
     </motion.div>

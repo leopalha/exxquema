@@ -26,7 +26,7 @@ api.interceptors.request.use(
     }
 
     // Add auth token if exists
-    const authData = safeLocalStorage.getItem('redlight-auth');
+    const authData = safeLocalStorage.getItem('flame-auth');
     const token = authData ? JSON.parse(authData).state?.token : null;
 
     if (token) {
@@ -60,7 +60,7 @@ api.interceptors.response.use(
 
       try {
         // Try to refresh token
-        const authDataStr = safeLocalStorage.getItem('redlight-auth');
+        const authDataStr = safeLocalStorage.getItem('flame-auth');
         const authData = authDataStr ? JSON.parse(authDataStr) : null;
 
         if (authData?.state?.refreshToken) {
@@ -73,7 +73,7 @@ api.interceptors.response.use(
 
             // Update stored auth data
             authData.state.token = newToken;
-            safeLocalStorage.setItem('redlight-auth', JSON.stringify(authData));
+            safeLocalStorage.setItem('flame-auth', JSON.stringify(authData));
 
             // Update authorization header
             api.defaults.headers.Authorization = `Bearer ${newToken}`;
@@ -88,7 +88,7 @@ api.interceptors.response.use(
       }
 
       // Clear auth data and redirect to login
-      safeLocalStorage.removeItem('redlight-auth');
+      safeLocalStorage.removeItem('flame-auth');
       delete api.defaults.headers.Authorization;
       
       // Only show toast if not on login page

@@ -7,7 +7,7 @@ import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuthStore } from '../stores/authStore';
 import useThemeStore from '../stores/themeStore';
-import { useOrderStore, ORDER_STATUS, PAYMENT_METHODS, CONSUMPTION_TYPES } from '../stores/orderStore';
+import { useOrderStore, ORDER_STATUS, ORDER_STATUS_LABELS, PAYMENT_METHODS, CONSUMPTION_TYPES } from '../stores/orderStore';
 import { useCartStore } from '../stores/cartStore';
 import { formatCurrency } from '../utils/format';
 import {
@@ -60,42 +60,49 @@ export default function MeusPedidos() {
   const getStatusInfo = (status) => {
     const statuses = {
       [ORDER_STATUS.PENDING]: {
-        label: 'Pendente',
+        label: ORDER_STATUS_LABELS.pending,
         color: 'text-yellow-400',
         bgColor: 'bg-yellow-600/20',
         borderColor: 'border-yellow-500/30',
         icon: Clock
       },
       [ORDER_STATUS.CONFIRMED]: {
-        label: 'Confirmado',
+        label: ORDER_STATUS_LABELS.confirmed,
         color: 'text-[var(--theme-secondary)]',
         bgColor: 'bg-[var(--theme-secondary)] bg-opacity-20',
         borderColor: 'border-[var(--theme-secondary)]/30',
         icon: CheckCircle
       },
       [ORDER_STATUS.PREPARING]: {
-        label: 'Preparando',
+        label: ORDER_STATUS_LABELS.preparing,
         color: 'text-[var(--theme-primary)]',
         bgColor: 'bg-[var(--theme-primary)] bg-opacity-20',
         borderColor: 'border-[var(--theme-primary)]/30',
         icon: ChefHat
       },
       [ORDER_STATUS.READY]: {
-        label: 'Pronto',
+        label: ORDER_STATUS_LABELS.ready,
         color: 'text-green-400',
         bgColor: 'bg-green-600/20',
         borderColor: 'border-green-500/30',
         icon: Package
       },
+      [ORDER_STATUS.ON_WAY]: {
+        label: ORDER_STATUS_LABELS.on_way,
+        color: 'text-blue-400',
+        bgColor: 'bg-blue-600/20',
+        borderColor: 'border-blue-500/30',
+        icon: Truck
+      },
       [ORDER_STATUS.DELIVERED]: {
-        label: 'Entregue',
+        label: ORDER_STATUS_LABELS.delivered,
         color: 'text-green-400',
         bgColor: 'bg-green-600/20',
         borderColor: 'border-green-500/30',
         icon: CheckCircle
       },
       [ORDER_STATUS.CANCELLED]: {
-        label: 'Cancelado',
+        label: ORDER_STATUS_LABELS.cancelled,
         color: 'text-red-400',
         bgColor: 'bg-red-600/20',
         borderColor: 'border-red-500/30',
@@ -142,7 +149,7 @@ export default function MeusPedidos() {
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-4xl font-bold text-white mb-2">Meus Pedidos</h1>
-              <p className="text-neutral-400">
+              <p className="text-gray-400">
                 Acompanhe seus pedidos em tempo real
               </p>
             </div>
@@ -154,7 +161,7 @@ export default function MeusPedidos() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                   filter === 'all'
                     ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
                 Todos ({orders.length})
@@ -164,7 +171,7 @@ export default function MeusPedidos() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                   filter === 'active'
                     ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
                 Em andamento ({activeOrders.length})
@@ -174,7 +181,7 @@ export default function MeusPedidos() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                   filter === 'history'
                     ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                 }`}
               >
                 Histórico ({orderHistory.length})
@@ -188,13 +195,13 @@ export default function MeusPedidos() {
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ShoppingBag className="w-10 h-10 text-neutral-600" />
+                <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShoppingBag className="w-10 h-10 text-gray-600" />
                 </div>
                 <h2 className="text-2xl font-semibold text-white mb-2">
                   Nenhum pedido encontrado
                 </h2>
-                <p className="text-neutral-400 mb-8">
+                <p className="text-gray-400 mb-8">
                   {filter === 'active'
                     ? 'Você não tem pedidos em andamento'
                     : 'Você ainda não fez nenhum pedido'}
@@ -212,14 +219,15 @@ export default function MeusPedidos() {
                   const statusInfo = getStatusInfo(order.status);
                   const StatusIcon = statusInfo.icon;
                   const isActive = ![ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED].includes(order.status);
+                  const canCancel = order.status === ORDER_STATUS.PENDING;
 
                   return (
                     <motion.div
                       key={order.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`bg-neutral-900 border rounded-xl p-6 transition-colors ${
-                        isActive ? statusInfo.borderColor : 'border-neutral-700 hover:border-neutral-600'
+                      className={`bg-gray-900 border rounded-xl p-6 transition-colors ${
+                        isActive ? statusInfo.borderColor : 'border-gray-700 hover:border-gray-600'
                       }`}
                     >
                       {/* Order Header */}
@@ -235,7 +243,7 @@ export default function MeusPedidos() {
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-4 text-sm text-neutral-400">
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
                               {new Date(order.createdAt).toLocaleDateString('pt-BR', {
@@ -270,7 +278,7 @@ export default function MeusPedidos() {
                           <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)]">
                             {formatCurrency(order.total)}
                           </p>
-                          <p className="text-sm text-neutral-400">
+                          <p className="text-sm text-gray-400">
                             {PAYMENT_METHODS.find(m => m.id === order.paymentMethod)?.nome}
                           </p>
                         </div>
@@ -291,16 +299,16 @@ export default function MeusPedidos() {
                         <div className="space-y-2">
                           {order.items.slice(0, 3).map((item, idx) => (
                             <div key={idx} className="flex justify-between text-sm">
-                              <span className="text-neutral-300">
+                              <span className="text-gray-300">
                                 {item.quantidade}x {item.nome}
                               </span>
-                              <span className="text-neutral-400">
+                              <span className="text-gray-400">
                                 {formatCurrency(item.precoUnitario * item.quantidade)}
                               </span>
                             </div>
                           ))}
                           {order.items.length > 3 && (
-                            <p className="text-neutral-500 text-sm">
+                            <p className="text-gray-500 text-sm">
                               +{order.items.length - 3} itens
                             </p>
                           )}
@@ -308,10 +316,10 @@ export default function MeusPedidos() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex gap-3 pt-4 border-t border-neutral-800">
+                      <div className="flex gap-3 pt-4 border-t border-gray-800">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                          className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                         >
                           <Eye className="w-4 h-4" />
                           Ver Detalhes
@@ -320,14 +328,14 @@ export default function MeusPedidos() {
                         {!isActive && (
                           <button
                             onClick={() => handleReorder(order)}
-                            className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                            className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                           >
                             <RefreshCw className="w-4 h-4" />
                             Pedir Novamente
                           </button>
                         )}
 
-                        {isActive && order.status === ORDER_STATUS.PENDING && (
+                        {isActive && canCancel && (
                           <button
                             onClick={() => handleCancelOrder(order.id)}
                             disabled={loading}
@@ -370,7 +378,7 @@ export default function MeusPedidos() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-neutral-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                className="bg-gray-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -380,7 +388,7 @@ export default function MeusPedidos() {
                     </h2>
                     <button
                       onClick={() => setSelectedOrder(null)}
-                      className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                      className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                     >
                       <X className="w-5 h-5 text-white" />
                     </button>
@@ -399,7 +407,7 @@ export default function MeusPedidos() {
                               <p className={`font-semibold ${statusInfo.color}`}>
                                 {statusInfo.label}
                               </p>
-                              <p className="text-neutral-400 text-sm">
+                              <p className="text-gray-400 text-sm">
                                 {new Date(selectedOrder.createdAt).toLocaleString('pt-BR')}
                               </p>
                             </div>
@@ -420,10 +428,10 @@ export default function MeusPedidos() {
                               {item.quantidade}x {item.nome}
                             </p>
                             {item.observacoes && (
-                              <p className="text-neutral-500 text-sm">{item.observacoes}</p>
+                              <p className="text-gray-500 text-sm">{item.observacoes}</p>
                             )}
                           </div>
-                          <p className="text-neutral-400">
+                          <p className="text-gray-400">
                             {formatCurrency(item.precoUnitario * item.quantidade)}
                           </p>
                         </div>
@@ -432,20 +440,20 @@ export default function MeusPedidos() {
                   </div>
 
                   {/* Totais */}
-                  <div className="border-t border-neutral-800 pt-4 mb-6">
+                  <div className="border-t border-gray-800 pt-4 mb-6">
                     <div className="space-y-2">
-                      <div className="flex justify-between text-neutral-400">
+                      <div className="flex justify-between text-gray-400">
                         <span>Subtotal</span>
                         <span>{formatCurrency(selectedOrder.subtotal)}</span>
                       </div>
                       {selectedOrder.taxaServico > 0 && (
-                        <div className="flex justify-between text-neutral-400">
+                        <div className="flex justify-between text-gray-400">
                           <span>Taxa de serviço</span>
                           <span>{formatCurrency(selectedOrder.taxaServico)}</span>
                         </div>
                       )}
                       {selectedOrder.taxaEntrega > 0 && (
-                        <div className="flex justify-between text-neutral-400">
+                        <div className="flex justify-between text-gray-400">
                           <span>Taxa de entrega</span>
                           <span>{formatCurrency(selectedOrder.taxaEntrega)}</span>
                         </div>
@@ -462,25 +470,25 @@ export default function MeusPedidos() {
                   {/* Detalhes */}
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-neutral-400">Tipo de consumo</span>
+                      <span className="text-gray-400">Tipo de consumo</span>
                       <span className="text-white">
                         {CONSUMPTION_TYPES.find(t => t.id === selectedOrder.consumptionType)?.nome}
                       </span>
                     </div>
                     {selectedOrder.tableNumber && (
                       <div className="flex justify-between">
-                        <span className="text-neutral-400">Mesa</span>
+                        <span className="text-gray-400">Mesa</span>
                         <span className="text-white">#{selectedOrder.tableNumber}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-neutral-400">Pagamento</span>
+                      <span className="text-gray-400">Pagamento</span>
                       <span className="text-white">
                         {PAYMENT_METHODS.find(m => m.id === selectedOrder.paymentMethod)?.nome}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-400">Status pagamento</span>
+                      <span className="text-gray-400">Status pagamento</span>
                       <span className={selectedOrder.paymentStatus === 'pago' ? 'text-green-400' : 'text-yellow-400'}>
                         {selectedOrder.paymentStatus === 'pago' ? 'Pago' : 'Pendente'}
                       </span>
@@ -488,8 +496,8 @@ export default function MeusPedidos() {
                   </div>
 
                   {selectedOrder.observacoes && (
-                    <div className="mt-4 p-3 bg-neutral-800 rounded-lg">
-                      <p className="text-neutral-400 text-sm">Observações:</p>
+                    <div className="mt-4 p-3 bg-gray-800 rounded-lg">
+                      <p className="text-gray-400 text-sm">Observações:</p>
                       <p className="text-white">{selectedOrder.observacoes}</p>
                     </div>
                   )}

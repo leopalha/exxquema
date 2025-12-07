@@ -176,14 +176,14 @@ export default function AdminReservas() {
       <Layout>
         <div className="min-h-screen pt-16 bg-black">
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-b border-orange-500/30">
+          <div className="bg-gray-900 border-b border-gray-800">
             <div className="max-w-7xl mx-auto px-4 py-8">
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-white mb-2">Gerenciar Reservas</h1>
                   <p className="text-gray-400">Administre todas as reservas do FLAME</p>
                 </div>
-                <Calendar size={48} className="text-orange-500" />
+                <Calendar size={48} style={{ color: 'var(--theme-primary)' }} />
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function AdminReservas() {
           {stats && (
             <div className="max-w-7xl mx-auto px-4 py-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-gray-800">
+                <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm">Total</p>
                     <TrendingUp size={20} className="text-blue-500" />
@@ -201,7 +201,7 @@ export default function AdminReservas() {
                   <p className="text-xs text-gray-500 mt-1">Últimos 30 dias</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-yellow-500/30">
+                <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm">Pendentes</p>
                     <Clock size={20} className="text-yellow-500" />
@@ -209,7 +209,7 @@ export default function AdminReservas() {
                   <p className="text-3xl font-bold text-yellow-400">{stats.pendingReservations || 0}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-green-500/30">
+                <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm">Confirmadas</p>
                     <CheckCircle size={20} className="text-green-500" />
@@ -217,12 +217,12 @@ export default function AdminReservas() {
                   <p className="text-3xl font-bold text-green-400">{stats.confirmedReservations || 0}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-orange-500/30">
+                <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-gray-400 text-sm">Taxa de Conclusão</p>
-                    <TrendingDown size={20} className="text-orange-500" />
+                    <TrendingDown size={20} style={{ color: 'var(--theme-primary)' }} />
                   </div>
-                  <p className="text-3xl font-bold text-orange-400">
+                  <p className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>
                     {stats.completionRate ? `${stats.completionRate.toFixed(0)}%` : '0%'}
                   </p>
                 </div>
@@ -245,7 +245,8 @@ export default function AdminReservas() {
                     placeholder="Buscar por nome, email, código..."
                     value={filters.search}
                     onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-orange-500 transition-colors"
+                    className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none transition-colors"
+                    style={{ borderColor: filters.search ? 'var(--theme-primary)' : '' }}
                   />
                 </div>
 
@@ -253,7 +254,8 @@ export default function AdminReservas() {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 transition-colors"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none transition-colors"
+                  style={{ borderColor: filters.status ? 'var(--theme-primary)' : '' }}
                 >
                   <option value="">Todos os status</option>
                   <option value="pending">Pendente</option>
@@ -268,7 +270,8 @@ export default function AdminReservas() {
                   type="date"
                   value={filters.date}
                   onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 transition-colors"
+                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none transition-colors"
+                  style={{ borderColor: filters.date ? 'var(--theme-primary)' : '' }}
                 />
 
                 {/* Clear Filters */}
@@ -287,7 +290,7 @@ export default function AdminReservas() {
             <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Clock size={24} className="animate-spin text-orange-500 mr-2" />
+                  <Clock size={24} className="animate-spin mr-2" style={{ color: 'var(--theme-primary)' }} />
                   <span className="text-gray-400">Carregando...</span>
                 </div>
               ) : !reservations || reservations.length === 0 ? (
@@ -355,7 +358,7 @@ export default function AdminReservas() {
                             </td>
                             <td className="px-4 py-4">{getStatusBadge(reservation.status)}</td>
                             <td className="px-4 py-4">
-                              <span className="font-mono text-sm text-orange-400">
+                              <span className="font-mono text-sm" style={{ color: 'var(--theme-primary)' }}>
                                 {reservation.confirmationCode}
                               </span>
                             </td>
@@ -390,7 +393,11 @@ export default function AdminReservas() {
                                         e.stopPropagation();
                                         handleSendReminder(reservation.id);
                                       }}
-                                      className="p-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded transition-colors"
+                                      className="p-2 rounded transition-colors"
+                                      style={{
+                                        background: 'var(--theme-primary-20)',
+                                        color: 'var(--theme-primary)'
+                                      }}
                                       title="Enviar lembrete"
                                     >
                                       <Send size={16} />

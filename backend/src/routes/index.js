@@ -11,6 +11,7 @@ const hookahRoutes = require('./hookah');
 const reservationRoutes = require('./reservations');
 const crmRoutes = require('./crm');
 const campaignRoutes = require('./campaign.routes');
+const ingredientRoutes = require('./ingredients');
 const seedRoutes = require('./seed-route');
 const migrateRoutes = require('./migrate');
 
@@ -55,6 +56,9 @@ router.use('/crm', crmRoutes);
 
 // Rotas de Campanhas de Marketing
 router.use('/campaigns', campaignRoutes);
+
+// Rotas de Insumos e Ficha Técnica
+router.use('/ingredients', ingredientRoutes);
 
 // Rotas de Seed (temporário)
 router.use('/', seedRoutes);

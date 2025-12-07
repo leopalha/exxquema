@@ -20,7 +20,8 @@ import {
   CalendarDays,
   Star,
   ChefHat,
-  CheckCircle
+  CheckCircle,
+  Layers
 } from 'lucide-react';
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonChart, SkeletonCard } from '../../components/LoadingSpinner';
@@ -436,6 +437,28 @@ export default function AdminDashboard() {
                       </div>
                       <div className="text-white font-semibold mb-2">Logs</div>
                       <div className="text-neutral-400 text-sm">Histórico de atividades</div>
+                    </button>
+
+                    <button
+                      onClick={() => router.push('/admin/insumos')}
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-teal-500 rounded-xl p-6 text-left transition-colors group"
+                    >
+                      <div className="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-500/30">
+                        <Layers className="w-6 h-6 text-teal-400" />
+                      </div>
+                      <div className="text-white font-semibold mb-2">Insumos</div>
+                      <div className="text-neutral-400 text-sm">Ficha técnica e estoque</div>
+                    </button>
+
+                    <button
+                      onClick={() => router.push('/admin/estoque')}
+                      className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-red-500 rounded-xl p-6 text-left transition-colors group"
+                    >
+                      <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-500/30">
+                        <AlertTriangle className="w-6 h-6 text-red-400" />
+                      </div>
+                      <div className="text-white font-semibold mb-2">Estoque</div>
+                      <div className="text-neutral-400 text-sm">Controle de produtos</div>
                     </button>
                   </div>
                 </motion.div>

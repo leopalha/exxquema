@@ -21,7 +21,9 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Gift,
+  Coins
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useCartStore } from '../stores/cartStore';
@@ -40,6 +42,10 @@ export default function Checkout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Estado para cashback
+  const [useCashback, setUseCashback] = useState(false);
+  const [cashbackAmount, setCashbackAmount] = useState(0);
 
   const { user, isAuthenticated } = useAuthStore();
   const { getPalette } = useThemeStore();
@@ -84,7 +90,20 @@ export default function Checkout() {
   const subtotal = getSubtotal();
   const taxaServico = checkoutData.consumptionType === 'table' ? subtotal * 0.10 : 0;
   const taxaEntrega = checkoutData.consumptionType === 'delivery' ? 8.00 : 0;
-  const total = subtotal + taxaServico + taxaEntrega;
+  const totalBeforeDiscount = subtotal + taxaServico + taxaEntrega;
+
+  // Cashback disponível do usuário
+  const userCashbackBalance = parseFloat(user?.cashbackBalance) || 0;
+  const maxCashbackToUse = Math.min(userCashbackBalance, totalBeforeDiscount);
+  const cashbackDiscount = useCashback ? Math.min(cashbackAmount, maxCashbackToUse) : 0;
+  const total = Math.max(0, totalBeforeDiscount - cashbackDiscount);
+
+  // Atualizar cashbackAmount quando toggle é ativado
+  useEffect(() => {
+    if (useCashback && cashbackAmount === 0 && maxCashbackToUse > 0) {
+      setCashbackAmount(maxCashbackToUse);
+    }
+  }, [useCashback, maxCashbackToUse, cashbackAmount]);
 
   // Validacao de steps
   const canProceedStep1 = items.length > 0;
@@ -119,7 +138,8 @@ export default function Checkout() {
       items,
       subtotal,
       user?.id,
-      user?.name
+      user?.name,
+      cashbackDiscount // Passa o cashback a usar
     );
 
     if (result.success) {
@@ -127,6 +147,8 @@ export default function Checkout() {
       setOrderComplete(true);
       clearCart();
       resetCheckout();
+      setUseCashback(false);
+      setCashbackAmount(0);
     }
 
     setIsProcessing(false);
@@ -162,7 +184,7 @@ export default function Checkout() {
           <title>Pedido Confirmado | FLAME</title>
         </Head>
         <Layout>
-          <div className="min-h-screen bg-neutral-900 pt-24 pb-12 px-4">
+          <div className="min-h-screen bg-gray-900 pt-24 pb-12 px-4">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -181,32 +203,32 @@ export default function Checkout() {
                 Pedido Confirmado!
               </h1>
 
-              <p className="text-neutral-400 mb-8">
+              <p className="text-gray-400 mb-8">
                 Seu pedido <span className="text-[var(--theme-primary)] font-semibold">#{completedOrder.id}</span> foi
                 recebido e está sendo processado.
               </p>
 
-              <div className="bg-neutral-800 rounded-xl p-6 mb-8 text-left">
+              <div className="bg-gray-800 rounded-xl p-6 mb-8 text-left">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-neutral-400">Status</span>
+                  <span className="text-gray-400">Status</span>
                   <span className="text-[var(--theme-secondary)] font-medium">Confirmado</span>
                 </div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-neutral-400">Tempo estimado</span>
+                  <span className="text-gray-400">Tempo estimado</span>
                   <span className="text-white font-medium flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     {completedOrder.estimatedTime} min
                   </span>
                 </div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-neutral-400">Total</span>
+                  <span className="text-gray-400">Total</span>
                   <span className="text-[var(--theme-primary)] font-bold text-xl">
                     {formatCurrency(completedOrder.total)}
                   </span>
                 </div>
                 {completedOrder.consumptionType === 'table' && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-400">Mesa</span>
+                    <span className="text-gray-400">Mesa</span>
                     <span className="text-white font-medium">#{completedOrder.tableNumber}</span>
                   </div>
                 )}
@@ -221,7 +243,7 @@ export default function Checkout() {
                 </button>
                 <button
                   onClick={() => router.push('/cardapio')}
-                  className="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+                  className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
                 >
                   Voltar ao Cardapio
                 </button>
@@ -239,13 +261,13 @@ export default function Checkout() {
         <title>Checkout | FLAME</title>
       </Head>
       <Layout>
-        <div className="min-h-screen bg-neutral-900 pt-24 pb-8 px-4">
+        <div className="min-h-screen bg-gray-900 pt-24 pb-8 px-4">
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
               <button
                 onClick={() => router.back()}
-                className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white" />
               </button>
@@ -260,7 +282,7 @@ export default function Checkout() {
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
                       currentStep >= step
                         ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                        : 'bg-neutral-800 text-neutral-500'
+                        : 'bg-gray-800 text-gray-500'
                     }`}
                   >
                     {currentStep > step ? <Check className="w-5 h-5" /> : step}
@@ -270,7 +292,7 @@ export default function Checkout() {
                       className={`w-16 sm:w-24 h-1 mx-2 rounded transition-all ${
                         currentStep > step
                           ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)]'
-                          : 'bg-neutral-800'
+                          : 'bg-gray-800'
                       }`}
                     />
                   )}
@@ -279,7 +301,7 @@ export default function Checkout() {
             </div>
 
             {/* Step Labels */}
-            <div className="flex justify-between mb-8 px-2 text-xs sm:text-sm text-neutral-500">
+            <div className="flex justify-between mb-8 px-2 text-xs sm:text-sm text-gray-500">
               <span className={currentStep >= 1 ? 'text-white' : ''}>Carrinho</span>
               <span className={currentStep >= 2 ? 'text-white' : ''}>Consumo</span>
               <span className={currentStep >= 3 ? 'text-white' : ''}>Pagamento</span>
@@ -301,7 +323,7 @@ export default function Checkout() {
                   {items.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-neutral-800 rounded-xl p-4 flex items-center gap-4"
+                      className="bg-gray-800 rounded-xl p-4 flex items-center gap-4"
                     >
                       <div className="relative w-20 h-20 flex-shrink-0">
                         {item.product.image ? (
@@ -312,8 +334,8 @@ export default function Checkout() {
                             className="object-cover rounded-lg"
                           />
                         ) : (
-                          <div className="w-full h-full bg-neutral-700 rounded-lg flex items-center justify-center">
-                            <ShoppingBag className="w-8 h-8 text-neutral-500" />
+                          <div className="w-full h-full bg-gray-700 rounded-lg flex items-center justify-center">
+                            <ShoppingBag className="w-8 h-8 text-gray-500" />
                           </div>
                         )}
                       </div>
@@ -326,14 +348,14 @@ export default function Checkout() {
                           {formatCurrency(item.product.price)}
                         </p>
                         {item.notes && (
-                          <p className="text-neutral-500 text-sm truncate">{item.notes}</p>
+                          <p className="text-gray-500 text-sm truncate">{item.notes}</p>
                         )}
                       </div>
 
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => decrementItem(item.id)}
-                          className="p-2 bg-neutral-700 rounded-lg hover:bg-neutral-600 transition-colors"
+                          className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                         >
                           <Minus className="w-4 h-4 text-white" />
                         </button>
@@ -342,7 +364,7 @@ export default function Checkout() {
                         </span>
                         <button
                           onClick={() => incrementItem(item.id)}
-                          className="p-2 bg-neutral-700 rounded-lg hover:bg-neutral-600 transition-colors"
+                          className="p-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
                         >
                           <Plus className="w-4 h-4 text-white" />
                         </button>
@@ -357,8 +379,8 @@ export default function Checkout() {
                     </div>
                   ))}
 
-                  <div className="bg-neutral-800 rounded-xl p-4 mt-6">
-                    <div className="flex justify-between text-neutral-400 mb-2">
+                  <div className="bg-gray-800 rounded-xl p-4 mt-6">
+                    <div className="flex justify-between text-gray-400 mb-2">
                       <span>Subtotal ({getTotalItems()} itens)</span>
                       <span>{formatCurrency(subtotal)}</span>
                     </div>
@@ -389,19 +411,19 @@ export default function Checkout() {
                         className={`p-6 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
                           checkoutData.consumptionType === type.id
                             ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] bg-opacity-10'
-                            : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
+                            : 'border-gray-700 bg-gray-800 hover:border-gray-600'
                         }`}
                       >
                         <div className={`p-3 rounded-lg ${
                           checkoutData.consumptionType === type.id
                             ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                            : 'bg-neutral-700 text-neutral-400'
+                            : 'bg-gray-700 text-gray-400'
                         }`}>
                           {getConsumptionIcon(type.icon)}
                         </div>
                         <div>
                           <h3 className="font-semibold text-white">{type.nome}</h3>
-                          <p className="text-neutral-400 text-sm">{type.descricao}</p>
+                          <p className="text-gray-400 text-sm">{type.descricao}</p>
                         </div>
                         {checkoutData.consumptionType === type.id && (
                           <Check className="w-6 h-6 text-[var(--theme-primary)] ml-auto" />
@@ -426,7 +448,7 @@ export default function Checkout() {
                             className={`p-3 rounded-lg font-semibold transition-all ${
                               checkoutData.tableNumber === mesa
                                 ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                             }`}
                           >
                             {mesa}
@@ -476,19 +498,19 @@ export default function Checkout() {
                         className={`p-6 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
                           checkoutData.paymentMethod === method.id
                             ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] bg-opacity-10'
-                            : 'border-neutral-700 bg-neutral-800 hover:border-neutral-600'
+                            : 'border-gray-700 bg-gray-800 hover:border-gray-600'
                         }`}
                       >
                         <div className={`p-3 rounded-lg ${
                           checkoutData.paymentMethod === method.id
                             ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                            : 'bg-neutral-700 text-neutral-400'
+                            : 'bg-gray-700 text-gray-400'
                         }`}>
                           {getPaymentIcon(method.icon)}
                         </div>
                         <div>
                           <h3 className="font-semibold text-white">{method.nome}</h3>
-                          <p className="text-neutral-400 text-sm">{method.descricao}</p>
+                          <p className="text-gray-400 text-sm">{method.descricao}</p>
                         </div>
                         {checkoutData.paymentMethod === method.id && (
                           <Check className="w-6 h-6 text-[var(--theme-primary)] ml-auto" />
@@ -506,7 +528,7 @@ export default function Checkout() {
                       value={checkoutData.observacoes}
                       onChange={(e) => setObservacoes(e.target.value)}
                       placeholder="Ex: Sem cebola, ponto da carne, alergias..."
-                      className="w-full bg-neutral-800 border border-neutral-700 rounded-xl p-4 text-white placeholder-neutral-500 focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] outline-none resize-none"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-white placeholder-neutral-500 focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] outline-none resize-none"
                       rows={3}
                     />
                   </div>
@@ -525,12 +547,12 @@ export default function Checkout() {
                   <h2 className="text-xl font-semibold text-white mb-6">Confirme seu pedido</h2>
 
                   {/* Resumo dos itens */}
-                  <div className="bg-neutral-800 rounded-xl p-6">
+                  <div className="bg-gray-800 rounded-xl p-6">
                     <h3 className="font-semibold text-white mb-4">Itens do pedido</h3>
                     <div className="space-y-3">
                       {items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
-                          <span className="text-neutral-400">
+                          <span className="text-gray-400">
                             {item.quantity}x {item.product.name}
                           </span>
                           <span className="text-white">
@@ -542,23 +564,23 @@ export default function Checkout() {
                   </div>
 
                   {/* Detalhes do consumo */}
-                  <div className="bg-neutral-800 rounded-xl p-6">
+                  <div className="bg-gray-800 rounded-xl p-6">
                     <h3 className="font-semibold text-white mb-4">Detalhes</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-neutral-400">Tipo de consumo</span>
+                        <span className="text-gray-400">Tipo de consumo</span>
                         <span className="text-white">
                           {CONSUMPTION_TYPES.find(t => t.id === checkoutData.consumptionType)?.nome}
                         </span>
                       </div>
                       {checkoutData.consumptionType === 'table' && (
                         <div className="flex justify-between">
-                          <span className="text-neutral-400">Mesa</span>
+                          <span className="text-gray-400">Mesa</span>
                           <span className="text-white">#{checkoutData.tableNumber}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-neutral-400">Pagamento</span>
+                        <span className="text-gray-400">Pagamento</span>
                         <span className="text-white">
                           {PAYMENT_METHODS.find(m => m.id === checkoutData.paymentMethod)?.nome}
                         </span>
@@ -567,25 +589,86 @@ export default function Checkout() {
                   </div>
 
                   {/* Totais */}
-                  <div className="bg-neutral-800 rounded-xl p-6">
+                  <div className="bg-gray-800 rounded-xl p-6">
                     <div className="space-y-3">
-                      <div className="flex justify-between text-neutral-400">
+                      <div className="flex justify-between text-gray-400">
                         <span>Subtotal</span>
                         <span>{formatCurrency(subtotal)}</span>
                       </div>
                       {taxaServico > 0 && (
-                        <div className="flex justify-between text-neutral-400">
+                        <div className="flex justify-between text-gray-400">
                           <span>Taxa de serviço (10%)</span>
                           <span>{formatCurrency(taxaServico)}</span>
                         </div>
                       )}
                       {taxaEntrega > 0 && (
-                        <div className="flex justify-between text-neutral-400">
+                        <div className="flex justify-between text-gray-400">
                           <span>Taxa de entrega</span>
                           <span>{formatCurrency(taxaEntrega)}</span>
                         </div>
                       )}
-                      <div className="border-t border-neutral-700 pt-3 flex justify-between text-white font-semibold text-xl">
+
+                      {/* Seção de Cashback */}
+                      {userCashbackBalance > 0 && (
+                        <div className="border-t border-gray-700 pt-3 mt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Coins className="w-5 h-5 text-yellow-400" />
+                              <span className="text-gray-300">Usar Cashback</span>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={useCashback}
+                                onChange={(e) => {
+                                  setUseCashback(e.target.checked);
+                                  if (!e.target.checked) setCashbackAmount(0);
+                                }}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
+                            </label>
+                          </div>
+
+                          {useCashback && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              className="space-y-2"
+                            >
+                              <div className="flex items-center justify-between text-sm text-gray-400">
+                                <span>Saldo disponível:</span>
+                                <span className="text-yellow-400 font-medium">{formatCurrency(userCashbackBalance)}</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max={maxCashbackToUse}
+                                step="0.01"
+                                value={cashbackAmount}
+                                onChange={(e) => setCashbackAmount(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)]"
+                              />
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-400">Usando:</span>
+                                <span className="text-green-400 font-semibold">-{formatCurrency(cashbackDiscount)}</span>
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+
+                      {cashbackDiscount > 0 && (
+                        <div className="flex justify-between text-green-400">
+                          <span className="flex items-center gap-1">
+                            <Gift className="w-4 h-4" />
+                            Desconto Cashback
+                          </span>
+                          <span>-{formatCurrency(cashbackDiscount)}</span>
+                        </div>
+                      )}
+
+                      <div className="border-t border-gray-700 pt-3 flex justify-between text-white font-semibold text-xl">
                         <span>Total</span>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)]">
                           {formatCurrency(total)}
@@ -595,9 +678,9 @@ export default function Checkout() {
                   </div>
 
                   {checkoutData.observacoes && (
-                    <div className="bg-neutral-800 rounded-xl p-6">
+                    <div className="bg-gray-800 rounded-xl p-6">
                       <h3 className="font-semibold text-white mb-2">Observações</h3>
-                      <p className="text-neutral-400">{checkoutData.observacoes}</p>
+                      <p className="text-gray-400">{checkoutData.observacoes}</p>
                     </div>
                   )}
                 </motion.div>
@@ -609,7 +692,7 @@ export default function Checkout() {
               {currentStep > 1 && (
                 <button
                   onClick={handlePrevStep}
-                  className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   <ChevronLeft className="w-5 h-5" />
                   Voltar

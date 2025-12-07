@@ -9,11 +9,11 @@ class TableController {
       const { status, area, page = 1, limit = 50 } = req.query;
 
       const where = {};
-      
+
       if (status) {
         where.status = status;
       }
-      
+
       if (area) {
         where.area = area;
       }
@@ -25,7 +25,7 @@ class TableController {
         include: [
           {
             model: Order,
-            as: 'currentOrder',
+            as: 'orders',
             where: {
               status: {
                 [Op.in]: ['pending', 'confirmed', 'preparing', 'ready', 'on_way']
@@ -76,7 +76,7 @@ class TableController {
         include: [
           {
             model: Order,
-            as: 'currentOrder',
+            as: 'orders',
             where: {
               status: {
                 [Op.in]: ['pending', 'confirmed', 'preparing', 'ready', 'on_way']
@@ -120,20 +120,9 @@ class TableController {
     try {
       const { number } = req.params;
 
+      // Busca simples - apenas a mesa, sem pedidos
       const table = await Table.findOne({
-        where: { number },
-        include: [
-          {
-            model: Order,
-            as: 'currentOrder',
-            where: {
-              status: {
-                [Op.in]: ['pending', 'confirmed', 'preparing', 'ready', 'on_way']
-              }
-            },
-            required: false
-          }
-        ]
+        where: { number: parseInt(number) }
       });
 
       if (!table) {
@@ -197,8 +186,8 @@ class TableController {
         position: x && y ? { x, y } : null
       });
 
-      // Gerar QR Code para a mesa
-      const qrCodeUrl = `${process.env.FRONTEND_URL}/table/${table.number}`;
+      // Gerar QR Code para a mesa - URL correta para cardápio com mesa
+      const qrCodeUrl = `${process.env.FRONTEND_URL}/cardapio?mesa=${table.number}`;
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
         width: 300,
         margin: 2,
@@ -256,8 +245,8 @@ class TableController {
           });
         }
 
-        // Regenerar QR Code se mudou o número
-        const qrCodeUrl = `${process.env.FRONTEND_URL}/table/${updateData.number}`;
+        // Regenerar QR Code se mudou o número - URL correta para cardápio com mesa
+        const qrCodeUrl = `${process.env.FRONTEND_URL}/cardapio?mesa=${updateData.number}`;
         const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
           width: 300,
           margin: 2,
@@ -546,7 +535,8 @@ class TableController {
         });
       }
 
-      const qrCodeUrl = `${process.env.FRONTEND_URL}/table/${table.number}`;
+      // URL correta para cardápio com mesa pré-selecionada
+      const qrCodeUrl = `${process.env.FRONTEND_URL}/cardapio?mesa=${table.number}`;
       const qrCodeDataURL = await QRCode.toDataURL(qrCodeUrl, {
         width: 300,
         margin: 2,
@@ -561,7 +551,7 @@ class TableController {
       res.status(200).json({
         success: true,
         message: 'QR Code gerado com sucesso',
-        data: { 
+        data: {
           qrCode: qrCodeDataURL,
           url: qrCodeUrl
         }

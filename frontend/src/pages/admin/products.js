@@ -24,7 +24,6 @@ import {
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonCard } from '../../components/LoadingSpinner';
 import { useAuthStore } from '../../stores/authStore';
-import useThemeStore from '../../stores/themeStore';
 import { formatCurrency } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import { api } from '../../services/api';
@@ -34,8 +33,6 @@ const DEFAULT_CATEGORIES = ['Drinks', 'Entradas', 'Porcoes', 'Sobremesas', 'Narg
 export default function AdminProducts() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const { getPalette } = useThemeStore();
-  const palette = getPalette();
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
@@ -332,19 +329,19 @@ export default function AdminProducts() {
       <Layout>
         <div className="min-h-screen pt-24 bg-black">
           {/* Header */}
-          <div className="bg-neutral-900 border-b border-neutral-800">
+          <div className="bg-gray-900 border-b border-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => router.push('/admin')}
-                    className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <ArrowLeft className="w-5 h-5 text-white" />
                   </button>
                   <div>
                     <h1 className="text-2xl font-bold text-white">Gerenciar Produtos</h1>
-                    <p className="text-neutral-400 text-sm">
+                    <p className="text-gray-400 text-sm">
                       {pagination.totalProducts || products.length} produtos no cardapio
                     </p>
                   </div>
@@ -353,18 +350,18 @@ export default function AdminProducts() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleRefresh}
-                    className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                     disabled={loading}
                   >
                     <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
                   </button>
 
                   {/* View Toggle */}
-                  <div className="flex items-center bg-neutral-800 rounded-lg p-1">
+                  <div className="flex items-center bg-gray-800 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode('grid')}
                       className={`p-2 rounded transition-colors ${
-                        viewMode === 'grid' ? 'bg-[var(--theme-primary)] text-white' : 'text-neutral-400 hover:text-white'
+                        viewMode === 'grid' ? 'bg-[var(--theme-primary)] text-white' : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       <Grid className="w-4 h-4" />
@@ -372,7 +369,7 @@ export default function AdminProducts() {
                     <button
                       onClick={() => setViewMode('list')}
                       className={`p-2 rounded transition-colors ${
-                        viewMode === 'list' ? 'bg-[var(--theme-primary)] text-white' : 'text-neutral-400 hover:text-white'
+                        viewMode === 'list' ? 'bg-[var(--theme-primary)] text-white' : 'text-gray-400 hover:text-white'
                       }`}
                     >
                       <List className="w-4 h-4" />
@@ -394,17 +391,17 @@ export default function AdminProducts() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Filters */}
-            <div className="bg-neutral-900 rounded-xl p-4 mb-6 border border-neutral-800">
+            <div className="bg-gray-900 rounded-xl p-4 mb-6 border border-gray-800">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                   <input
                     type="text"
                     placeholder="Buscar produtos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-neutral-500 focus:outline-none focus:border-[var(--theme-primary)]"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--theme-primary)]"
                   />
                 </div>
 
@@ -415,7 +412,7 @@ export default function AdminProducts() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                       selectedCategory === 'Todos'
                         ? 'bg-[var(--theme-primary)] text-white'
-                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                   >
                     Todos
@@ -427,7 +424,7 @@ export default function AdminProducts() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                         selectedCategory === category
                           ? 'bg-[var(--theme-primary)] text-white'
-                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                          : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       }`}
                     >
                       {category}
@@ -445,10 +442,10 @@ export default function AdminProducts() {
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-neutral-900 rounded-xl p-12 text-center border border-neutral-800">
-                <Package className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
+              <div className="bg-gray-900 rounded-xl p-12 text-center border border-gray-800">
+                <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">Nenhum produto encontrado</h3>
-                <p className="text-neutral-400 mb-6">
+                <p className="text-gray-400 mb-6">
                   {products.length === 0
                     ? 'Ainda não há produtos cadastrados.'
                     : 'Tente ajustar os filtros ou adicione um novo produto.'}
@@ -469,12 +466,12 @@ export default function AdminProducts() {
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden hover:border-[var(--theme-primary)] transition-colors ${
+                    className={`bg-gray-900 rounded-xl border border-gray-800 overflow-hidden hover:border-[var(--theme-primary)] transition-colors ${
                       viewMode === 'list' ? 'flex' : ''
                     } ${!product.isActive ? 'opacity-60' : ''}`}
                   >
                     {/* Product Image */}
-                    <div className={`relative ${viewMode === 'list' ? 'w-48 h-32' : 'h-48'} bg-neutral-800`}>
+                    <div className={`relative ${viewMode === 'list' ? 'w-48 h-32' : 'h-48'} bg-gray-800`}>
                       {product.image ? (
                         <Image
                           src={product.image}
@@ -486,8 +483,8 @@ export default function AdminProducts() {
                           }}
                         />
                       ) : null}
-                      <div className="absolute inset-0 flex items-center justify-center bg-neutral-800">
-                        <Package className="w-12 h-12 text-neutral-600" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                        <Package className="w-12 h-12 text-gray-600" />
                       </div>
 
                       {/* Status Badges */}
@@ -516,7 +513,7 @@ export default function AdminProducts() {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-white">{product.name}</h3>
-                          <span className="inline-flex items-center gap-1 text-neutral-400 text-xs mt-1">
+                          <span className="inline-flex items-center gap-1 text-gray-400 text-xs mt-1">
                             <Tag className="w-3 h-3" />
                             {product.category}
                           </span>
@@ -524,7 +521,7 @@ export default function AdminProducts() {
                         <div className="text-right">
                           {product.isPromotional && product.discountPercentage ? (
                             <>
-                              <span className="text-sm text-neutral-500 line-through">
+                              <span className="text-sm text-gray-500 line-through">
                                 {formatCurrency(product.price)}
                               </span>
                               <span className="text-lg font-bold text-[var(--theme-primary)] block">
@@ -539,7 +536,7 @@ export default function AdminProducts() {
                         </div>
                       </div>
 
-                      <p className="text-neutral-400 text-sm mb-4 line-clamp-2">
+                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
                         {product.description || 'Sem descrição'}
                       </p>
 
@@ -552,7 +549,7 @@ export default function AdminProducts() {
                               Estoque baixo: {product.stock}
                             </span>
                           ) : (
-                            <span className="text-neutral-500">
+                            <span className="text-gray-500">
                               Estoque: {product.stock}
                             </span>
                           )}
@@ -560,12 +557,12 @@ export default function AdminProducts() {
                       )}
 
                       {/* Actions */}
-                      <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-800">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => toggleAvailability(product.id, product.isActive)}
                             className={`p-2 rounded-lg transition-colors ${
-                              product.isActive ? 'bg-green-500/20 text-green-400' : 'bg-neutral-800 text-neutral-400'
+                              product.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-800 text-gray-400'
                             }`}
                             title={product.isActive ? 'Desativar' : 'Ativar'}
                           >
@@ -575,7 +572,7 @@ export default function AdminProducts() {
                           <button
                             onClick={() => toggleHighlight(product.id, product.isSignature)}
                             className={`p-2 rounded-lg transition-colors ${
-                              product.isSignature ? 'bg-yellow-500/20 text-yellow-400' : 'bg-neutral-800 text-neutral-400'
+                              product.isSignature ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-800 text-gray-400'
                             }`}
                             title={product.isSignature ? 'Remover destaque' : 'Destacar'}
                           >
@@ -586,7 +583,7 @@ export default function AdminProducts() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleOpenModal(product)}
-                            className="p-2 bg-neutral-800 rounded-lg hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                            className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
                             title="Editar"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -594,7 +591,7 @@ export default function AdminProducts() {
 
                           <button
                             onClick={() => handleDeleteProduct(product.id)}
-                            className="p-2 bg-neutral-800 rounded-lg hover:bg-red-500/20 text-neutral-400 hover:text-red-400 transition-colors"
+                            className="p-2 bg-gray-800 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
                             title="Desativar"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -617,7 +614,7 @@ export default function AdminProducts() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       pagination.currentPage === page
                         ? 'bg-[var(--theme-primary)] text-white'
-                        : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                   >
                     {page}
@@ -643,7 +640,7 @@ export default function AdminProducts() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-neutral-900 rounded-xl border border-neutral-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                className="bg-gray-900 rounded-xl border border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
@@ -652,7 +649,7 @@ export default function AdminProducts() {
                     </h3>
                     <button
                       onClick={handleCloseModal}
-                      className="p-2 text-neutral-400 hover:text-white transition-colors"
+                      className="p-2 text-gray-400 hover:text-white transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -667,7 +664,7 @@ export default function AdminProducts() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                         placeholder="Ex: Moscow Mule"
                       />
                     </div>
@@ -680,7 +677,7 @@ export default function AdminProducts() {
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows={3}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                         placeholder="Descreva o produto..."
                       />
                     </div>
@@ -695,7 +692,7 @@ export default function AdminProducts() {
                           step="0.01"
                           value={formData.price}
                           onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                           placeholder="0.00"
                         />
                       </div>
@@ -707,7 +704,7 @@ export default function AdminProducts() {
                         <select
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                         >
                           <option value="">Selecione...</option>
                           {categories.map(category => (
@@ -725,7 +722,7 @@ export default function AdminProducts() {
                         type="url"
                         value={formData.image}
                         onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                        className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                         placeholder="https://..."
                       />
                     </div>
@@ -739,7 +736,7 @@ export default function AdminProducts() {
                           type="number"
                           value={formData.preparationTime}
                           onChange={(e) => setFormData({ ...formData, preparationTime: e.target.value })}
-                          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                           placeholder="15"
                         />
                       </div>
@@ -752,7 +749,7 @@ export default function AdminProducts() {
                           type="number"
                           value={formData.discountPercentage}
                           onChange={(e) => setFormData({ ...formData, discountPercentage: e.target.value })}
-                          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                           placeholder="0"
                           disabled={!formData.isPromotional}
                         />
@@ -760,13 +757,13 @@ export default function AdminProducts() {
                     </div>
 
                     {/* Stock controls */}
-                    <div className="border-t border-neutral-800 pt-4">
+                    <div className="border-t border-gray-800 pt-4">
                       <label className="flex items-center gap-2 cursor-pointer mb-4">
                         <input
                           type="checkbox"
                           checked={formData.hasStock}
                           onChange={(e) => setFormData({ ...formData, hasStock: e.target.checked })}
-                          className="rounded border-neutral-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
+                          className="rounded border-gray-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
                         />
                         <span className="text-neutral-300">Controlar estoque</span>
                       </label>
@@ -781,7 +778,7 @@ export default function AdminProducts() {
                               type="number"
                               value={formData.stock}
                               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                               placeholder="0"
                             />
                           </div>
@@ -793,7 +790,7 @@ export default function AdminProducts() {
                               type="number"
                               value={formData.minStock}
                               onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
-                              className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
+                              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[var(--theme-primary)]"
                               placeholder="5"
                             />
                           </div>
@@ -801,13 +798,13 @@ export default function AdminProducts() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-6 border-t border-neutral-800 pt-4">
+                    <div className="flex items-center gap-6 border-t border-gray-800 pt-4">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.isActive}
                           onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                          className="rounded border-neutral-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
+                          className="rounded border-gray-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
                         />
                         <span className="text-neutral-300">Ativo</span>
                       </label>
@@ -817,7 +814,7 @@ export default function AdminProducts() {
                           type="checkbox"
                           checked={formData.isSignature}
                           onChange={(e) => setFormData({ ...formData, isSignature: e.target.checked })}
-                          className="rounded border-neutral-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
+                          className="rounded border-gray-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
                         />
                         <span className="text-neutral-300">Destaque</span>
                       </label>
@@ -827,17 +824,17 @@ export default function AdminProducts() {
                           type="checkbox"
                           checked={formData.isPromotional}
                           onChange={(e) => setFormData({ ...formData, isPromotional: e.target.checked })}
-                          className="rounded border-neutral-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
+                          className="rounded border-gray-600 text-[var(--theme-primary)] focus:ring-[var(--theme-primary)]"
                         />
                         <span className="text-neutral-300">Promocao</span>
                       </label>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-neutral-800">
+                  <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-800">
                     <button
                       onClick={handleCloseModal}
-                      className="px-6 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg transition-colors"
+                      className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,10 +10,13 @@ import ImageModal from '../components/ImageModal';
 import NarguileOptionsModal from '../components/NarguileOptionsModal';
 import LoadingSpinner, { SkeletonCard } from '../components/LoadingSpinner';
 import { useProductStore } from '../stores/productStore';
+import { useCartStore } from '../stores/cartStore';
 import { useDebounce } from '../hooks';
 import { formatCurrency } from '../utils/format';
+import { toast } from 'react-hot-toast';
 
 export default function Cardapio() {
+  const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [narguileProduct, setNarguileProduct] = useState(null);
   const {
@@ -31,6 +35,7 @@ export default function Cardapio() {
     sortProducts,
     goToPage,
   } = useProductStore();
+  const { setTable, tableNumber } = useCartStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -39,6 +44,18 @@ export default function Cardapio() {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Capturar mesa do QR Code
+  useEffect(() => {
+    const mesaFromQuery = router.query.mesa;
+    if (mesaFromQuery && !tableNumber) {
+      const mesaNum = parseInt(mesaFromQuery);
+      if (!isNaN(mesaNum) && mesaNum > 0) {
+        setTable(mesaFromQuery, mesaNum);
+        toast.success(`Mesa ${mesaNum} selecionada!`, { icon: '📍' });
+      }
+    }
+  }, [router.query.mesa, tableNumber, setTable]);
 
   useEffect(() => {
     fetchProducts();
@@ -127,7 +144,7 @@ export default function Cardapio() {
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-xl text-neutral-300 max-w-2xl mx-auto"
+                className="text-xl text-gray-300 max-w-2xl mx-auto"
               >
                 Drinks autorais, gastronomia premium e narguilé de alta qualidade
               </motion.p>
@@ -135,20 +152,20 @@ export default function Cardapio() {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-neutral-900 border-b border-neutral-800 sticky top-16 z-40">
+          <div className="bg-gray-900 border-b border-gray-800 sticky top-16 z-40">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 {/* Search */}
                 <div className="relative flex-1 w-full md:max-w-md">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-neutral-400" />
+                    <Search className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Buscar produtos..."
-                    className="block w-full pl-10 pr-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white placeholder-neutral-400 focus:outline-none focus:ring-2"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': 'var(--theme-primary)' }}
                     onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
                     onBlur={(e) => e.currentTarget.style.borderColor = '#404040'}
@@ -158,7 +175,7 @@ export default function Cardapio() {
                 {/* Controls */}
                 <div className="flex items-center gap-4">
                   {/* View Mode Toggle */}
-                  <div className="flex bg-neutral-800 rounded-lg p-1">
+                  <div className="flex bg-gray-800 rounded-lg p-1">
                     <button
                       onClick={() => setViewMode('grid')}
                       className="p-2 rounded-md transition-colors text-white"
@@ -183,7 +200,7 @@ export default function Cardapio() {
                   <select
                     value={sortBy}
                     onChange={(e) => handleSortChange(e.target.value)}
-                    className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                    className="bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': 'var(--theme-primary)' }}
                     onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
                     onBlur={(e) => e.currentTarget.style.borderColor = '#404040'}
@@ -199,7 +216,7 @@ export default function Cardapio() {
                   {/* Filters Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     <Filter className="w-4 h-4" />
                     Filtros
@@ -248,7 +265,7 @@ export default function Cardapio() {
                   )}
                   <button
                     onClick={handleClearFilters}
-                    className="text-neutral-400 hover:text-white text-sm underline"
+                    className="text-gray-400 hover:text-white text-sm underline"
                   >
                     Limpar todos
                   </button>
@@ -265,7 +282,7 @@ export default function Cardapio() {
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="bg-neutral-800 border-b border-neutral-700 overflow-hidden"
+                className="bg-gray-800 border-b border-gray-700 overflow-hidden"
               >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                   <div className="grid md:grid-cols-3 gap-6">
@@ -302,26 +319,26 @@ export default function Cardapio() {
                       <h3 className="text-lg font-semibold text-white mb-4">Faixa de Preço</h3>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm text-neutral-400 mb-1">Preço mínimo</label>
+                          <label className="block text-sm text-gray-400 mb-1">Preço mínimo</label>
                           <input
                             type="number"
                             value={priceRange.min}
                             onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                             placeholder="R$ 0,00"
-                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                            className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
                             style={{ '--tw-ring-color': 'var(--theme-primary)' }}
                             onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
                             onBlur={(e) => e.currentTarget.style.borderColor = '#525252'}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm text-neutral-400 mb-1">Preço máximo</label>
+                          <label className="block text-sm text-gray-400 mb-1">Preço máximo</label>
                           <input
                             type="number"
                             value={priceRange.max}
                             onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                             placeholder="R$ 100,00"
-                            className="w-full bg-neutral-700 border border-neutral-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+                            className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
                             style={{ '--tw-ring-color': 'var(--theme-primary)' }}
                             onFocus={(e) => e.currentTarget.style.borderColor = 'var(--theme-primary)'}
                             onBlur={(e) => e.currentTarget.style.borderColor = '#525252'}
@@ -365,7 +382,7 @@ export default function Cardapio() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Results Info */}
             <div className="flex items-center justify-between mb-6">
-              <p className="text-neutral-400">
+              <p className="text-gray-400">
                 {isLoading ? 'Carregando...' : `${pagination.totalProducts} produtos encontrados`}
               </p>
             </div>
@@ -408,13 +425,13 @@ export default function Cardapio() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-16">
-                    <div className="w-24 h-24 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Search className="w-12 h-12 text-neutral-600" />
+                    <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Search className="w-12 h-12 text-gray-600" />
                     </div>
                     <h3 className="text-2xl font-semibold text-white mb-2">
                       Nenhum produto encontrado
                     </h3>
-                    <p className="text-neutral-400 mb-6">
+                    <p className="text-gray-400 mb-6">
                       Tente ajustar os filtros ou termos de busca
                     </p>
                     <button
@@ -438,7 +455,7 @@ export default function Cardapio() {
                   <button
                     onClick={() => goToPage(pagination.currentPage - 1)}
                     disabled={pagination.currentPage === 1}
-                    className="px-4 py-2 border border-neutral-700 rounded-lg text-neutral-400 hover:text-white hover:border-[var(--theme-primary)] hover:border-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 border border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-[var(--theme-primary)] hover:border-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Anterior
                   </button>
@@ -461,7 +478,7 @@ export default function Cardapio() {
                   <button
                     onClick={() => goToPage(pagination.currentPage + 1)}
                     disabled={pagination.currentPage === pagination.totalPages}
-                    className="px-4 py-2 border border-neutral-700 rounded-lg text-neutral-400 hover:text-white hover:border-[var(--theme-secondary)] hover:border-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 border border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-[var(--theme-secondary)] hover:border-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Próximo
                   </button>

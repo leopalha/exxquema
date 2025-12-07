@@ -2,7 +2,7 @@ const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: process.env.CYPRESS_BASE_URL || 'http://localhost:3000',
     supportFile: 'cypress/support/e2e.js',
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     viewportWidth: 1280,
@@ -12,11 +12,27 @@ module.exports = defineConfig({
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
     responseTimeout: 30000,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
     env: {
-      apiUrl: 'http://localhost:7000/api',
+      apiUrl: process.env.CYPRESS_API_URL || 'http://localhost:7000/api',
+      // Production URLs (for CI/CD)
+      prodBaseUrl: 'https://flame-lounge.vercel.app',
+      prodApiUrl: 'https://backend-production-28c3.up.railway.app/api',
     },
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Log test results
+      on('after:spec', (spec, results) => {
+        if (results && results.stats) {
+          console.log(`📊 ${spec.name}: ${results.stats.passes} passed, ${results.stats.failures} failed`);
+        }
+      });
+
+      // Allow environment variable overrides
+      config.env.apiUrl = process.env.CYPRESS_API_URL || config.env.apiUrl;
+      return config;
     },
   },
   component: {

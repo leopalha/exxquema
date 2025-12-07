@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import {
+  BarChart3,
+  LogOut,
+  Clock,
+  TrendingUp,
+  DollarSign,
+  Package,
+  ShoppingBag,
+  X
+} from 'lucide-react';
 import useReportStore from '../../stores/reportStore';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -54,6 +62,10 @@ export default function RelatoriosPage() {
 
     fetchDashboard(30);
   }, [isAuthenticated, user, router]);
+
+  const handleLogout = () => {
+    router.push('/login');
+  };
 
   const handleFetchReport = async (reportType) => {
     try {
@@ -113,22 +125,49 @@ export default function RelatoriosPage() {
         <title>Relatórios | FLAME</title>
       </Head>
 
-      <div className="min-h-screen bg-black flex flex-col">
-        <Header />
+      <div className="min-h-screen bg-black">
+        {/* Header */}
+        <div className="bg-gray-900 border-b border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                  <BarChart3 className="w-7 h-7" style={{ color: 'var(--theme-primary)' }} />
+                  FLAME - Relatórios
+                </h1>
+                <p className="text-gray-400 text-sm mt-1">
+                  Análise de vendas e desempenho
+                </p>
+              </div>
 
-        <main className="flex-1 container mx-auto px-4 py-8">
+              <div className="flex items-center gap-4">
+                {/* Current Time */}
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-white">
+                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Relatórios</h1>
-                <p className="text-gray-400">Análise de vendas e desempenho</p>
-              </div>
-            </div>
 
             {/* Error Alert */}
             {error && (
@@ -155,11 +194,12 @@ export default function RelatoriosPage() {
                     setActiveTab(tab.id);
                     handleFetchReport(tab.id);
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 text-white ${
                     activeTab === tab.id
-                      ? 'bg-orange-500 text-white'
+                      ? ''
                       : 'bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-white'
                   }`}
+                  style={activeTab === tab.id ? { background: 'var(--theme-primary)' } : {}}
                 >
                   <span>{tab.icon}</span>
                   <span>{tab.label}</span>
@@ -207,7 +247,8 @@ export default function RelatoriosPage() {
                   <button
                     onClick={() => handleFetchReport(activeTab)}
                     disabled={loading}
-                    className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="px-6 py-2 text-white rounded-lg font-medium transition-all disabled:opacity-50 hover:opacity-90"
+                    style={{ background: 'var(--theme-primary)' }}
                   >
                     {loading ? 'Carregando...' : 'Atualizar'}
                   </button>
@@ -227,11 +268,12 @@ export default function RelatoriosPage() {
                         setDashboardDays(days);
                         fetchDashboard(days);
                       }}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      className={`px-4 py-2 rounded-lg font-medium transition-all text-white ${
                         dashboardDays === days
-                          ? 'bg-orange-500 text-white'
+                          ? ''
                           : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                       }`}
+                      style={dashboardDays === days ? { background: 'var(--theme-primary)' } : {}}
                     >
                       {days} dias
                     </button>
@@ -243,7 +285,7 @@ export default function RelatoriosPage() {
             {/* Loading State */}
             {loading && (
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--theme-primary)' }}></div>
               </div>
             )}
 
@@ -752,8 +794,6 @@ export default function RelatoriosPage() {
             )}
           </motion.div>
         </main>
-
-        <Footer />
       </div>
     </>
   );

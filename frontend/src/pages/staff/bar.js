@@ -5,12 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
 import useStaffStore from '../../stores/staffStore';
 import useThemeStore from '../../stores/themeStore';
-import { useHookahStore } from '../../stores/hookahStore';
 import { formatCurrency } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import socketService from '../../services/socket';
 import StaffOrderCard from '../../components/StaffOrderCard';
-import HookahSessionCard from '../../components/HookahSessionCard';
 import useNotificationSound from '../../hooks/useNotificationSound';
 import {
   Wine,
@@ -19,61 +17,31 @@ import {
   Package,
   LogOut,
   AlertTriangle,
-  Flame,
-  User,
-  Pause,
-  Play,
-  Zap
+  Flame
 } from 'lucide-react';
+
+// NOTA: Narguilé foi migrado para /atendente (Sprint 23)
 
 export default function PainelBar() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, token, isAuthenticated, logout } = useAuthStore();
   const { stats, orders, alerts, fetchDashboard, updateOrderStatus } = useStaffStore();
-  const { getPalette } = useThemeStore();
-  const {
-    sessions: hookahSessions,
-    fetchSessions,
-    registerCoalChange,
-    pauseSession,
-    resumeSession,
-    endSession
-  } = useHookahStore();
   const { playNewOrder, playSuccess, playUrgent } = useNotificationSound();
-  const [activeTab, setActiveTab] = useState('drinks'); // 'drinks' | 'hookah'
-  const [isReady, setIsReady] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Wait for Zustand persist to hydrate
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    console.warn('🚨 [BAR] useEffect EXECUTADO!');
+    if (!isHydrated) return; // Wait for hydration
 
-    // DEBUG: Verificar estado
-    window.BAR_DEBUG = {
-      componentLoaded: true,
-      timestamp: new Date().toISOString()
-    };
-    console.warn('🚨 [BAR] Estado do componente:', window.BAR_DEBUG);
-
-    // Verificar token do Zustand persist storage (flame-auth)
-    let token = null;
-    try {
-      const authData = localStorage.getItem('flame-auth');
-      if (authData) {
-        const parsed = JSON.parse(authData);
-        token = parsed?.state?.token;
-      }
-    } catch (e) {
-      console.error('[BAR] Erro ao ler flame-auth:', e);
-    }
-    console.warn('[BAR] Token encontrado:', token ? `SIM ✅ (${token.substring(0, 20)}...)` : 'NÃO ❌');
-
-    if (!token) {
-      console.warn('[BAR] ❌ Sem token - mostrando tela de login');
-      // NÃO redirecionar - apenas marcar como não pronto
-      // O usuário verá a tela de loading e pode navegar manualmente
+    if (!isAuthenticated) {
+      toast.error('Faça login como bartender');
+      router.push('/login?returnTo=/staff/bar');
       return;
     }
-
-    console.warn('[BAR] ✅ Token presente, continuando com setup...');
 
     // Carregar dashboard inicial
     const loadDashboard = async () => {
@@ -86,42 +54,34 @@ export default function PainelBar() {
     };
 
     loadDashboard();
-    fetchSessions();
 
-    // Conectar ao Socket.IO
-    console.warn('🚨 [BAR] 🔌 Iniciando conexão Socket.IO...');
-    console.warn('[BAR] Conectando com token...');
-    socketService.connect(token);
-    console.warn('🚨 [BAR] 🏠 Entrando na room bar...');
-    socketService.joinBarRoom?.();
-    console.warn('🚨 [BAR] ✅ Setup do Socket.IO concluído');
+    // Conectar ao Socket.IO com token do store
+    if (token) {
+      socketService.connect(token);
+      socketService.joinBarRoom();
 
-    // Marcar como pronto para renderizar
-    setIsReady(true);
+      // Listener para novos pedidos
+      socketService.onOrderCreated((order) => {
+        console.log('🆕 Novo pedido recebido:', order);
+        toast.success(`Novo pedido #${order.orderNumber || order.id}`);
+        playNewOrder();
+        fetchDashboard();
+      });
 
-    // Listener para novos pedidos
-    socketService.onOrderCreated((order) => {
-      console.log('🆕 Novo pedido recebido:', order);
-      toast.success(`Novo pedido #${order.orderNumber || order.id}`);
-      playNewOrder();
-      // Recarregar dashboard para incluir novo pedido
-      fetchDashboard();
-    });
-
-    // Listener para atualização de status
-    socketService.onOrderUpdated((updatedOrder) => {
-      console.log('🔄 Pedido atualizado:', updatedOrder);
-      // Recarregar dashboard quando pedido é atualizado
-      fetchDashboard();
-    });
+      // Listener para atualização de status
+      socketService.onOrderUpdated((updatedOrder) => {
+        console.log('🔄 Pedido atualizado:', updatedOrder);
+        fetchDashboard();
+      });
+    }
 
     // Cleanup
     return () => {
-      socketService.leaveBarRoom?.();
+      socketService.leaveBarRoom();
       socketService.removeAllListeners('order_created');
       socketService.removeAllListeners('order_updated');
     };
-  }, []); // IMPORTANTE: Array vazio para executar apenas UMA VEZ ao montar o componente
+  }, [isAuthenticated, isHydrated, token, router, fetchDashboard, playNewOrder]);
 
   const handleStatusUpdate = async (orderId) => {
     try {
@@ -156,42 +116,9 @@ export default function PainelBar() {
     router.push('/login');
   };
 
-  const palette = getPalette();
-
-  // Mostrar loading/login screen enquanto verifica autenticação
-  if (!isReady) {
-    // Verificar se tem token para decidir mensagem
-    let hasToken = false;
-    if (typeof window !== 'undefined') {
-      try {
-        const authData = localStorage.getItem('flame-auth');
-        if (authData) {
-          const parsed = JSON.parse(authData);
-          hasToken = !!parsed?.state?.token;
-        }
-      } catch (e) { /* ignore */ }
-    }
-
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <Wine className="w-16 h-16 text-orange-500 mx-auto animate-pulse" />
-          {hasToken ? (
-            <p className="text-gray-400 mt-4">Carregando painel...</p>
-          ) : (
-            <>
-              <p className="text-gray-400 mt-4">Faça login para acessar o painel</p>
-              <button
-                onClick={() => router.push('/login')}
-                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-              >
-                Ir para Login
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    );
+  // Aguardar hydration do Zustand antes de renderizar
+  if (!isHydrated || !isAuthenticated) {
+    return null;
   }
 
   return (
@@ -208,35 +135,12 @@ export default function PainelBar() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Wine className="w-7 h-7" style={{ color: palette.primary }} />
+                  <Wine className="w-7 h-7" style={{ color: 'var(--theme-primary)' }} />
                   FLAME - BAR
                 </h1>
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    onClick={() => setActiveTab('drinks')}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      activeTab === 'drinks'
-                        ? 'text-white'
-                        : 'text-gray-400 bg-gray-800 hover:text-white'
-                    }`}
-                    style={activeTab === 'drinks' ? { background: palette.primary } : {}}
-                  >
-                    <Wine className="w-4 h-4 inline mr-1" />
-                    Bebidas
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('hookah')}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      activeTab === 'hookah'
-                        ? 'text-white'
-                        : 'text-gray-400 bg-gray-800 hover:text-white'
-                    }`}
-                    style={activeTab === 'hookah' ? { background: palette.primary } : {}}
-                  >
-                    <Flame className="w-4 h-4 inline mr-1" />
-                    Narguilé ({hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0})
-                  </button>
-                </div>
+                <p className="text-gray-400 text-sm mt-1">
+                  Fila de Bebidas
+                </p>
               </div>
 
               <div className="flex items-center gap-4">
@@ -296,8 +200,8 @@ export default function PainelBar() {
 
             <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-orange-400" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--theme-primary-20)' }}>
+                  <AlertTriangle className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
                 </div>
               </div>
               <p className="text-gray-400 text-sm mb-1">Atrasadas (&gt;15min)</p>
@@ -310,13 +214,19 @@ export default function PainelBar() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-orange-900/20 border-2 border-orange-500 rounded-xl p-6 mb-6 flex items-center gap-4"
+              className="rounded-xl p-6 mb-6 flex items-center gap-4"
+              style={{
+                background: 'var(--theme-primary-10)',
+                borderWidth: '2px',
+                borderStyle: 'solid',
+                borderColor: 'var(--theme-primary)'
+              }}
             >
-              <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center animate-pulse">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse" style={{ background: 'var(--theme-primary)' }}>
                 <AlertTriangle className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-orange-400 mb-1">
+                <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--theme-primary)' }}>
                   ⚠️ ATENÇÃO: {alerts.delayed.length} bebida(s) atrasada(s)
                 </h3>
                 <p className="text-gray-300">
@@ -326,12 +236,11 @@ export default function PainelBar() {
             </motion.div>
           )}
 
-          {/* Content based on active tab */}
-          {activeTab === 'drinks' && (
+          {/* Fila de Bebidas */}
           <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Wine className="w-6 h-6" style={{ color: palette.primary }} />
+                <Wine className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
                 Fila de Bebidas
               </h2>
               <span className="text-gray-400">
@@ -364,6 +273,7 @@ export default function PainelBar() {
                             order={order}
                             onStatusUpdate={handleStatusUpdate}
                             onTimerAlert={handleTimerAlert}
+                            userRole="bar"
                           />
                         ))}
                       </div>
@@ -382,6 +292,7 @@ export default function PainelBar() {
                             order={order}
                             onStatusUpdate={handleStatusUpdate}
                             onTimerAlert={handleTimerAlert}
+                            userRole="bar"
                           />
                         ))}
                       </div>
@@ -391,100 +302,6 @@ export default function PainelBar() {
               </div>
             )}
           </div>
-          )}
-
-          {/* Hookah Sessions Tab */}
-          {activeTab === 'hookah' && (
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                  <Flame className="w-6 h-6" style={{ color: palette.primary }} />
-                  Sessões de Narguilé
-                </h2>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1 text-green-400">
-                    <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    Ativas: {hookahSessions?.filter(s => s.status === 'active').length || 0}
-                  </span>
-                  <span className="flex items-center gap-1 text-yellow-400">
-                    <span className="w-2 h-2 bg-yellow-500 rounded-full" />
-                    Pausadas: {hookahSessions?.filter(s => s.status === 'paused').length || 0}
-                  </span>
-                </div>
-              </div>
-
-              {(!hookahSessions || hookahSessions.filter(s => s.status !== 'ended').length === 0) ? (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Flame className="w-10 h-10 text-gray-600" />
-                  </div>
-                  <p className="text-gray-400">Nenhuma sessão ativa</p>
-                  <p className="text-gray-500 text-sm mt-2">Sessões aparecem quando clientes pedem narguilé</p>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <AnimatePresence>
-                    {hookahSessions
-                      .filter(s => s.status === 'active' || s.status === 'paused')
-                      .map((session) => (
-                        <HookahSessionCard
-                          key={session.id}
-                          session={session}
-                          onCoalChange={registerCoalChange}
-                          onPause={pauseSession}
-                          onResume={resumeSession}
-                          onEnd={endSession}
-                          useThemeStore={useThemeStore}
-                        />
-                      ))}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Quick Actions for Hookah */}
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-4">Controles Rápidos</h3>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => {
-                      hookahSessions?.filter(s => s.status === 'active').forEach(s => registerCoalChange(s.id));
-                      toast.success('Carvão trocado em todas as sessões ativas!');
-                    }}
-                    disabled={!hookahSessions?.some(s => s.status === 'active')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: palette.primary }}
-                  >
-                    <Zap className="w-4 h-4" />
-                    Trocar Carvão (Todas)
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      hookahSessions?.filter(s => s.status === 'active').forEach(s => pauseSession(s.id));
-                      toast.success('Todas sessões pausadas!');
-                    }}
-                    disabled={!hookahSessions?.some(s => s.status === 'active')}
-                    className="flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Pause className="w-4 h-4" />
-                    Pausar Todas
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      hookahSessions?.filter(s => s.status === 'paused').forEach(s => resumeSession(s.id));
-                      toast.success('Todas sessões retomadas!');
-                    }}
-                    disabled={!hookahSessions?.some(s => s.status === 'paused')}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Play className="w-4 h-4" />
-                    Retomar Todas
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>

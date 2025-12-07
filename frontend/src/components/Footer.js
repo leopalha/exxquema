@@ -51,7 +51,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-neutral-900 border-t border-neutral-800">
+    <footer className="bg-gray-900 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -61,27 +61,27 @@ const Footer = () => {
               <FlameLogo size={45} />
             </Link>
 
-            <p className="text-neutral-400 text-sm mb-6 min-h-[60px] sm:min-h-[40px] transition-all duration-500">
+            <p className="text-gray-400 text-sm mb-6 min-h-[60px] sm:min-h-[40px] transition-all duration-500">
               {frasesFooter[fraseIndex]}
             </p>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-sm text-neutral-400">
+              <div className="flex items-center space-x-3 text-sm text-gray-400">
                 <MapPin className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
                 <span>Rua Arnaldo Quintela 19, Botafogo - RJ</span>
               </div>
 
-              <div className="flex items-center space-x-3 text-sm text-neutral-400">
+              <div className="flex items-center space-x-3 text-sm text-gray-400">
                 <Phone className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
                 <span>(21) 99554-6492</span>
               </div>
 
-              <div className="flex items-center space-x-3 text-sm text-neutral-400">
+              <div className="flex items-center space-x-3 text-sm text-gray-400">
                 <Mail className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0`} />
                 <span>contato@flamelounge.com.br</span>
               </div>
 
-              <div className="flex items-start space-x-3 text-sm text-neutral-400">
+              <div className="flex items-start space-x-3 text-sm text-gray-400">
                 <Clock className={`w-4 h-4 ${palette.textPrimary} flex-shrink-0 mt-0.5`} />
                 <div>
                   <div>Dom-Qui: 16h as 02h</div>
@@ -99,7 +99,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-neutral-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -116,7 +116,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-neutral-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -136,7 +136,7 @@ const Footer = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-neutral-800 hover:bg-[var(--theme-primary)] rounded-lg flex items-center justify-center text-neutral-400 hover:text-white transition-all duration-200 shadow-lg"
+                  className="w-10 h-10 bg-gray-800 hover:bg-[var(--theme-primary)] rounded-lg flex items-center justify-center text-gray-400 hover:text-white transition-all duration-200 shadow-lg"
                   aria-label={social.name}
                 >
                   <social.icon className="w-5 h-5" />
@@ -152,7 +152,7 @@ const Footer = () => {
                 <input
                   type="email"
                   placeholder="Seu e-mail"
-                  className="flex-1 min-w-0 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)]"
+                  className="flex-1 min-w-0 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)]"
                 />
                 <button className="px-4 py-2 text-white rounded-lg text-sm font-medium transition-all shadow-lg hover:opacity-90 whitespace-nowrap flex-shrink-0" style={{
                   background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))'
@@ -165,13 +165,13 @@ const Footer = () => {
         </div>
 
         {/* Bottom Footer */}
-        <div className="border-t border-neutral-800 py-6">
+        <div className="border-t border-gray-800 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-neutral-400 text-sm mb-4 md:mb-0">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
               {currentYear} FLAME Lounge Bar. Todos os direitos reservados.
             </div>
 
-            <div className="flex items-center space-x-6 text-sm text-neutral-400">
+            <div className="flex items-center space-x-6 text-sm text-gray-400">
               <span className="flex items-center gap-1">
                 Desenvolvido com
                 <span className={palette.textPrimary}>love</span>

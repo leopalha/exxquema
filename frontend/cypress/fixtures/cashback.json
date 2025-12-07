@@ -1,0 +1,83 @@
+{
+  "tiers": {
+    "bronze": {
+      "name": "Bronze",
+      "rate": 0.02,
+      "minSpent": 0,
+      "benefits": ["2% de cashback em todas as compras"]
+    },
+    "silver": {
+      "name": "Silver",
+      "rate": 0.05,
+      "minSpent": 500,
+      "benefits": ["5% de cashback", "Prioridade em reservas"]
+    },
+    "gold": {
+      "name": "Gold",
+      "rate": 0.08,
+      "minSpent": 2000,
+      "benefits": ["8% de cashback", "Prioridade em reservas", "Brindes exclusivos"]
+    },
+    "platinum": {
+      "name": "Platinum",
+      "rate": 0.10,
+      "minSpent": 5000,
+      "benefits": ["10% de cashback", "Acesso VIP", "Eventos exclusivos", "Brindes premium"]
+    }
+  },
+  "bonuses": {
+    "welcome": {
+      "amount": 10.00,
+      "description": "Bônus de boas-vindas"
+    },
+    "birthday": {
+      "bronze": 10.00,
+      "silver": 50.00,
+      "gold": 100.00,
+      "platinum": 200.00
+    }
+  },
+  "transactions": [
+    {
+      "id": "txn-1",
+      "type": "earned",
+      "amount": 8.50,
+      "description": "Cashback do pedido #1001",
+      "orderId": "order-1",
+      "createdAt": "2024-12-07T20:00:00.000Z"
+    },
+    {
+      "id": "txn-2",
+      "type": "used",
+      "amount": -15.00,
+      "description": "Usado no pedido #1002",
+      "orderId": "order-2",
+      "createdAt": "2024-12-06T19:30:00.000Z"
+    },
+    {
+      "id": "txn-3",
+      "type": "bonus",
+      "amount": 10.00,
+      "description": "Bônus de boas-vindas",
+      "createdAt": "2024-12-01T10:00:00.000Z"
+    }
+  ],
+  "userWithHighBalance": {
+    "id": "high-balance-user",
+    "nome": "Usuario Alto Saldo",
+    "email": "alto@flame.com",
+    "role": "cliente",
+    "loyaltyTier": "platinum",
+    "cashbackBalance": 500.00,
+    "totalSpent": 8500.00
+  },
+  "userWithLowBalance": {
+    "id": "low-balance-user",
+    "nome": "Usuario Baixo Saldo",
+    "email": "baixo@flame.com",
+    "role": "cliente",
+    "loyaltyTier": "bronze",
+    "cashbackBalance": 5.50,
+    "totalSpent": 150.00
+  }
+}
