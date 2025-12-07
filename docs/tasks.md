@@ -904,6 +904,399 @@ Frontend:
 
 ---
 
+---
+
+## 🔥 ROADMAP PRIORITÁRIO (Sprints 41-48) - NOVOS REQUISITOS
+
+> **Data**: 07/12/2024
+> **Origem**: Requisitos do cliente - funcionalidades críticas pendentes
+> **Prioridade**: P0-P1 (Bloqueadores de operação)
+
+---
+
+### SPRINT 41 - CADASTRO COMPLETO (CPF/ESTRANGEIRO/IDADE) ⚠️ P0
+
+**Objetivo**: Reformular cadastro com validações legais obrigatórias
+
+**Prioridade**: P0 (Bloqueador legal - venda de bebidas)
+**Estimativa**: 2-3 dias
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Campos Novos no Model User**
+   - `birthDate` (DATE, OBRIGATÓRIO)
+   - `foreignId` (STRING, alternativa ao CPF)
+   - `isBrazilian` (BOOLEAN, default true)
+   - Arquivo: `backend/src/models/User.js`
+
+2. [ ] **Migration para Novos Campos**
+   - Adicionar campos ao banco
+   - Arquivo: `backend/src/migrations/20251207_user_age_fields.js`
+
+3. [ ] **Validação de CPF Completa**
+   - Algoritmo de dígitos verificadores
+   - Não apenas formato
+   - Arquivo: `backend/src/utils/validators.js`
+
+4. [ ] **Validação de Idade 18+**
+   - Verificar birthDate >= 18 anos
+   - Bloquear cadastro se menor
+   - Mensagem: "Você precisa ter 18 anos ou mais"
+   - Arquivo: `backend/src/controllers/authController.js`
+
+5. [ ] **UI do Formulário de Cadastro**
+   - Toggle: Brasileiro / Estrangeiro
+   - Se brasileiro: CPF obrigatório + validação
+   - Se estrangeiro: ID estrangeiro obrigatório
+   - Data de nascimento com datepicker
+   - Checkbox: "Declaro ter 18 anos ou mais"
+   - Arquivo: `frontend/src/pages/register.js`
+
+6. [ ] **profileComplete Atualizado**
+   - Agora requer: nome + email + (cpf OU foreignId) + birthDate
+   - Arquivo: `backend/src/models/User.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── models/User.js (novos campos)
+├── migrations/20251207_user_age_fields.js (NOVO)
+├── controllers/authController.js (validações)
+├── utils/validators.js (CPF algoritmo)
+└── middlewares/validation.middleware.js (atualizar)
+
+Frontend:
+├── pages/register.js (refatorar formulário)
+├── pages/complete-profile.js (adicionar campos)
+└── components/DatePicker.js (se não existir)
+```
+
+#### Critérios de Aceitação:
+- [ ] CPF validado com algoritmo completo
+- [ ] Estrangeiros podem usar ID alternativo
+- [ ] Menores de 18 bloqueados
+- [ ] Mensagens de erro claras
+
+---
+
+### SPRINT 42 - TAXA DE SERVIÇO 10% ⚠️ P0
+
+**Objetivo**: Implementar taxa de serviço padrão removível
+
+**Prioridade**: P0 (Receita operacional)
+**Estimativa**: 1-2 dias
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Campos no Model Order**
+   - `serviceFee` (DECIMAL)
+   - `serviceFeeIncluded` (BOOLEAN, default true)
+   - Arquivo: `backend/src/models/Order.js`
+
+2. [ ] **Migration**
+   - Arquivo: `backend/src/migrations/20251207_service_fee.js`
+
+3. [ ] **Cálculo Automático no Backend**
+   - serviceFee = subtotal * 0.10
+   - Incluído por padrão
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+4. [ ] **UI no Carrinho/Checkout**
+   - Exibir taxa de serviço
+   - Botão discreto [x] para remover
+   - Modal de confirmação sutil
+   - "A taxa valoriza nossos colaboradores"
+   - Arquivo: `frontend/src/pages/checkout.js`
+
+5. [ ] **Recálculo de Totais**
+   - total = subtotal + serviceFee - discount
+   - Atualizar em tempo real
+   - Arquivo: `frontend/src/stores/cartStore.js`
+
+#### Critérios de Aceitação:
+- [ ] Taxa 10% incluída por padrão
+- [ ] Cliente pode remover de forma discreta
+- [ ] Modal de confirmação ao remover
+- [ ] Total recalculado corretamente
+
+---
+
+### SPRINT 43 - PAGAMENTO COM ATENDENTE ⚠️ P0
+
+**Objetivo**: Fluxo completo de pagamento dinheiro/cartão/divisão
+
+**Prioridade**: P0 (Operação básica de restaurante)
+**Estimativa**: 3-4 dias
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Novos Campos no Model Order**
+   - `paymentMethod` (ENUM: credit_card, debit_card, pix, cash, card_at_table, split)
+   - `paidViaApp` (BOOLEAN)
+   - `attendantPayment` (BOOLEAN)
+   - `splitPayments` (JSON)
+   - Arquivo: `backend/src/models/Order.js`
+
+2. [ ] **Opções de Pagamento no Checkout**
+   - Seção "Pagar pelo App" (crédito, débito, PIX)
+   - Seção "Pagar com Atendente" (dinheiro, cartão mesa, dividir)
+   - Arquivo: `frontend/src/pages/checkout.js`
+
+3. [ ] **Notificação para Atendente**
+   - Socket.IO quando cliente escolhe pagamento presencial
+   - Push notification para atendentes
+   - Exibir: mesa, pedido, valor, forma
+   - Arquivo: `backend/src/services/socket.service.js`
+
+4. [ ] **Painel de Pagamentos Pendentes (Atendente)**
+   - Lista de mesas aguardando pagamento
+   - Botão "Confirmar Pagamento Recebido"
+   - Calcular troco para dinheiro
+   - Arquivo: `frontend/src/pages/atendente/index.js`
+
+5. [ ] **Fluxo de Divisão de Conta**
+   - Escolher número de pessoas
+   - Dividir igualmente ou valores diferentes
+   - Registrar forma de pagamento de cada pessoa
+   - Confirmar quando todos pagaram
+   - Arquivo: `frontend/src/components/SplitBillModal.js` (NOVO)
+
+6. [ ] **Status pending_payment**
+   - Novo status para pedidos aguardando pagamento presencial
+   - Arquivo: `backend/src/services/orderStatus.service.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── models/Order.js (campos de pagamento)
+├── migrations/20251207_payment_methods.js (NOVO)
+├── controllers/orderController.js (confirmarPagamento)
+├── services/orderStatus.service.js (novo status)
+└── services/socket.service.js (notificação atendente)
+
+Frontend:
+├── pages/checkout.js (opções de pagamento)
+├── pages/atendente/index.js (painel pagamentos)
+├── components/SplitBillModal.js (NOVO)
+├── components/PaymentPendingCard.js (NOVO)
+└── stores/orderStore.js (status pending_payment)
+```
+
+#### Critérios de Aceitação:
+- [ ] Cliente escolhe forma de pagamento
+- [ ] Atendente notificado para ir à mesa
+- [ ] Divisão de conta funcional
+- [ ] Pagamento confirmado pelo atendente
+
+---
+
+### SPRINT 44 - CASHBACK INSTAGRAM ⚠️ P1
+
+**Objetivo**: Sistema de cashback via postagem no Instagram
+
+**Prioridade**: P1 (Marketing/Engajamento)
+**Estimativa**: 2-3 dias
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Campos no Model User**
+   - `instagramHandle` (STRING)
+   - `instagramPromoOptIn` (BOOLEAN)
+   - `lastInstagramPostDate` (DATE)
+   - Arquivo: `backend/src/models/User.js`
+
+2. [ ] **Campos no Model Order**
+   - `instagramPromoOptIn` (BOOLEAN)
+   - `instagramHandle` (STRING)
+   - `instagramCashbackPending` (BOOLEAN)
+   - `instagramCashbackConfirmed` (BOOLEAN)
+   - `instagramCashbackAmount` (DECIMAL)
+   - Arquivo: `backend/src/models/Order.js`
+
+3. [ ] **UI no Checkout**
+   - Seção "Ganhe 5% de cashback extra!"
+   - Campo para informar @instagram
+   - Checkbox "Quero participar"
+   - Exibir termos resumidos
+   - Exibir valor potencial de cashback
+   - Arquivo: `frontend/src/pages/checkout.js`
+
+4. [ ] **Verificação pelo Atendente**
+   - Ao entregar pedido, mostrar se cliente participa
+   - Exibir @ do Instagram
+   - Instruções: pedir para mostrar postagem
+   - Botões: [Confirmou] [Não postou]
+   - Arquivo: `frontend/src/pages/atendente/index.js`
+
+5. [ ] **Endpoints de Confirmação**
+   - `POST /orders/:id/instagram-confirm`
+   - `POST /orders/:id/instagram-reject`
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+6. [ ] **Creditar Cashback Instagram**
+   - Calcular 5% do valor do pedido
+   - Verificar limite de 1x por dia
+   - Adicionar via user.addCashback()
+   - Notificar cliente
+   - Arquivo: `backend/src/services/cashback.service.js`
+
+#### Arquivos Envolvidos:
+```
+Backend:
+├── models/User.js (campos Instagram)
+├── models/Order.js (campos Instagram)
+├── migrations/20251207_instagram_cashback.js (NOVO)
+├── controllers/orderController.js (endpoints)
+└── services/cashback.service.js (creditar)
+
+Frontend:
+├── pages/checkout.js (opt-in Instagram)
+├── pages/atendente/index.js (verificação)
+└── components/InstagramCashbackSection.js (NOVO)
+```
+
+#### Critérios de Aceitação:
+- [ ] Cliente opta por participar no checkout
+- [ ] Atendente verifica postagem na entrega
+- [ ] Cashback 5% creditado automaticamente
+- [ ] Limite 1x por dia respeitado
+
+---
+
+### SPRINT 45 - PAINEL RETIRADA NO BAR ⚠️ P1
+
+**Objetivo**: Painel para exibir pedidos prontos para retirada
+
+**Prioridade**: P1 (Operação balcão)
+**Estimativa**: 1 dia
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Filtro de Pedidos Balcão**
+   - Pedidos com tableId = null e status = ready
+   - Arquivo: `backend/src/controllers/staffController.js`
+
+2. [ ] **Tab "Retirada" no Bar**
+   - Lista de pedidos prontos
+   - Número do pedido grande e visível
+   - Nome do cliente
+   - Lista de itens
+   - Tempo desde que ficou pronto
+   - Arquivo: `frontend/src/pages/staff/bar.js`
+
+3. [ ] **Botão "Chamar Cliente"**
+   - Enviar push notification
+   - Enviar SMS
+   - Arquivo: `backend/src/controllers/staffController.js`
+
+4. [ ] **Botão "Entregue"**
+   - Marcar pedido como delivered
+   - Remover da lista
+   - Arquivo: `frontend/src/pages/staff/bar.js`
+
+#### Critérios de Aceitação:
+- [ ] Pedidos de balcão aparecem no painel
+- [ ] Cliente pode ser chamado via push/SMS
+- [ ] Entrega confirmada remove da lista
+
+---
+
+### SPRINT 46 - FIX IMAGENS CARDÁPIO 🔧 P0
+
+**Objetivo**: Corrigir exibição de imagens de produtos
+
+**Prioridade**: P0 (Bug crítico de UX)
+**Estimativa**: 0.5 dia
+**Dependências**: Nenhuma
+
+#### Problema Identificado:
+O `next.config.js` não inclui o domínio do Railway nas imagens permitidas.
+
+#### Tarefas:
+1. [ ] **Adicionar Domínio Railway**
+   - `backend-production-28c3.up.railway.app`
+   - Arquivo: `frontend/next.config.js`
+
+2. [ ] **Usar remotePatterns (Next 13+)**
+   - Migrar de `domains` para `remotePatterns`
+   - Mais flexível para subdomínios
+   - Arquivo: `frontend/next.config.js`
+
+3. [ ] **Fallback para Imagens Inválidas**
+   - onError no Image component
+   - Mostrar placeholder
+   - Arquivo: `frontend/src/components/ProductCard.js`
+
+#### Arquivo a Editar:
+```javascript
+// next.config.js
+images: {
+  remotePatterns: [
+    { protocol: 'https', hostname: '**.railway.app' },
+    { protocol: 'https', hostname: 'images.unsplash.com' },
+    { protocol: 'https', hostname: 'source.unsplash.com' },
+  ]
+}
+```
+
+---
+
+### SPRINT 47 - ACOMPANHAMENTO DE PEDIDO MELHORADO ⚠️ P1
+
+**Objetivo**: Timeline detalhada do status do pedido
+
+**Prioridade**: P1 (UX Cliente)
+**Estimativa**: 1 dia
+**Dependências**: Nenhuma
+
+#### Tarefas:
+1. [ ] **Timeline Visual**
+   - Todos os status com timestamps
+   - Indicador do status atual
+   - Animação de progresso
+   - Arquivo: `frontend/src/pages/pedido/[id].js`
+
+2. [ ] **Detalhes do Pedido**
+   - Lista de itens com imagens
+   - Valores individuais
+   - Desconto aplicado (se houver)
+   - Taxa de serviço
+   - Total final
+   - Arquivo: `frontend/src/components/OrderDetails.js`
+
+3. [ ] **Botão "Preciso de Ajuda"**
+   - Chamar atendente via Socket
+   - Notificar com mesa e pedido
+   - Arquivo: `frontend/src/pages/pedido/[id].js`
+
+---
+
+### SPRINT 48 - NOTIFICAÇÃO DE CASHBACK ⚠️ P2
+
+**Objetivo**: Notificar cliente quando recebe cashback
+
+**Prioridade**: P2 (Engajamento)
+**Estimativa**: 0.5 dia
+**Dependências**: Sprint 44
+
+#### Tarefas:
+1. [ ] **Push de Cashback Recebido**
+   - Após pedido entregue
+   - Após confirmação Instagram
+   - Após bônus automático
+   - Arquivo: `backend/src/services/push.service.js`
+
+2. [ ] **SMS de Cashback**
+   - Opcional, configurável
+   - Arquivo: `backend/src/services/sms.service.js`
+
+3. [ ] **Histórico na Tela de Cashback**
+   - Listar últimos créditos
+   - Mostrar origem (pedido, instagram, bônus)
+   - Arquivo: `frontend/src/pages/cashback.js`
+
+---
+
 ## 📊 RESUMO DO ROADMAP
 
 | Sprint | Nome | Prioridade | Estimativa | Status |
@@ -918,12 +1311,49 @@ Frontend:
 | 38 | QR Code e Happy Hour | P2 | 1-2 dias | Pendente |
 | 39 | Venda Manual no Caixa | P2 | 1 dia | Pendente |
 | 40 | Testes E2E e Documentação | P1 | 2-3 dias | Pendente |
+| **41** | **Cadastro CPF/Idade** | **P0** | 2-3 dias | **🔴 Pendente** |
+| **42** | **Taxa de Serviço 10%** | **P0** | 1-2 dias | **🔴 Pendente** |
+| **43** | **Pagamento com Atendente** | **P0** | 3-4 dias | **🔴 Pendente** |
+| **44** | **Cashback Instagram** | **P1** | 2-3 dias | **🟡 Pendente** |
+| **45** | **Painel Retirada Bar** | **P1** | 1 dia | **🟡 Pendente** |
+| **46** | **Fix Imagens Cardápio** | **P0** | 0.5 dia | **🔴 Pendente** |
+| **47** | **Acompanhamento Pedido** | **P1** | 1 dia | **🟡 Pendente** |
+| **48** | **Notificação Cashback** | **P2** | 0.5 dia | Pendente |
 
-**Total estimado**: 15-22 dias de desenvolvimento
+**Total estimado (31-40)**: 15-22 dias
+**Total estimado (41-48)**: 12-16 dias
+**TOTAL GERAL**: 27-38 dias
 
 ---
 
-## 🎯 ORDEM DE EXECUÇÃO SUGERIDA
+## 🎯 ORDEM DE EXECUÇÃO SUGERIDA (ATUALIZADA)
+
+### 🚨 PRIORIDADE MÁXIMA (P0 - Fazer PRIMEIRO!)
+
+**Sprint 46** → Fix Imagens Cardápio (0.5 dia)
+- Bug crítico que afeta todos os clientes
+
+**Sprint 41** → Cadastro CPF/Idade (2-3 dias)
+- Bloqueador LEGAL - venda de bebidas para menores
+
+**Sprint 42** → Taxa de Serviço 10% (1-2 dias)
+- Receita operacional básica
+
+**Sprint 43** → Pagamento com Atendente (3-4 dias)
+- Fluxo básico de restaurante
+
+### 🟡 ALTA PRIORIDADE (P1)
+
+**Sprint 44** → Cashback Instagram (2-3 dias)
+- Marketing e engajamento
+
+**Sprint 45** → Painel Retirada Bar (1 dia)
+- Operação de balcão
+
+**Sprint 47** → Acompanhamento Pedido (1 dia)
+- UX do cliente
+
+### 📋 SPRINTS ORIGINAIS (31-40)
 
 **Fase 1 - Essenciais (Sprints 31, 33)**
 - Ficha técnica + Alertas push

@@ -77,7 +77,9 @@
 | Pedido Balcão | Retirada no balcão | P0 | ✅ | `tableId = null` no pedido |
 | Reserva Mesa | Agendar mesa antecipada | P1 | ✅ | `reservationController`, `reservationStore`, `/reservas` |
 | Narguilé | Solicitar, escolher sabor | P1 | ✅ | `hookahController`, `hookahStore` |
-| Pagamento | Cartão, PIX, Dinheiro | P0 | ✅ | `payment.controller`, `payment.service` (Stripe) |
+| Pagamento | Cartão Crédito/Débito, PIX, Dinheiro, Cartão na Mesa | P0 | ⚠️ | `payment.controller`, `payment.service` (Stripe) - **FLUXO COMPLETO PENDENTE** |
+| Taxa de Serviço | 10% incluída por padrão (removível) | P0 | ❌ | **NÃO IMPLEMENTADO** |
+| Divisão de Conta | Atendente vai à mesa dividir | P1 | ❌ | **NÃO IMPLEMENTADO** |
 | Acompanhamento | Status em tempo real | P0 | ✅ | `socket.service`, `socket.js`, `/pedido/[id]` |
 | Histórico | Pedidos anteriores | P1 | ✅ | `orderController.getUserOrders()`, `/pedidos` |
 | Avaliação | Avaliar pedido | P2 | ✅ | `orderController.rateOrder()`, `/avaliacao/[id]` |
@@ -118,6 +120,226 @@ Notificação "Pedido Pronto" → Retira no balcão
 
 ---
 
+### 2.1.0.1 TAXA DE SERVIÇO (10%)
+
+**Conceito:**
+A taxa de serviço de 10% é **sempre incluída por padrão** em todos os pedidos, cobrindo o serviço prestado pelos funcionários.
+
+**Regras:**
+- Taxa de 10% calculada sobre o subtotal (antes de descontos)
+- Exibida de forma clara no carrinho e checkout
+- Cliente pode remover (de forma sutil/implícita)
+- Não é obrigatória (lei brasileira não obriga)
+
+**Apresentação no Checkout:**
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  RESUMO DO PEDIDO                                                    │
+│                                                                     │
+│  Subtotal:                                    R$ 100,00             │
+│  Taxa de serviço (10%):                       R$ 10,00    [Remover] │
+│  ─────────────────────────────────────────────────────────          │
+│  TOTAL:                                       R$ 110,00             │
+│                                                                     │
+│  ℹ️ A taxa de serviço é opcional e valoriza nossos colaboradores   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Botão "Remover":**
+- Pequeno, discreto (texto link, não botão destacado)
+- Ao clicar: modal de confirmação sutil
+- Mensagem: "A taxa de serviço ajuda a valorizar nosso time. Deseja realmente remover?"
+- Botões: [Manter taxa] [Remover]
+
+**Campos no Order:**
+```javascript
+{
+  subtotal: Decimal,          // Valor dos itens
+  serviceFee: Decimal,        // Valor da taxa (10% ou 0)
+  serviceFeeIncluded: Boolean, // Se taxa foi mantida
+  total: Decimal              // subtotal + serviceFee - descontos
+}
+```
+
+---
+
+### 2.1.0.2 FORMAS DE PAGAMENTO (COMPLETO)
+
+**Formas Disponíveis:**
+
+| Forma | Via Plataforma | Ação do Atendente | Status |
+|-------|----------------|-------------------|--------|
+| Cartão de Crédito | ✅ Stripe | Nenhuma | ⚠️ Parcial |
+| Cartão de Débito | ✅ Stripe | Nenhuma | ⚠️ Parcial |
+| PIX | ✅ Stripe | Nenhuma | ⚠️ Parcial |
+| Dinheiro | ❌ | Notificado para ir à mesa | ❌ Não implementado |
+| Cartão na Mesa | ❌ | Notificado para ir à mesa com máquina | ❌ Não implementado |
+| Dividir Conta | ❌ | Notificado para ir à mesa | ❌ Não implementado |
+
+**Fluxo de Pagamento Completo:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CHECKOUT - PAGAMENTO                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Como você quer pagar?                                              │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ 💳 PAGAR PELO APP (Mais rápido!)                            │    │
+│  │                                                             │    │
+│  │   ○ Cartão de Crédito                                       │    │
+│  │   ○ Cartão de Débito                                        │    │
+│  │   ● PIX (Recomendado)                                       │    │
+│  │                                                             │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ 🙋 PAGAR COM ATENDENTE                                      │    │
+│  │                                                             │    │
+│  │   ○ Dinheiro                                                │    │
+│  │     (Atendente irá até sua mesa)                            │    │
+│  │                                                             │    │
+│  │   ○ Cartão na Mesa                                          │    │
+│  │     (Atendente levará a máquina)                            │    │
+│  │                                                             │    │
+│  │   ○ Dividir Conta                                           │    │
+│  │     (Atendente ajudará na divisão)                          │    │
+│  │                                                             │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  [Confirmar Pedido]                                                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Fluxo "Pagar com Atendente":**
+
+```
+Cliente seleciona "Dinheiro" ou "Cartão na Mesa" ou "Dividir Conta"
+    ↓
+Pedido criado com status: pending_payment
+    ↓
+NOTIFICAÇÃO PUSH/SOCKET para ATENDENTE:
+┌─────────────────────────────────────────────────────────────────────┐
+│ 🔔 PAGAMENTO NA MESA                                                │
+│                                                                     │
+│ Mesa 07 │ Pedido #0127 │ R$ 110,00                                  │
+│                                                                     │
+│ Forma de pagamento: DINHEIRO / CARTÃO / DIVIDIR                     │
+│                                                                     │
+│ Cliente aguardando!                                                 │
+│                                                                     │
+│ [Ir para mesa]                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+    ↓
+Atendente vai à mesa
+    ↓
+Recebe pagamento (máquina, dinheiro, divide conta)
+    ↓
+Confirma no app: [Pagamento Recebido]
+    ↓
+Pedido muda para: confirmed → vai para preparo
+```
+
+**Fluxo "Dividir Conta":**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DIVISÃO DE CONTA                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  Painel do Atendente:                                               │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ Mesa 07 │ Dividir Conta                                     │    │
+│  │                                                             │    │
+│  │ Total: R$ 220,00                                            │    │
+│  │                                                             │    │
+│  │ Dividir por:                                                │    │
+│  │ ○ Partes iguais: [2] [3] [4] [5] [6]                       │    │
+│  │   R$ 110,00 cada (2 pessoas)                                │    │
+│  │                                                             │    │
+│  │ ○ Valor personalizado                                       │    │
+│  │   Pessoa 1: R$ [____]  [Crédito] [Débito] [PIX] [Dinheiro]  │    │
+│  │   Pessoa 2: R$ [____]  [Crédito] [Débito] [PIX] [Dinheiro]  │    │
+│  │   + Adicionar pessoa                                        │    │
+│  │                                                             │    │
+│  │ Restante: R$ 0,00                                           │    │
+│  │                                                             │    │
+│  │ [Confirmar Divisão]                                         │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  O atendente registra cada pagamento recebido                       │
+│  Quando todos pagaram → Pedido confirmado                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Campos no Order:**
+```javascript
+{
+  paymentMethod: ENUM('credit_card', 'debit_card', 'pix', 'cash',
+                      'card_at_table', 'split'),
+  paymentStatus: ENUM('pending', 'processing', 'paid', 'failed', 'refunded'),
+  paidViaApp: Boolean,           // true = processado via Stripe
+  attendantPayment: Boolean,     // true = atendente recebeu na mesa
+  splitPayments: JSON,           // Array de pagamentos se dividido
+  // splitPayments: [
+  //   { amount: 110, method: 'credit_card', paidAt: Date },
+  //   { amount: 110, method: 'cash', paidAt: Date }
+  // ]
+}
+```
+
+---
+
+### 2.1.0.3 PAINEL DO BAR (Retirada Balcão)
+
+Quando o cliente escolhe "Retirar no Balcão", precisa haver um painel no bar exibindo os pedidos prontos para retirada.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PAINEL DO BAR - RETIRADA                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  PEDIDOS PRONTOS PARA RETIRADA                                      │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ #0127 │ JOÃO SILVA                                          │    │
+│  │                                                             │    │
+│  │ • 2x Caipirinha                                             │    │
+│  │ • 1x Cerveja Artesanal                                      │    │
+│  │ • 1x Porção de Fritas                                       │    │
+│  │                                                             │    │
+│  │ Pronto há: 2 min                                            │    │
+│  │                                                             │    │
+│  │ [Chamar Cliente] [Entregue]                                 │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ #0128 │ MARIA SANTOS                                        │    │
+│  │                                                             │    │
+│  │ • 1x Gin Tônica                                             │    │
+│  │                                                             │    │
+│  │ Pronto há: < 1 min                                          │    │
+│  │                                                             │    │
+│  │ [Chamar Cliente] [Entregue]                                 │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Funcionalidades:**
+- Exibe número do pedido bem visível
+- Nome do cliente
+- Lista de itens
+- Tempo desde que ficou pronto
+- Botão para chamar cliente (envia notificação push)
+- Botão para marcar como entregue
+
+---
+
 ### 2.1.1 MODELO DE USUÁRIO (User.js)
 
 #### Campos Completos do Modelo
@@ -128,10 +350,15 @@ O modelo User é a entidade central do sistema. Abaixo está o mapeamento **COMP
 |-------|------|-------------|---------|-----------|
 | `id` | UUID | ✅ | auto | Identificador único |
 | `nome` | STRING(100) | ✅ | - | Nome completo (2-100 chars) |
-| `email` | STRING | ❌ | null | Email único (pode ser null para cadastro por celular) |
+| `email` | STRING | ✅ | - | Email único (OBRIGATÓRIO para pedidos) |
 | `celular` | STRING(20) | ✅ | - | Celular único formato +55XXXXXXXXXXX |
-| `cpf` | STRING(14) | ❌ | null | CPF formato 000.000.000-00 (opcional) |
+| `cpf` | STRING(14) | ⚠️ Condicional | null | CPF validado (obrigatório para brasileiros) |
+| `foreignId` | STRING(50) | ⚠️ Condicional | null | Número de identificação para estrangeiros (passaporte/RNE) |
+| `birthDate` | DATE | ✅ | - | Data de nascimento (OBRIGATÓRIO - verificação 18+) |
 | `password` | STRING | ❌ | null | Hash bcrypt (pode ser null para SMS-only) |
+| `instagramPromoOptIn` | BOOLEAN | ✅ | false | Aceitou participar do programa de cashback via Instagram |
+| `instagramHandle` | STRING(50) | ❌ | null | @ do Instagram do cliente |
+| `lastInstagramPostDate` | DATE | ❌ | null | Última data que postou para cashback Instagram |
 | `role` | ENUM | ✅ | 'cliente' | Papel: cliente, atendente, cozinha, bar, caixa, gerente, admin |
 | `isActive` | BOOLEAN | ✅ | true | Conta ativa |
 | `emailVerified` | BOOLEAN | ✅ | false | Email verificado |
@@ -488,16 +715,26 @@ GET    /api/auth/debug-sms/:celular → Debug: ver código SMS
 **Email:**
 - Normalizado para lowercase
 - Único no sistema
-- Não obrigatório para cadastro por celular
+- OBRIGATÓRIO para fazer pedidos (perfil completo)
 
-**CPF:**
-- Formato: 000.000.000-00
-- Opcional
-- Único no sistema (se fornecido)
-- Validação de formato (não de dígitos verificadores)
+**CPF ou Identificação Estrangeira:**
+- CPF obrigatório para brasileiros (formato: 000.000.000-00)
+- Validação completa de CPF (algoritmo de dígitos verificadores)
+- Estrangeiros: número de identificação alternativo (passaporte, RNE)
+- Usuário escolhe: "Sou brasileiro" ou "Sou estrangeiro"
+- Se brasileiro → CPF obrigatório e validado
+- Se estrangeiro → foreignId obrigatório (sem validação específica)
+
+**Data de Nascimento:**
+- OBRIGATÓRIO para todos os usuários
+- Verificação de idade mínima: 18 anos
+- Motivo legal: venda de bebidas alcoólicas
+- Formato: DD/MM/AAAA
+- Bloqueia cadastro se menor de 18 anos
+- Mensagem: "Você precisa ter 18 anos ou mais para utilizar nossos serviços"
 
 **profileComplete:**
-- `true` se: nome preenchido E email preenchido E (profileComplete marcado OU authProvider === 'google')
+- `true` se: nome + email + (cpf OU foreignId) + birthDate (18+) + celular verificado
 - Bloqueia criação de pedidos/reservas se `false`
 
 #### Segurança
@@ -1024,6 +1261,122 @@ O sistema de fidelidade funciona com **cashback em dinheiro (R$)** ao invés de 
 
 - Um job diário expira saldos de cashback que ficaram **90 dias** sem novas transações de ganho (`earned`) ou bônus (`bonus`).
 - A expiração gera uma transação `expired` em `CashbackHistory` e zera o saldo do usuário.
+
+---
+
+#### 🔥 CASHBACK INSTAGRAM (NOVO!)
+
+**Conceito:**
+Clientes que concordarem em postar uma foto do pedido no Instagram marcando **@flamelounge_** ganham **5% de cashback extra** naquele pedido.
+
+**Regras do Programa:**
+- Máximo de **5% de cashback** via Instagram (não 10%)
+- Limite de **1 postagem por dia** por cliente
+- O cliente deve concordar com os termos no checkout
+- Atendente deve verificar a postagem na entrega do pedido
+- O cashback só é creditado após confirmação do atendente
+
+**Fluxo Completo:**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CASHBACK INSTAGRAM FLOW                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  CHECKOUT (Cliente):                                                │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ 🔥 Ganhe 5% de cashback extra!                                │  │
+│  │                                                                │  │
+│  │ Ao receber seu pedido, poste uma foto no Instagram            │  │
+│  │ e marque @flamelounge_ para ganhar 5% de cashback.            │  │
+│  │                                                                │  │
+│  │ Termos:                                                        │  │
+│  │ • A postagem deve ser feita em até 1 hora após a entrega      │  │
+│  │ • Marque @flamelounge_ na foto ou stories                     │  │
+│  │ • Mostrar o pedido de forma clara                             │  │
+│  │ • O atendente verificará sua postagem na entrega              │  │
+│  │ • Limite de 1 postagem por dia                                │  │
+│  │                                                                │  │
+│  │ Seu @Instagram: [@_______________]                            │  │
+│  │                                                                │  │
+│  │ [✓] Aceito participar do programa Instagram Cashback          │  │
+│  │                                                                │  │
+│  │ Você poderá ganhar: R$ X,XX de cashback extra                 │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                       │                                             │
+│                       ▼                                             │
+│  PEDIDO CRIADO com:                                                │
+│  ├── instagramPromoOptIn: true                                     │
+│  ├── instagramHandle: "@usuario"                                   │
+│  └── instagramCashbackPending: true                                │
+│                       │                                             │
+│                       ▼                                             │
+│  ENTREGA (Atendente):                                              │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ Pedido #0127 │ Mesa 07                                        │  │
+│  │                                                                │  │
+│  │ 🔔 CLIENTE PARTICIPA DO INSTAGRAM CASHBACK                    │  │
+│  │                                                                │  │
+│  │ Instagram: @usuario_cliente                                    │  │
+│  │                                                                │  │
+│  │ Instrução: Peça para o cliente mostrar a postagem             │  │
+│  │ no Instagram com a marcação @flamelounge_                     │  │
+│  │                                                                │  │
+│  │ [ ] Cliente postou e marcou corretamente                      │  │
+│  │                                                                │  │
+│  │ [Confirmar Postagem] [Cliente não postou]                     │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                       │                                             │
+│           ┌───────────┴───────────┐                                │
+│           │                       │                                │
+│           ▼                       ▼                                │
+│     Confirmou                Não postou                            │
+│           │                       │                                │
+│           ▼                       ▼                                │
+│  ┌─────────────────┐    ┌─────────────────┐                       │
+│  │ Credita 5%      │    │ Sem cashback    │                       │
+│  │ cashback extra  │    │ Instagram       │                       │
+│  │                 │    │                 │                       │
+│  │ Notifica cliente│    │ Pedido normal   │                       │
+│  └─────────────────┘    └─────────────────┘                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Campos no Order:**
+```javascript
+{
+  // ... outros campos
+  instagramPromoOptIn: Boolean,      // Cliente aceitou participar
+  instagramHandle: String,           // @ do Instagram
+  instagramCashbackPending: Boolean, // Aguardando verificação
+  instagramCashbackConfirmed: Boolean, // Atendente confirmou
+  instagramCashbackAmount: Decimal   // Valor do cashback Instagram
+}
+```
+
+**Campos no User:**
+```javascript
+{
+  // ... outros campos
+  instagramPromoOptIn: Boolean,      // Preferência geral do usuário
+  instagramHandle: String,           // @ salvo do usuário
+  lastInstagramPostDate: Date        // Última postagem (para limite diário)
+}
+```
+
+**Endpoints:**
+```
+POST /api/orders/:id/instagram-confirm  → Atendente confirma postagem
+POST /api/orders/:id/instagram-reject   → Cliente não postou
+```
+
+**Notificação ao Cliente:**
+Quando o cashback Instagram é creditado:
+```
+🎉 Você ganhou R$ X,XX de cashback pela sua postagem no Instagram!
+Obrigado por compartilhar a experiência FLAME! 🔥
+```
 
 #### Modelo de Dados
 
