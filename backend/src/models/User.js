@@ -338,6 +338,17 @@ User.init({
     type: DataTypes.INTEGER,
     defaultValue: 0,
     comment: 'Total de indicações bem-sucedidas'
+  },
+  // Sprint 41 - Cadastro Internacional
+  countryCode: {
+    type: DataTypes.STRING(2),
+    allowNull: true,
+    comment: 'Código ISO 3166-1 alpha-2 do país (ex: BR, US, PT)'
+  },
+  foreignId: {
+    type: DataTypes.STRING(30),
+    allowNull: true,
+    comment: 'Documento de identidade para estrangeiros (passaporte, RNE, etc.)'
   }
 }, {
   sequelize,

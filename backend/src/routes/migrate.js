@@ -944,6 +944,114 @@ router.post('/add-order-timeline-fields', async (req, res) => {
 });
 
 
+// Add Instagram Cashback table (Sprint 44)
+router.post('/add-instagram-cashback-table', async (req, res) => {
+  try {
+    // Check if table exists
+    const [tables] = await sequelize.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'instagram_cashbacks';
+    `);
+
+    if (tables.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'Tabela instagram_cashbacks já existe',
+        alreadyMigrated: true
+      });
+    }
+
+    // Create table
+    await sequelize.query(`
+      CREATE TABLE "instagram_cashbacks" (
+        "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "userId" UUID NOT NULL REFERENCES "users"("id"),
+        "orderId" UUID NOT NULL UNIQUE REFERENCES "orders"("id"),
+        "instagramPostUrl" VARCHAR(500) NOT NULL,
+        "cashbackAmount" DECIMAL(10, 2) NOT NULL,
+        "status" VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+        "expiresAt" TIMESTAMPTZ NOT NULL,
+        "approvedBy" UUID REFERENCES "users"("id"),
+        "approvedAt" TIMESTAMPTZ,
+        "rejectedBy" UUID REFERENCES "users"("id"),
+        "rejectedAt" TIMESTAMPTZ,
+        "rejectionReason" VARCHAR(500),
+        "createdAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX "idx_instagram_cashbacks_userId" ON "instagram_cashbacks"("userId");
+      CREATE INDEX "idx_instagram_cashbacks_status" ON "instagram_cashbacks"("status");
+    `);
+
+    res.status(200).json({
+      success: true,
+      message: 'Tabela instagram_cashbacks criada com sucesso',
+      migrated: true
+    });
+  } catch (error) {
+    console.error('Erro na migração instagram_cashbacks:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao criar tabela',
+      error: error.message
+    });
+  }
+});
+
+// Add user identity fields (Sprint 41 - Cadastro Internacional)
+router.post('/add-user-identity-fields', async (req, res) => {
+  try {
+    const columnsToAdd = [
+      { name: 'countryCode', type: 'VARCHAR(2)', comment: 'Código ISO 3166-1 alpha-2 do país' },
+      { name: 'foreignId', type: 'VARCHAR(30)', comment: 'Documento de identidade para estrangeiros' }
+    ];
+
+    const results = [];
+
+    for (const col of columnsToAdd) {
+      const [existing] = await sequelize.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'users' AND column_name = '${col.name}';
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already_exists' });
+        continue;
+      }
+
+      await sequelize.query(`
+        ALTER TABLE "users" ADD COLUMN "${col.name}" ${col.type};
+      `);
+
+      results.push({ column: col.name, status: 'added' });
+    }
+
+    // Set countryCode = 'BR' for existing users with celular starting with +55
+    const [updated] = await sequelize.query(`
+      UPDATE "users" SET "countryCode" = 'BR'
+      WHERE "countryCode" IS NULL AND "celular" LIKE '+55%'
+      RETURNING id;
+    `);
+
+    res.status(200).json({
+      success: true,
+      message: 'Colunas de identidade internacional verificadas/adicionadas',
+      results,
+      braziliansMarked: updated.length
+    });
+  } catch (error) {
+    console.error('Erro na migração user identity fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
 // Add referral fields to users table (Sprint 29 - Bônus de Indicação)
 router.post('/add-referral-fields', async (req, res) => {
   try {

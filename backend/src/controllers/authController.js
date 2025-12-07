@@ -6,9 +6,10 @@ const { Op } = require('sequelize');
 
 class AuthController {
   // Cadastro de usuário - Etapa 1: Dados básicos
+  // Sprint 41: Adicionado suporte a birthDate, countryCode, foreignId
   async register(req, res) {
     try {
-      const { nome, cpf, email, celular, password } = req.body;
+      const { nome, cpf, email, celular, password, birthDate, countryCode, foreignId } = req.body;
 
       // Verificar se já existe usuário com CPF, email ou celular
       const whereConditions = [
@@ -58,12 +59,28 @@ class AuthController {
         });
       }
 
+      // Validar idade mínima (18 anos)
+      if (birthDate) {
+        const birth = new Date(birthDate);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          return res.status(400).json({
+            success: false,
+            message: 'Você deve ter pelo menos 18 anos para se cadastrar'
+          });
+        }
+      }
+
       // Gerar código SMS
       const smsCode = smsService.generateSMSCode();
       const smsCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
 
       // Criar usuário (ainda não verificado)
-      // Remover cpf do objeto se for undefined ou vazio
       const userData = {
         nome,
         email,
@@ -78,9 +95,20 @@ class AuthController {
         role: 'cliente'
       };
 
-      // Adicionar CPF apenas se fornecido
+      // Adicionar CPF apenas se fornecido (brasileiros)
       if (cpf) {
         userData.cpf = cpf;
+      }
+
+      // Adicionar campos Sprint 41
+      if (birthDate) {
+        userData.birthDate = birthDate;
+      }
+      if (countryCode) {
+        userData.countryCode = countryCode;
+      }
+      if (foreignId) {
+        userData.foreignId = foreignId;
       }
 
       const user = await User.create(userData);
