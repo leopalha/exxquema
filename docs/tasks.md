@@ -388,6 +388,103 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51SVcch...
 
 ---
 
+### SPRINT 28 - PUSH NOTIFICATIONS ✅ COMPLETA
+
+**Objetivo**: Ativar Push Notifications para usuários e staff
+
+**Prioridade**: P1 (Engajamento/Operação)
+**Status**: ✅ COMPLETA (07/12/2024)
+
+#### Realizações da Sprint 28:
+1. ✅ **Service Worker Reativado**: `usePWA.js` agora registra SW
+2. ✅ **VAPID Keys Configuradas**: Chaves em variáveis de ambiente
+3. ✅ **Autorização em Rotas Admin**:
+   - `POST /push/send` - admin, gerente
+   - `POST /push/broadcast` - admin only
+   - `DELETE /push/cleanup` - admin only
+4. ✅ **Rotas Públicas**:
+   - `GET /push/vapid-key` - público
+   - Subscription e test - qualquer autenticado
+
+---
+
+### SPRINT 29 - SISTEMA DE INDICAÇÃO + BÔNUS AVALIAÇÃO ✅ COMPLETA
+
+**Objetivo**: Implementar referral system e bônus por avaliação
+
+**Prioridade**: P1 (Marketing/Fidelização)
+**Status**: ✅ COMPLETA (07/12/2024)
+
+#### Realizações da Sprint 29:
+1. ✅ **Sistema de Indicação**:
+   - Campos: referralCode, referredBy, referralBonusGiven, totalReferrals
+   - Referido recebe R$10 ao completar perfil
+   - Quem indicou recebe R$15 após primeira compra do indicado
+   - Códigos únicos formato FLAME#### gerados automaticamente
+2. ✅ **Job de Processamento**: `referralBonus.job.js`
+   - Valida código de indicação
+   - Processa bônus de novos usuários
+   - Processa bônus de referrer após primeira compra
+3. ✅ **Bônus de Avaliação**: R$2 por avaliação de pedido
+   - Integrado em `orderController.rateOrder()`
+   - Evita duplicação via CashbackHistory
+4. ✅ **Migration**: `20251207_add_referral_fields.js`
+   - 4 colunas adicionadas
+   - 13 códigos gerados para usuários existentes
+
+---
+
+### SPRINT 30 - GESTÃO DE PRODUTOS MELHORADA ✅ COMPLETA
+
+**Objetivo**: Upload de imagens e filtros avançados de estoque
+
+**Prioridade**: P1 (UX Admin)
+**Status**: ✅ COMPLETA (07/12/2024)
+
+#### Realizações da Sprint 30:
+1. ✅ **Upload de Imagens**:
+   - Middleware multer: JPEG, PNG, GIF, WebP (max 5MB)
+   - Armazenamento local: `/uploads/products/`
+   - Preview antes de salvar
+   - URL alternativa como fallback
+2. ✅ **Endpoints de Upload**:
+   - `POST /api/upload/product/:id` - Upload para produto
+   - `POST /api/upload/image` - Upload genérico
+   - `DELETE /api/upload/image/:fn` - Deletar imagem
+3. ✅ **Cards de Estatísticas**:
+   - Total de produtos
+   - Ativos / Inativos
+   - Em estoque / Baixo / Zerado
+4. ✅ **Filtros Avançados**:
+   - Filtro por status (ativos/inativos)
+   - Filtro por nível de estoque
+   - Resumo de filtros ativos
+   - Botão "Limpar todos"
+
+---
+
+## PRÓXIMAS SPRINTS SUGERIDAS
+
+### SPRINT 31 - FICHA TÉCNICA INTEGRADA (Pendente)
+- [ ] Modal de ficha técnica na página de produtos
+- [ ] Vinculação produto ↔ insumos com quantidades
+- [ ] Cálculo automático de custo por produto
+- [ ] Alertas de falta de insumos para produto
+
+### SPRINT 32 - RELATÓRIOS AVANÇADOS (Pendente)
+- [ ] Relatórios CMV com gráficos (Chart.js)
+- [ ] Dashboard de vendas por período
+- [ ] Análise de produtos mais vendidos
+- [ ] Exportação para Excel/PDF
+
+### SPRINT 33 - ALERTAS PUSH AUTOMÁTICOS (Pendente)
+- [ ] Push de estoque baixo para gerente
+- [ ] Push de pedido pronto para cliente
+- [ ] Push de reserva confirmada
+- [ ] Configurações de preferências de notificação
+
+---
+
 ## PROBLEMAS IDENTIFICADOS
 
 ### 1. FLUXO DE PEDIDOS INCORRETO

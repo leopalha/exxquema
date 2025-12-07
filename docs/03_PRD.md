@@ -3,7 +3,7 @@
 ## VISÃO GERAL
 
 **Produto:** FLAME - Plataforma Digital Integrada
-**Versão:** 3.3.0
+**Versão:** 3.4.0
 **Última Atualização:** 07/12/2024
 **Auditoria Completa:** Todos os módulos mapeados
 **Tipo:** PWA (Progressive Web App) Full-Stack
@@ -1422,10 +1422,27 @@ RECEITA BRUTA
 | Usuários | Staff, roles, permissões |
 | Horários | Funcionamento, happy hour |
 | Pagamentos | Métodos, taxas |
-|| Fidelidade | Regras de cashback, tiers, bônus |
+| Fidelidade | Regras de cashback, tiers, bônus |
 | Narguilé | Preços, sabores |
 | Notificações | Templates, automações |
 | Integrações | Stripe, Twilio, etc |
+
+#### Gestão de Produtos (Sprint 30)
+
+| Feature | Descrição | Status |
+|---------|-----------|--------|
+| Upload de Imagens | Upload local via multer (JPEG, PNG, GIF, WebP - max 5MB) | ✅ |
+| Preview de Imagem | Visualização antes de salvar no modal de produto | ✅ |
+| URL Alternativa | Opção de colar URL externa em vez de upload | ✅ |
+| Cards de Estatísticas | Total, ativos, inativos, estoque alto/baixo/zerado | ✅ |
+| Filtro por Status | Todos, apenas ativos, apenas inativos | ✅ |
+| Filtro por Estoque | Todos, em estoque, baixo, zerado, sem controle | ✅ |
+| Filtros Ativos | Resumo visual com opção "Limpar todos" | ✅ |
+
+**Endpoints de Upload:**
+- `POST /api/upload/product/:productId` - Upload para produto específico
+- `POST /api/upload/image` - Upload genérico
+- `DELETE /api/upload/image/:filename` - Deletar imagem
 
 ---
 
