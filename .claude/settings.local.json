@@ -14,7 +14,9 @@
       "Bash(find:*)",
       "Bash(wc:*)",
       "Bash(git checkout:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(railway logs:*)",
+      "Bash(npx vercel --prod)"
     ],
     "deny": [],
     "ask": []

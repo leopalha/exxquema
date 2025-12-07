@@ -351,9 +351,11 @@ O modelo User é a entidade central do sistema. Abaixo está o mapeamento **COMP
 | `id` | UUID | ✅ | auto | Identificador único |
 | `nome` | STRING(100) | ✅ | - | Nome completo (2-100 chars) |
 | `email` | STRING | ✅ | - | Email único (OBRIGATÓRIO para pedidos) |
-| `celular` | STRING(20) | ✅ | - | Celular único formato +55XXXXXXXXXXX |
-| `cpf` | STRING(14) | ⚠️ Condicional | null | CPF validado (obrigatório para brasileiros) |
-| `foreignId` | STRING(50) | ⚠️ Condicional | null | Número de identificação para estrangeiros (passaporte/RNE) |
+| `celular` | STRING(20) | ✅ | - | Celular único formato E.164 (+[código país][número]) |
+| `countryCode` | STRING(5) | ✅ | 'BR' | Código ISO do país (detectado pelo telefone) |
+| `phoneCountryCode` | STRING(5) | ✅ | '+55' | DDI do país selecionado |
+| `cpf` | STRING(14) | ⚠️ Condicional | null | CPF validado (obrigatório se countryCode = 'BR') |
+| `foreignId` | STRING(50) | ⚠️ Condicional | null | Número de identificação (obrigatório se countryCode != 'BR') |
 | `birthDate` | DATE | ✅ | - | Data de nascimento (OBRIGATÓRIO - verificação 18+) |
 | `password` | STRING | ❌ | null | Hash bcrypt (pode ser null para SMS-only) |
 | `instagramPromoOptIn` | BOOLEAN | ✅ | false | Aceitou participar do programa de cashback via Instagram |
@@ -417,8 +419,95 @@ beforeSave: async (user) => {
   // 1. Hash password se alterada (bcrypt 12 rounds)
   // 2. Normalizar email para lowercase + trim
   // 3. Normalizar nome com trim
+  // 4. Normalizar celular para formato E.164
 }
 ```
+
+#### Validações de Cadastro
+
+##### Telefone Internacional (libphonenumber-js)
+
+O sistema usa a biblioteca `libphonenumber-js` para validação de telefones internacionais.
+
+**Formato E.164**: `+[código país][número nacional]` (máximo 15 dígitos)
+
+**Tabela de Países Suportados (Resumo):**
+
+> **TABELA COMPLETA**: Ver `docs/tasks.md` → Sprint 41 → "TABELA COMPLETA DE PAÍSES"
+> **100+ países mapeados** com ISO, DDI, dígitos, prefixos móveis e bandeiras
+
+| Região | Países | Prioridade |
+|--------|--------|------------|
+| América do Sul | Brasil, Argentina, Chile, Colômbia, Peru, Venezuela, Equador, Bolívia, Paraguai, Uruguai, Guiana, Suriname | Alta |
+| América do Norte/Central | EUA, Canadá, México, Guatemala, Costa Rica, Panamá, Cuba, Rep. Dominicana, Jamaica, Porto Rico | Média |
+| Europa Ocidental | Portugal, Espanha, França, Itália, Alemanha, Reino Unido, Irlanda, Holanda, Bélgica, Suíça | Média |
+| Europa Nórdica/Oriental | Suécia, Noruega, Polônia, Rússia, Ucrânia, Rep. Tcheca, Hungria, Romênia, Grécia, Turquia | Baixa |
+| Ásia | Japão, China, Coreia do Sul, Índia, Indonésia, Tailândia, Filipinas, Singapura, Hong Kong | Baixa |
+| Oriente Médio | Emirados, Arábia Saudita, Israel, Líbano, Jordânia, Kuwait, Qatar | Baixa |
+| África | África do Sul, Nigéria, Quênia, Marrocos, Angola, Moçambique, Cabo Verde | Baixa |
+| Oceania | Austrália, Nova Zelândia | Baixa |
+
+**Países Prioritários (América do Sul + Lusófonos):**
+
+| País | ISO | DDI | Dígitos | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|---------|--------------|---------------|----------|
+| Brasil | BR | +55 | 10-11 | 9 | +5521999998888 | 🇧🇷 |
+| Portugal | PT | +351 | 9 | 9 | +351912345678 | 🇵🇹 |
+| Argentina | AR | +54 | 10 | 9 | +5491155551234 | 🇦🇷 |
+| Chile | CL | +56 | 9 | 9 | +56912345678 | 🇨🇱 |
+| Colômbia | CO | +57 | 10 | 3 | +573001234567 | 🇨🇴 |
+| Peru | PE | +51 | 9 | 9 | +51912345678 | 🇵🇪 |
+| Uruguai | UY | +598 | 8 | 9 | +59894123456 | 🇺🇾 |
+| Paraguai | PY | +595 | 9 | 9 | +595981234567 | 🇵🇾 |
+| Angola | AO | +244 | 9 | 9 | +244912345678 | 🇦🇴 |
+| Moçambique | MZ | +258 | 9 | 8 | +258821234567 | 🇲🇿 |
+| Cabo Verde | CV | +238 | 7 | 9 | +2389123456 | 🇨🇻 |
+| EUA | US | +1 | 10 | Qualquer | +12025551234 | 🇺🇸 |
+
+**Fluxo de Seleção de País:**
+1. Usuário clica no campo de telefone
+2. Abre dropdown pesquisável com bandeira + nome + DDI
+3. Usuário seleciona país ou digita para filtrar
+4. Sistema atualiza: `countryCode` e `phoneCountryCode`
+5. Input de telefone formata automaticamente conforme país
+6. Sistema detecta nacionalidade: Brasil = brasileiro, outros = estrangeiro
+
+##### Validação de CPF (Brasileiros)
+
+```javascript
+// Algoritmo completo de validação
+function validateCPF(cpf) {
+  // 1. Remove formatação (., -)
+  // 2. Verifica 11 dígitos
+  // 3. Rejeita sequências (111.111.111-11, etc)
+  // 4. Calcula primeiro dígito verificador
+  // 5. Calcula segundo dígito verificador
+  // 6. Compara com dígitos informados
+  return isValid; // boolean
+}
+```
+
+**CPFs inválidos conhecidos (rejeitados):**
+- 000.000.000-00, 111.111.111-11, ..., 999.999.999-99
+- Qualquer CPF com menos de 11 dígitos
+- CPF com dígitos verificadores incorretos
+
+##### Validação de Idade (18+)
+
+```javascript
+function validateAge(birthDate) {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age >= 18;
+}
+```
+
+**Mensagem de erro**: "Você precisa ter 18 anos ou mais para se cadastrar."
 
 ---
 
@@ -463,8 +552,36 @@ GET    /api/auth/debug-sms/:celular → Debug: ver código SMS
 │                         /register                                    │
 │  ┌─────────────────────────────────────────────────────────────┐    │
 │  │  [Nome Completo    ]  [Email           ]                    │    │
-│  │  [Celular +55      ]  [Senha           ] [Confirmar Senha ] │    │
+│  │                                                             │    │
+│  │  TELEFONE COM SELETOR DE PAÍS:                              │    │
+│  │  ┌──────────────────────────────────────────────────────┐   │    │
+│  │  │ [🇧🇷 Brasil +55 ▼] [  (21) 99999-9999  ]              │   │    │
+│  │  └──────────────────────────────────────────────────────┘   │    │
+│  │  Ao clicar no seletor, abre lista pesquisável de países:    │    │
+│  │  ┌──────────────────────────────────────────────────────┐   │    │
+│  │  │ 🔍 Buscar país...                                    │   │    │
+│  │  │ ─────────────────────────────────────────────────────│   │    │
+│  │  │ 🇧🇷 Brasil                                    +55    │   │    │
+│  │  │ 🇺🇸 Estados Unidos                            +1     │   │    │
+│  │  │ 🇵🇹 Portugal                                  +351   │   │    │
+│  │  │ 🇦🇷 Argentina                                 +54    │   │    │
+│  │  │ 🇪🇸 Espanha                                   +34    │   │    │
+│  │  │ 🇫🇷 França                                    +33    │   │    │
+│  │  │ ... (mais países)                                    │   │    │
+│  │  └──────────────────────────────────────────────────────┘   │    │
+│  │                                                             │    │
+│  │  ⚡ Sistema detecta automaticamente:                        │    │
+│  │     - Se país = Brasil → mostra campo CPF                   │    │
+│  │     - Se país != Brasil → mostra campo ID Estrangeiro       │    │
+│  │                                                             │    │
+│  │  [CPF: 123.456.789-00] (se Brasil)                          │    │
+│  │      OU                                                     │    │
+│  │  [ID Estrangeiro: ABC123456] (se outro país)                │    │
+│  │                                                             │    │
+│  │  [Data de Nascimento: DD/MM/AAAA] (OBRIGATÓRIO - 18+)       │    │
+│  │  [Senha           ] [Confirmar Senha ]                      │    │
 │  │  [ ] Aceito os termos de uso                                │    │
+│  │  [ ] Declaro ter 18 anos ou mais                            │    │
 │  │  [         Criar Conta          ]                           │    │
 │  │  ─────────────── ou ───────────────                         │    │
 │  │  [         Entrar com Google    ]                           │    │
@@ -472,16 +589,22 @@ GET    /api/auth/debug-sms/:celular → Debug: ver código SMS
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                      POST /api/auth/register
-                    { nome, email, celular, password }
+                    { nome, email, celular, countryCode,
+                      phoneCountryCode, cpf?, foreignId?,
+                      birthDate, password }
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │  Backend:                                                            │
 │  1. Verifica duplicidade (email, celular, cpf)                      │
-│  2. Gera código SMS 6 dígitos                                       │
-│  3. Cria User com profileComplete: true, phoneVerified: false       │
-│  4. Envia SMS via Twilio                                            │
-│  5. Retorna { userId, celular, smsExpiry }                          │
+│  2. Valida telefone usando libphonenumber-js (formato por país)     │
+│  3. Valida CPF com algoritmo completo (se brasileiro)               │
+│  4. Valida idade >= 18 anos via birthDate                           │
+│  5. Armazena celular em formato E.164 (+[código][número])           │
+│  6. Gera código SMS 6 dígitos                                       │
+│  7. Cria User com profileComplete: true, phoneVerified: false       │
+│  8. Envia SMS via Twilio (suporta internacional)                    │
+│  9. Retorna { userId, celular, smsExpiry }                          │
 └─────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼

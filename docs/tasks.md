@@ -3,9 +3,9 @@
 ## STATUS ATUAL DO PROJETO
 
 **Data Atualização**: 07/12/2024
-**Versão**: 3.8.0
-**Status**: ✅ SISTEMA COMPLETO + UPLOAD DE IMAGENS + GESTÃO DE ESTOQUE
-**Sincronizado com**: PRD v3.3.0 e User Flows v3.3.0
+**Versão**: 3.9.0
+**Status**: ✅ SISTEMA COMPLETO + MAPEAMENTO DE PENDÊNCIAS
+**Sincronizado com**: PRD v3.4.0 e User Flows v3.4.0
 
 > **SPRINTS 21-30 COMPLETAS**:
 > - Sprint 21: Melhorias de UX (componentes reutilizáveis)
@@ -463,6 +463,89 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51SVcch...
 
 ---
 
+## 🚨 CONSOLIDAÇÃO DE PENDÊNCIAS (MAPEAMENTO COMPLETO)
+
+> **Data**: 07/12/2024
+> **Fonte**: PRD v3.4.0, User Flows v3.4.0, ANALISE_PRD_VS_SISTEMA.md
+
+### 📊 RESUMO EXECUTIVO
+
+| Prioridade | Quantidade | Status |
+|------------|------------|--------|
+| **P0 (Bloqueadores)** | 4 | 🔴 Sprints 41-43, 46 |
+| **P1 (Importantes)** | 6 | 🟡 Sprints 31, 33, 44-45, 47 |
+| **P2 (Melhorias)** | 8 | 📋 Sprints 32, 34-40, 48 |
+
+### 🔴 P0 - BLOQUEADORES (Fazer PRIMEIRO!)
+
+| # | Feature | Sprint | Descrição | Estimativa |
+|---|---------|--------|-----------|------------|
+| 1 | **Fix Imagens Cardápio** | 46 | next.config.js sem domínio Railway | 0.5 dia |
+| 2 | **Cadastro CPF/Idade/Telefone** | 41 | Seletor de país, CPF, 18+, libphonenumber-js | 3-4 dias |
+| 3 | **Taxa de Serviço 10%** | 42 | Incluída por padrão, removível | 1-2 dias |
+| 4 | **Pagamento com Atendente** | 43 | Dinheiro, cartão mesa, dividir conta | 3-4 dias |
+
+### 🟡 P1 - IMPORTANTES
+
+| # | Feature | Sprint | Descrição | Estimativa |
+|---|---------|--------|-----------|------------|
+| 5 | **Ficha Técnica UI** | 31 | Modal integrado ao produto | 1-2 dias |
+| 6 | **Alertas Push Automáticos** | 33 | Estoque baixo, pedido pronto, etc | 1-2 dias |
+| 7 | **Cashback Instagram** | 44 | 5% por postagem @flamelounge_ | 2-3 dias |
+| 8 | **Painel Retirada Bar** | 45 | Pedidos de balcão prontos | 1 dia |
+| 9 | **Acompanhamento Pedido** | 47 | Timeline detalhada | 1 dia |
+| 10 | **Google OAuth Credenciais** | - | Configurar Google Cloud Console | Config |
+
+### 📋 P2 - MELHORIAS
+
+| # | Feature | Sprint | Descrição | Estimativa |
+|---|---------|--------|-----------|------------|
+| 11 | **Relatórios CMV** | 32 | Gráficos e análise de custos | 2-3 dias |
+| 12 | **Fornecedores** | 34 | Cadastro e histórico | 1-2 dias |
+| 13 | **Automações CRM** | 35 | Campanhas automáticas | 2 dias |
+| 14 | **Job No-Show** | 36 | Marcar após 15min | 1 dia |
+| 15 | **Dashboard Admin** | 37 | Melhorias visuais | 2 dias |
+| 16 | **QR Code + Happy Hour** | 38 | QR dinâmico, descontos por horário | 1-2 dias |
+| 17 | **Venda Manual Caixa** | 39 | PDV para venda sem app | 1 dia |
+| 18 | **Testes E2E + Docs** | 40 | Cypress + documentação | 2-3 dias |
+| 19 | **Notificação Cashback** | 48 | Push/SMS ao receber | 0.5 dia |
+
+### 📱 NOVAS FEATURES DO PRD (User Flows Atualizados)
+
+**Cadastro com Seletor de País (Sprint 41)**:
+- Campo telefone com dropdown de países
+- Validação libphonenumber-js por país
+- Detecção automática de nacionalidade
+- CPF para brasileiros, ID estrangeiro para outros
+- Data de nascimento obrigatória (18+)
+
+**Fluxo de Pagamento com Atendente (Sprint 43)**:
+- Opções: PIX/Cartão (app) ou Dinheiro/Cartão Mesa/Dividir (atendente)
+- Notificação Socket.IO para atendente
+- Painel de pagamentos pendentes
+- Cálculo de troco automático
+
+**Divisão de Conta (Sprint 43)**:
+- Dividir igualmente ou valores diferentes
+- Registrar pagamento de cada pessoa
+- Confirmar quando todos pagaram
+
+**Cashback Instagram (Sprint 44)**:
+- Opt-in no checkout com @instagram
+- Atendente verifica postagem na entrega
+- 5% de cashback extra (1x por dia)
+
+### ⚠️ PENDÊNCIAS DE CONFIGURAÇÃO (Não são sprints)
+
+| Item | Status | Ação |
+|------|--------|------|
+| Google OAuth | ⚠️ Código pronto | Configurar credenciais no Google Cloud |
+| Stripe Produção | ⚠️ Modo teste | Trocar para credenciais de produção |
+| WhatsApp número | ⚠️ Pendente | Configurar número Twilio |
+| Domínio personalizado | ⚠️ Opcional | Configurar DNS para domínio próprio |
+
+---
+
 ## 📋 ROADMAP DE SPRINTS (31-40)
 
 > **Análise baseada em**: PRD v3.4.0, User Flows v3.4.0, ANALISE_PRD_VS_SISTEMA.md
@@ -914,19 +997,20 @@ Frontend:
 
 ---
 
-### SPRINT 41 - CADASTRO COMPLETO (CPF/ESTRANGEIRO/IDADE) ⚠️ P0
+### SPRINT 41 - CADASTRO COMPLETO (CPF/ESTRANGEIRO/IDADE/TELEFONE INTERNACIONAL) ⚠️ P0
 
-**Objetivo**: Reformular cadastro com validações legais obrigatórias
+**Objetivo**: Reformular cadastro com validações legais obrigatórias e suporte internacional
 
 **Prioridade**: P0 (Bloqueador legal - venda de bebidas)
-**Estimativa**: 2-3 dias
+**Estimativa**: 3-4 dias
 **Dependências**: Nenhuma
 
 #### Tarefas:
 1. [ ] **Campos Novos no Model User**
    - `birthDate` (DATE, OBRIGATÓRIO)
    - `foreignId` (STRING, alternativa ao CPF)
-   - `isBrazilian` (BOOLEAN, default true)
+   - `countryCode` (STRING(5), código do país ex: "BR", "US", "PT")
+   - `phoneCountryCode` (STRING(5), código telefone ex: "+55", "+1", "+351")
    - Arquivo: `backend/src/models/User.js`
 
 2. [ ] **Migration para Novos Campos**
@@ -944,38 +1028,284 @@ Frontend:
    - Mensagem: "Você precisa ter 18 anos ou mais"
    - Arquivo: `backend/src/controllers/authController.js`
 
-5. [ ] **UI do Formulário de Cadastro**
-   - Toggle: Brasileiro / Estrangeiro
-   - Se brasileiro: CPF obrigatório + validação
-   - Se estrangeiro: ID estrangeiro obrigatório
+5. [ ] **Seletor de País para Telefone (NOVO)**
+   - Dropdown com lista de países ao clicar no campo telefone
+   - Cada país mostra: bandeira + nome + código (+55, +1, etc)
+   - Ao selecionar país, sistema detecta automaticamente nacionalidade
+   - Validação de telefone específica por país usando libphonenumber-js
+   - Arquivo: `frontend/src/components/PhoneCountrySelector.js` (NOVO)
+
+6. [ ] **Biblioteca libphonenumber-js**
+   - Instalar: `npm install libphonenumber-js`
+   - Validação de formato por país
+   - Formatação automática durante digitação
+   - Arquivo: `frontend/src/utils/phoneValidation.js` (NOVO)
+
+7. [ ] **Lista de Países com Códigos e Validação**
+   - Mapeamento completo de países
+   - Arquivo: `frontend/src/data/countries.js` (NOVO)
+
+---
+
+#### 📞 TABELA COMPLETA DE PAÍSES - TELEFONE INTERNACIONAL
+
+> **Referência**: Padrão E.164 (ITU-T) - Máximo 15 dígitos total
+> **Uso**: Copiar direto para `frontend/src/data/countries.js`
+
+##### 🌎 AMÉRICA DO SUL (Prioridade Alta - Região do Negócio)
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Brasil | BR | +55 | 10-11 | 9 | +5521999998888 | 🇧🇷 |
+| Argentina | AR | +54 | 10 | 9 | +5491155551234 | 🇦🇷 |
+| Chile | CL | +56 | 9 | 9 | +56912345678 | 🇨🇱 |
+| Colômbia | CO | +57 | 10 | 3 | +573001234567 | 🇨🇴 |
+| Peru | PE | +51 | 9 | 9 | +51912345678 | 🇵🇪 |
+| Venezuela | VE | +58 | 10 | 4 | +584121234567 | 🇻🇪 |
+| Equador | EC | +593 | 9 | 9 | +593991234567 | 🇪🇨 |
+| Bolívia | BO | +591 | 8 | 6,7 | +59171234567 | 🇧🇴 |
+| Paraguai | PY | +595 | 9 | 9 | +595981234567 | 🇵🇾 |
+| Uruguai | UY | +598 | 8 | 9 | +59894123456 | 🇺🇾 |
+| Guiana | GY | +592 | 7 | 6 | +5926001234 | 🇬🇾 |
+| Suriname | SR | +597 | 7 | 8 | +5978123456 | 🇸🇷 |
+| Guiana Francesa | GF | +594 | 9 | 6 | +594694123456 | 🇬🇫 |
+
+##### 🌎 AMÉRICA DO NORTE E CENTRAL
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Estados Unidos | US | +1 | 10 | Qualquer | +12025551234 | 🇺🇸 |
+| Canadá | CA | +1 | 10 | Qualquer | +14165551234 | 🇨🇦 |
+| México | MX | +52 | 10 | 1 | +525512345678 | 🇲🇽 |
+| Guatemala | GT | +502 | 8 | 3-5 | +50231234567 | 🇬🇹 |
+| Honduras | HN | +504 | 8 | 3,8,9 | +50431234567 | 🇭🇳 |
+| El Salvador | SV | +503 | 8 | 6,7 | +50371234567 | 🇸🇻 |
+| Nicarágua | NI | +505 | 8 | 8 | +50581234567 | 🇳🇮 |
+| Costa Rica | CR | +506 | 8 | 6,7,8 | +50661234567 | 🇨🇷 |
+| Panamá | PA | +507 | 8 | 6 | +50761234567 | 🇵🇦 |
+| Cuba | CU | +53 | 8 | 5 | +5351234567 | 🇨🇺 |
+| República Dominicana | DO | +1 | 10 | 809,829,849 | +18091234567 | 🇩🇴 |
+| Haiti | HT | +509 | 8 | 3,4 | +50931234567 | 🇭🇹 |
+| Jamaica | JM | +1 | 10 | 876 | +18761234567 | 🇯🇲 |
+| Porto Rico | PR | +1 | 10 | 787,939 | +17871234567 | 🇵🇷 |
+| Trinidad e Tobago | TT | +1 | 10 | 868 | +18681234567 | 🇹🇹 |
+| Bahamas | BS | +1 | 10 | 242 | +12421234567 | 🇧🇸 |
+| Barbados | BB | +1 | 10 | 246 | +12461234567 | 🇧🇧 |
+| Belize | BZ | +501 | 7 | 6 | +5016012345 | 🇧🇿 |
+
+##### 🌍 EUROPA OCIDENTAL
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Portugal | PT | +351 | 9 | 9 | +351912345678 | 🇵🇹 |
+| Espanha | ES | +34 | 9 | 6,7 | +34612345678 | 🇪🇸 |
+| França | FR | +33 | 9 | 6,7 | +33612345678 | 🇫🇷 |
+| Itália | IT | +39 | 10 | 3 | +393123456789 | 🇮🇹 |
+| Alemanha | DE | +49 | 10-11 | 15,16,17 | +4915123456789 | 🇩🇪 |
+| Reino Unido | GB | +44 | 10 | 7 | +447911123456 | 🇬🇧 |
+| Irlanda | IE | +353 | 9 | 8 | +353871234567 | 🇮🇪 |
+| Holanda | NL | +31 | 9 | 6 | +31612345678 | 🇳🇱 |
+| Bélgica | BE | +32 | 9 | 4 | +32471234567 | 🇧🇪 |
+| Suíça | CH | +41 | 9 | 7 | +41791234567 | 🇨🇭 |
+| Áustria | AT | +43 | 10-11 | 6 | +436641234567 | 🇦🇹 |
+| Luxemburgo | LU | +352 | 9 | 6 | +352621234567 | 🇱🇺 |
+| Mônaco | MC | +377 | 8 | 6 | +37761234567 | 🇲🇨 |
+| Andorra | AD | +376 | 6 | 3,6 | +376312345 | 🇦🇩 |
+
+##### 🌍 EUROPA NÓRDICA E ORIENTAL
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Suécia | SE | +46 | 9 | 7 | +46701234567 | 🇸🇪 |
+| Noruega | NO | +47 | 8 | 4,9 | +4791234567 | 🇳🇴 |
+| Dinamarca | DK | +45 | 8 | 2-9 | +4521234567 | 🇩🇰 |
+| Finlândia | FI | +358 | 9-10 | 4,5 | +358401234567 | 🇫🇮 |
+| Islândia | IS | +354 | 7 | 6,7,8 | +3546123456 | 🇮🇸 |
+| Polônia | PL | +48 | 9 | 5,6,7,8 | +48501234567 | 🇵🇱 |
+| Rússia | RU | +7 | 10 | 9 | +79161234567 | 🇷🇺 |
+| Ucrânia | UA | +380 | 9 | 5,6,9 | +380501234567 | 🇺🇦 |
+| República Tcheca | CZ | +420 | 9 | 6,7 | +420601234567 | 🇨🇿 |
+| Hungria | HU | +36 | 9 | 2,3,7 | +36201234567 | 🇭🇺 |
+| Romênia | RO | +40 | 9 | 7 | +40721234567 | 🇷🇴 |
+| Bulgária | BG | +359 | 9 | 8,9 | +359881234567 | 🇧🇬 |
+| Grécia | GR | +30 | 10 | 6,9 | +306912345678 | 🇬🇷 |
+| Turquia | TR | +90 | 10 | 5 | +905321234567 | 🇹🇷 |
+| Croácia | HR | +385 | 9 | 9 | +385911234567 | 🇭🇷 |
+| Sérvia | RS | +381 | 9 | 6 | +381641234567 | 🇷🇸 |
+| Eslováquia | SK | +421 | 9 | 9 | +421901234567 | 🇸🇰 |
+| Eslovênia | SI | +386 | 8 | 3,4,5,6,7 | +38631123456 | 🇸🇮 |
+| Estônia | EE | +372 | 7-8 | 5 | +3725123456 | 🇪🇪 |
+| Letônia | LV | +371 | 8 | 2 | +37121234567 | 🇱🇻 |
+| Lituânia | LT | +370 | 8 | 6 | +37061234567 | 🇱🇹 |
+| Belarus | BY | +375 | 9 | 25,29,33,44 | +375291234567 | 🇧🇾 |
+
+##### 🌏 ÁSIA
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Japão | JP | +81 | 10 | 70,80,90 | +819012345678 | 🇯🇵 |
+| China | CN | +86 | 11 | 1 | +8613912345678 | 🇨🇳 |
+| Coreia do Sul | KR | +82 | 10 | 1 | +821012345678 | 🇰🇷 |
+| Índia | IN | +91 | 10 | 6,7,8,9 | +919876543210 | 🇮🇳 |
+| Indonésia | ID | +62 | 10-12 | 8 | +6281234567890 | 🇮🇩 |
+| Tailândia | TH | +66 | 9 | 8,9 | +66812345678 | 🇹🇭 |
+| Vietnã | VN | +84 | 9-10 | 3,5,7,8,9 | +84912345678 | 🇻🇳 |
+| Filipinas | PH | +63 | 10 | 9 | +639171234567 | 🇵🇭 |
+| Malásia | MY | +60 | 9-10 | 1 | +60123456789 | 🇲🇾 |
+| Singapura | SG | +65 | 8 | 8,9 | +6581234567 | 🇸🇬 |
+| Hong Kong | HK | +852 | 8 | 5,6,9 | +85291234567 | 🇭🇰 |
+| Taiwan | TW | +886 | 9 | 9 | +886912345678 | 🇹🇼 |
+| Paquistão | PK | +92 | 10 | 3 | +923001234567 | 🇵🇰 |
+| Bangladesh | BD | +880 | 10 | 1 | +8801712345678 | 🇧🇩 |
+| Sri Lanka | LK | +94 | 9 | 7 | +94712345678 | 🇱🇰 |
+| Nepal | NP | +977 | 10 | 98 | +9779812345678 | 🇳🇵 |
+| Cazaquistão | KZ | +7 | 10 | 7 | +77011234567 | 🇰🇿 |
+
+##### 🌍 ORIENTE MÉDIO
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Emirados Árabes | AE | +971 | 9 | 5 | +971501234567 | 🇦🇪 |
+| Arábia Saudita | SA | +966 | 9 | 5 | +966512345678 | 🇸🇦 |
+| Israel | IL | +972 | 9 | 5 | +972501234567 | 🇮🇱 |
+| Líbano | LB | +961 | 8 | 3,7 | +96171123456 | 🇱🇧 |
+| Jordânia | JO | +962 | 9 | 7 | +962791234567 | 🇯🇴 |
+| Kuwait | KW | +965 | 8 | 5,6,9 | +96551234567 | 🇰🇼 |
+| Qatar | QA | +974 | 8 | 3,5,6,7 | +97431234567 | 🇶🇦 |
+| Bahrein | BH | +973 | 8 | 3 | +97331234567 | 🇧🇭 |
+| Omã | OM | +968 | 8 | 9 | +96891234567 | 🇴🇲 |
+| Iraque | IQ | +964 | 10 | 7 | +9647712345678 | 🇮🇶 |
+| Irã | IR | +98 | 10 | 9 | +989121234567 | 🇮🇷 |
+| Egito | EG | +20 | 10 | 1 | +201012345678 | 🇪🇬 |
+
+##### 🌍 ÁFRICA
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| África do Sul | ZA | +27 | 9 | 6,7,8 | +27611234567 | 🇿🇦 |
+| Nigéria | NG | +234 | 10 | 7,8,9 | +2348012345678 | 🇳🇬 |
+| Quênia | KE | +254 | 9 | 7 | +254712345678 | 🇰🇪 |
+| Gana | GH | +233 | 9 | 2,5 | +233201234567 | 🇬🇭 |
+| Marrocos | MA | +212 | 9 | 6,7 | +212612345678 | 🇲🇦 |
+| Argélia | DZ | +213 | 9 | 5,6,7 | +213551234567 | 🇩🇿 |
+| Tunísia | TN | +216 | 8 | 2,4,5,9 | +21621234567 | 🇹🇳 |
+| Etiópia | ET | +251 | 9 | 9 | +251911234567 | 🇪🇹 |
+| Tanzânia | TZ | +255 | 9 | 6,7 | +255712345678 | 🇹🇿 |
+| Uganda | UG | +256 | 9 | 7 | +256712345678 | 🇺🇬 |
+| Angola | AO | +244 | 9 | 9 | +244912345678 | 🇦🇴 |
+| Moçambique | MZ | +258 | 9 | 8 | +258821234567 | 🇲🇿 |
+| Cabo Verde | CV | +238 | 7 | 9 | +2389123456 | 🇨🇻 |
+| São Tomé e Príncipe | ST | +239 | 7 | 9 | +2399912345 | 🇸🇹 |
+| Guiné-Bissau | GW | +245 | 7 | 9 | +2459123456 | 🇬🇼 |
+
+##### 🌏 OCEANIA
+
+| País | ISO | DDI | Dígitos Nacionais | Móvel Inicia | Exemplo E.164 | Bandeira |
+|------|-----|-----|-------------------|--------------|---------------|----------|
+| Austrália | AU | +61 | 9 | 4 | +61412345678 | 🇦🇺 |
+| Nova Zelândia | NZ | +64 | 9 | 2 | +64212345678 | 🇳🇿 |
+| Fiji | FJ | +679 | 7 | 7,8,9 | +6797123456 | 🇫🇯 |
+| Papua Nova Guiné | PG | +675 | 8 | 7 | +67571234567 | 🇵🇬 |
+
+---
+
+##### 📋 RESUMO PARA IMPLEMENTAÇÃO
+
+**Total de países mapeados**: 100+
+
+**Estrutura do arquivo `countries.js`**:
+```javascript
+export const countries = [
+  { code: 'BR', name: 'Brasil', dial: '+55', flag: '🇧🇷', digits: { min: 10, max: 11 }, mobileStart: ['9'] },
+  { code: 'US', name: 'Estados Unidos', dial: '+1', flag: '🇺🇸', digits: { min: 10, max: 10 }, mobileStart: null },
+  { code: 'PT', name: 'Portugal', dial: '+351', flag: '🇵🇹', digits: { min: 9, max: 9 }, mobileStart: ['9'] },
+  // ... continuar com todos os países
+];
+
+export const getCountryByCode = (code) => countries.find(c => c.code === code);
+export const getCountryByDial = (dial) => countries.find(c => c.dial === dial);
+export const isBrazilian = (countryCode) => countryCode === 'BR';
+```
+
+**Validação com libphonenumber-js**:
+```javascript
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
+
+export const validatePhone = (phone, countryCode) => {
+  try {
+    return isValidPhoneNumber(phone, countryCode);
+  } catch {
+    return false;
+  }
+};
+
+export const formatPhone = (phone, countryCode) => {
+  try {
+    const parsed = parsePhoneNumber(phone, countryCode);
+    return parsed.formatInternational();
+  } catch {
+    return phone;
+  }
+};
+```
+
+---
+
+8. [ ] **Detecção Automática de Nacionalidade**
+   - Se countryCode = "BR" → brasileiro (requer CPF)
+   - Se countryCode != "BR" → estrangeiro (requer foreignId)
+   - NÃO mostrar toggle manual brasileiro/estrangeiro
+   - Sistema detecta pelo país do telefone
+   - Arquivo: `frontend/src/pages/register.js`
+
+9. [ ] **UI do Formulário de Cadastro (Atualizado)**
+   - Campo telefone com seletor de país integrado
+   - Ao clicar: abre lista pesquisável de países
+   - Formatação automática do número conforme país
+   - Se Brasil: mostra campo CPF
+   - Se outro país: mostra campo ID Estrangeiro
    - Data de nascimento com datepicker
    - Checkbox: "Declaro ter 18 anos ou mais"
    - Arquivo: `frontend/src/pages/register.js`
 
-6. [ ] **profileComplete Atualizado**
-   - Agora requer: nome + email + (cpf OU foreignId) + birthDate
-   - Arquivo: `backend/src/models/User.js`
+10. [ ] **Validação Backend (E.164)**
+    - Armazenar telefone em formato E.164: +[código país][número]
+    - Máximo 15 dígitos total
+    - Validar formato antes de salvar
+    - Arquivo: `backend/src/utils/validators.js`
+
+11. [ ] **profileComplete Atualizado**
+    - Agora requer: nome + email + (cpf OU foreignId) + birthDate + celular válido
+    - Arquivo: `backend/src/models/User.js`
 
 #### Arquivos Envolvidos:
 ```
 Backend:
-├── models/User.js (novos campos)
+├── models/User.js (novos campos: countryCode, phoneCountryCode)
 ├── migrations/20251207_user_age_fields.js (NOVO)
 ├── controllers/authController.js (validações)
-├── utils/validators.js (CPF algoritmo)
+├── utils/validators.js (CPF + telefone internacional)
 └── middlewares/validation.middleware.js (atualizar)
 
 Frontend:
 ├── pages/register.js (refatorar formulário)
 ├── pages/complete-profile.js (adicionar campos)
-└── components/DatePicker.js (se não existir)
+├── components/PhoneCountrySelector.js (NOVO - seletor de país)
+├── components/DatePicker.js (se não existir)
+├── data/countries.js (NOVO - lista de países)
+├── utils/phoneValidation.js (NOVO - validação libphonenumber)
+└── package.json (adicionar libphonenumber-js)
 ```
 
 #### Critérios de Aceitação:
-- [ ] CPF validado com algoritmo completo
-- [ ] Estrangeiros podem usar ID alternativo
+- [ ] Seletor de país funcional com busca
+- [ ] Telefone valida conforme país selecionado
+- [ ] Nacionalidade detectada automaticamente pelo país
+- [ ] CPF validado com algoritmo completo (brasileiros)
+- [ ] Estrangeiros usam ID alternativo
 - [ ] Menores de 18 bloqueados
-- [ ] Mensagens de erro claras
+- [ ] Telefone armazenado em formato E.164
+- [ ] Formatação visual durante digitação
 
 ---
 
@@ -1311,7 +1641,7 @@ images: {
 | 38 | QR Code e Happy Hour | P2 | 1-2 dias | Pendente |
 | 39 | Venda Manual no Caixa | P2 | 1 dia | Pendente |
 | 40 | Testes E2E e Documentação | P1 | 2-3 dias | Pendente |
-| **41** | **Cadastro CPF/Idade** | **P0** | 2-3 dias | **🔴 Pendente** |
+| **41** | **Cadastro CPF/Idade/Telefone Internacional** | **P0** | 3-4 dias | **🔴 Pendente** |
 | **42** | **Taxa de Serviço 10%** | **P0** | 1-2 dias | **🔴 Pendente** |
 | **43** | **Pagamento com Atendente** | **P0** | 3-4 dias | **🔴 Pendente** |
 | **44** | **Cashback Instagram** | **P1** | 2-3 dias | **🟡 Pendente** |
@@ -1321,8 +1651,8 @@ images: {
 | **48** | **Notificação Cashback** | **P2** | 0.5 dia | Pendente |
 
 **Total estimado (31-40)**: 15-22 dias
-**Total estimado (41-48)**: 12-16 dias
-**TOTAL GERAL**: 27-38 dias
+**Total estimado (41-48)**: 13-18 dias
+**TOTAL GERAL**: 28-40 dias
 
 ---
 
@@ -1333,8 +1663,10 @@ images: {
 **Sprint 46** → Fix Imagens Cardápio (0.5 dia)
 - Bug crítico que afeta todos os clientes
 
-**Sprint 41** → Cadastro CPF/Idade (2-3 dias)
+**Sprint 41** → Cadastro CPF/Idade/Telefone Internacional (3-4 dias)
 - Bloqueador LEGAL - venda de bebidas para menores
+- Seletor de país para telefone com detecção automática de nacionalidade
+- Validação de telefone internacional (libphonenumber-js)
 
 **Sprint 42** → Taxa de Serviço 10% (1-2 dias)
 - Receita operacional básica

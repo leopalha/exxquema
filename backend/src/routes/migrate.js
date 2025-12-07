@@ -1115,4 +1115,59 @@ router.post('/add-referral-fields', async (req, res) => {
     });
   }
 });
+
+// Sprint 51: Migração para adicionar campos de timeline nos pedidos
+router.post('/add-order-timeline-fields', async (req, res) => {
+  try {
+    const results = [];
+
+    // Lista de campos de timeline a adicionar
+    const timelineColumns = [
+      { name: 'confirmedAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'startedAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'finishedAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'pickedUpAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'deliveredAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'cancelledAt', type: 'TIMESTAMP WITH TIME ZONE' },
+      { name: 'preparationTime', type: 'INTEGER' },
+      { name: 'attendantId', type: 'UUID' },
+      { name: 'kitchenUserId', type: 'UUID' },
+      { name: 'cancelledBy', type: 'UUID' }
+    ];
+
+    for (const col of timelineColumns) {
+      // Verificar se coluna já existe
+      const [existing] = await sequelize.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'orders' AND column_name = '${col.name}';
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already_exists' });
+      } else {
+        // Adicionar coluna
+        await sequelize.query(`
+          ALTER TABLE "orders"
+          ADD COLUMN "${col.name}" ${col.type};
+        `);
+        results.push({ column: col.name, status: 'added' });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Campos de timeline de pedidos verificados/adicionados',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração order timeline fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
