@@ -3,6 +3,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 const useReportStore = create((set, get) => ({
   // State
   dashboard: null,
@@ -22,7 +36,7 @@ const useReportStore = create((set, get) => ({
   fetchDashboard: async (days = 30) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/reports/dashboard?days=${days}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,7 +60,7 @@ const useReportStore = create((set, get) => ({
   fetchSalesReport: async ({ startDate, endDate, groupBy = 'day' }) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
@@ -75,7 +89,7 @@ const useReportStore = create((set, get) => ({
   fetchProductsReport: async ({ startDate, endDate, limit = 20 }) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
@@ -104,7 +118,7 @@ const useReportStore = create((set, get) => ({
   fetchCategoriesReport: async ({ startDate, endDate }) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
@@ -132,7 +146,7 @@ const useReportStore = create((set, get) => ({
   fetchHourlyReport: async ({ startDate, endDate }) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
@@ -160,7 +174,7 @@ const useReportStore = create((set, get) => ({
   fetchDREReport: async ({ startDate, endDate }) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);

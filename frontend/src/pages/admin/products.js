@@ -123,7 +123,7 @@ export default function AdminProducts() {
     try {
       const params = {
         page: pagination.currentPage,
-        limit: 50,
+        limit: 200, // Aumentado para mostrar todos os produtos
         isActive: 'all', // Mostrar todos para admin
         sortBy: 'name',
         sortOrder: 'ASC'

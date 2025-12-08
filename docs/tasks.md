@@ -2,9 +2,9 @@
 
 ## STATUS ATUAL DO PROJETO
 
-**Data Atualização**: 08/12/2024 (23:45)
-**Versão**: 4.1.0
-**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-49 IMPLEMENTADAS
+**Data Atualização**: 08/12/2024 (23:59)
+**Versão**: 4.2.0
+**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-50 IMPLEMENTADAS
 **Sincronizado com**: PRD v3.5.0 e User Flows v3.5.0
 
 > **SPRINTS 21-30 COMPLETAS**:
@@ -18,7 +18,7 @@
 > - ✅ Sprint 29: Sistema de Indicação (R$15) + Bônus Avaliação (R$2)
 > - ✅ Sprint 30: Upload de Imagens + Gestão de Estoque Melhorada
 >
-> **SPRINTS 41-49 COMPLETAS (08/12/2024)**:
+> **SPRINTS 41-50 COMPLETAS (08/12/2024)**:
 > - ✅ Sprint 41: Cadastro Internacional (PhoneInput com seletor de país, countries.js)
 > - ✅ Sprint 42: Taxa de Serviço 10% (serviceFee, removível pelo cliente)
 > - ✅ Sprint 43: Pagamento com Atendente (pay_later, card_at_table, pending_payment)
@@ -26,6 +26,7 @@
 > - ✅ Sprint 46: Fix Imagens Cardápio (next.config.js com Railway domain)
 > - ✅ Sprint 47: Timeline Pedido (calculateTimeline em orderStatus.service.js)
 > - ✅ Sprint 49: Correções Críticas de Rotas e Socket.IO (08/12/2024)
+> - ✅ Sprint 50: Socket.IO em todas as páginas staff + Correção tokens (08/12/2024)
 >
 > - ✅ Sprint 31: Ficha Técnica UI (modal em admin/products.js com CRUD de RecipeItem)
 > - ✅ Sprint 33: Alertas Push Automáticos (push.service.js - notifyOrderReady, notifyOrderStatus)
@@ -1681,39 +1682,61 @@ images: {
 
 ---
 
-### SPRINT 50 - SOCKET.IO EM TODAS AS PÁGINAS ⚠️ PENDENTE
+### SPRINT 50 - SOCKET.IO EM TODAS AS PÁGINAS + CORREÇÃO TOKENS ✅ COMPLETA
 
-**Objetivo**: Implementar notificações em tempo real em TODAS as páginas de staff
+**Objetivo**: Implementar notificações em tempo real em TODAS as páginas de staff + Corrigir leitura de tokens
 
 **Prioridade**: P1 (ALTA - UX operacional)
-**Estimativa**: 1-2 dias
+**Status**: ✅ COMPLETA (08/12/2024)
 
-#### Tarefas:
+#### Tarefas Implementadas:
 
-1. [ ] **Cozinha (`/cozinha`)**
-   - Receber novos pedidos automaticamente
-   - Som de notificação para novos pedidos
+1. ✅ **Cozinha (`/cozinha`)**
+   - Recebe novos pedidos automaticamente via Socket.IO
+   - Som de notificação com useNotificationSound hook
+   - Corrigido token para ler de `flame-auth` (Zustand persist)
    - Arquivo: `frontend/src/pages/cozinha/index.js`
 
-2. [ ] **Bar (`/staff/bar`)**
-   - Receber novos pedidos de bebidas
-   - Som de notificação específico
+2. ✅ **Bar (`/staff/bar`)**
+   - Já tinha Socket.IO implementado
+   - Verificado funcionamento correto
    - Arquivo: `frontend/src/pages/staff/bar.js`
 
-3. [ ] **Caixa (`/staff/caixa`)**
-   - Receber notificação de pedidos pagos
-   - Atualizar totais em tempo real
+3. ✅ **Caixa (`/staff/caixa`)**
+   - Implementado Socket.IO com listeners para pedidos pagos
+   - Notificação quando pedido é pago/entregue
+   - Atualiza caixa em tempo real
    - Arquivo: `frontend/src/pages/staff/caixa.js`
 
-4. [ ] **Admin Orders (`/admin/orders`)**
+4. ✅ **Admin Orders (`/admin/orders`)**
+   - Implementado Socket.IO com room 'waiter'
+   - Toast + som para novos pedidos
    - Atualização automática da lista
    - Arquivo: `frontend/src/pages/admin/orders.js`
 
-5. [ ] **Sistema de Sons Diferenciados**
-   - Som para novo pedido
-   - Som para pedido pronto
-   - Som para chamada de atendente
-   - Arquivo: `frontend/src/services/notification.js`
+5. ✅ **Atendente (`/atendente`)**
+   - Corrigido token para ler de `flame-auth`
+   - Já tinha Socket.IO completo
+   - Arquivo: `frontend/src/pages/atendente/index.js`
+
+6. ✅ **Correção de Tokens em todos os Stores**
+   - Todos stores migrados de `localStorage.getItem('token')` para `flame-auth`
+   - Adicionada função helper `getAuthToken()` em cada store
+   - Arquivos:
+     - `frontend/src/stores/cashierStore.js`
+     - `frontend/src/stores/campaignStore.js`
+     - `frontend/src/stores/cashbackStore.js`
+     - `frontend/src/stores/crmStore.js`
+     - `frontend/src/stores/hookahStore.js`
+     - `frontend/src/stores/reservationStore.js`
+     - `frontend/src/stores/reportStore.js`
+
+#### Sistema de Sons (useNotificationSound hook):
+- `playNewOrder()` - Sons ascendentes para novo pedido
+- `playSuccess()` - Triple beep para sucesso
+- `playAlert()` - Double beep para alertas
+- `playUrgent()` - Triple agudo para urgente
+- Arquivo: `frontend/src/hooks/useNotificationSound.js`
 
 ---
 
@@ -1740,7 +1763,7 @@ images: {
 | **47** | **Timeline Pedido** | **P1** | 1 dia | **✅ Completa** |
 | **48** | **Notificação Cashback** | **P2** | 0.5 dia | Pendente |
 | **49** | **Correções Rotas/Socket** | **P0** | 0.5 dia | **✅ Completa** |
-| **50** | **Socket.IO Todas Páginas** | **P1** | 1-2 dias | **🟡 Pendente** |
+| **50** | **Socket.IO Todas Páginas + Tokens** | **P1** | 1-2 dias | **✅ Completa** |
 
 **Total estimado (31-40)**: 15-22 dias
 **Total estimado (41-48)**: 13-18 dias

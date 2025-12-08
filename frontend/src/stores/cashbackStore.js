@@ -3,6 +3,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 const useCashbackStore = create((set, get) => ({
   // State
   balance: 0,
@@ -18,7 +32,7 @@ const useCashbackStore = create((set, get) => ({
   fetchBalance: async () => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/user/cashback`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -44,7 +58,7 @@ const useCashbackStore = create((set, get) => ({
   fetchHistory: async (page = 1, limit = 20) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/user/cashback/history`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { page, limit }
@@ -77,7 +91,7 @@ const useCashbackStore = create((set, get) => ({
   applyCashback: async (orderId, amount) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/orders/${orderId}/use-cashback`,
         { amount },

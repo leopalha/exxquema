@@ -74,27 +74,37 @@ class StaffController {
         limit: 50
       });
 
-      let readyOrders = await Order.findAll({
-        where: { status: 'ready' },
-        include: [
-          {
-            model: OrderItem,
-            as: 'items'
-          },
-          {
-            model: Table,
-            as: 'table',
-            attributes: ['number', 'name']
-          }
-        ],
-        order: [['createdAt', 'ASC']],
-        limit: 50
-      });
+      // Pedidos prontos - apenas atendente e admin veem
+      // Bar e cozinha NÃO devem ver pedidos prontos (já terminaram o trabalho)
+      let readyOrders = [];
+      if (role === 'atendente' || role === 'admin' || role === 'gerente') {
+        readyOrders = await Order.findAll({
+          where: { status: 'ready' },
+          include: [
+            {
+              model: OrderItem,
+              as: 'items'
+            },
+            {
+              model: Table,
+              as: 'table',
+              attributes: ['number', 'name']
+            },
+            {
+              model: User,
+              as: 'customer',
+              attributes: ['nome', 'celular']
+            }
+          ],
+          order: [['createdAt', 'ASC']],
+          limit: 50
+        });
+      }
 
       // Aplicar filtro de categoria
       pendingOrders = filterOrdersByCategory(pendingOrders);
       preparingOrders = filterOrdersByCategory(preparingOrders);
-      readyOrders = filterOrdersByCategory(readyOrders);
+      // ready orders não precisam de filtro - atendente vê todos
 
       // Calcular estatísticas
       const totalOrders = await Order.count();

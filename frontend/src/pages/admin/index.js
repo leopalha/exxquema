@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -39,16 +39,47 @@ export default function AdminDashboard() {
   const { getPalette } = useThemeStore();
   const palette = getPalette();
   const [dateRange, setDateRange] = useState('today');
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Dados calculados dos stores
-  const activeOrders = getActiveOrders();
-  const upcomingReservations = getUpcomingReservations();
-  const todayOrders = orders.filter(o => {
-    const orderDate = new Date(o.createdAt).toDateString();
-    const today = new Date().toDateString();
-    return orderDate === today;
-  });
-  const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
+  // Wait for Zustand persist to hydrate
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Dados calculados dos stores - com try/catch para evitar crash
+  const activeOrders = useMemo(() => {
+    try {
+      return getActiveOrders?.() || [];
+    } catch (e) {
+      console.error('Erro ao buscar pedidos ativos:', e);
+      return [];
+    }
+  }, [orders, getActiveOrders]);
+
+  const upcomingReservations = useMemo(() => {
+    try {
+      return getUpcomingReservations?.() || [];
+    } catch (e) {
+      console.error('Erro ao buscar reservas:', e);
+      return [];
+    }
+  }, [reservations, getUpcomingReservations]);
+
+  const todayOrders = useMemo(() => {
+    try {
+      return (orders || []).filter(o => {
+        const orderDate = new Date(o.createdAt).toDateString();
+        const today = new Date().toDateString();
+        return orderDate === today;
+      });
+    } catch (e) {
+      return [];
+    }
+  }, [orders]);
+
+  const todayRevenue = useMemo(() => {
+    return todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+  }, [todayOrders]);
 
   // Dashboard data (mockado)
   const [dashboardLoading, setDashboardLoading] = useState(true);
@@ -123,6 +154,15 @@ export default function AdminDashboard() {
       transition: { duration: 0.5 }
     }
   };
+
+  // Aguardar hydration antes de renderizar
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <LoadingSpinner size="large" text="Carregando..." />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || user?.role !== 'admin') {
     return (

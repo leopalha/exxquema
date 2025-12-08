@@ -3,6 +3,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 const useCRMStore = create((set, get) => ({
   // State
   customers: [],
@@ -48,7 +62,7 @@ const useCRMStore = create((set, get) => ({
   fetchDashboardStats: async () => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/crm/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -71,7 +85,7 @@ const useCRMStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/crm/customers`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filters
@@ -94,7 +108,7 @@ const useCRMStore = create((set, get) => ({
   fetchCustomerDetails: async (customerId) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/crm/customers/${customerId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -119,7 +133,7 @@ const useCRMStore = create((set, get) => ({
   fetchInactiveCustomers: async (days = 30) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/crm/inactive`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { days }
@@ -141,7 +155,7 @@ const useCRMStore = create((set, get) => ({
   fetchNearUpgradeCustomers: async (threshold = 100) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/crm/near-upgrade`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { threshold }
@@ -163,7 +177,7 @@ const useCRMStore = create((set, get) => ({
   addManualCashback: async (customerId, amount, description) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/crm/customers/${customerId}/cashback`,
         { amount, description },
@@ -190,7 +204,7 @@ const useCRMStore = create((set, get) => ({
   adjustTier: async (customerId) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.put(
         `${API_URL}/crm/customers/${customerId}/tier`,
         {},

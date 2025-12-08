@@ -62,6 +62,7 @@ export default function PainelAtendente() {
   const [confirmPaymentModal, setConfirmPaymentModal] = useState(null);
   const [amountReceived, setAmountReceived] = useState('');
   const [isConfirmingPayment, setIsConfirmingPayment] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   // Wait for Zustand persist to hydrate
   useEffect(() => {
@@ -92,7 +93,16 @@ export default function PainelAtendente() {
     fetchPendingPayments(); // Carregar pagamentos pendentes
 
     // Conectar ao Socket.IO
-    const token = localStorage.getItem('token');
+    const authData = localStorage.getItem('flame-auth');
+    let token = null;
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed?.state?.token;
+      } catch (e) {
+        console.error('Erro ao parsear token:', e);
+      }
+    }
     socketService.connect(token);
     socketService.joinWaiterRoom();
 
@@ -150,20 +160,28 @@ export default function PainelAtendente() {
 
   // Confirmar pagamento recebido
   const handleConfirmPayment = async (order) => {
+    if (!selectedPaymentMethod) {
+      toast.error('Selecione a forma de pagamento');
+      return;
+    }
+
     setIsConfirmingPayment(true);
     try {
       const payload = {
-        amountReceived: amountReceived ? parseFloat(amountReceived) : null,
-        change: amountReceived ? Math.max(0, parseFloat(amountReceived) - parseFloat(order.total)) : null
+        paymentMethod: selectedPaymentMethod,
+        amountReceived: selectedPaymentMethod === 'cash' && amountReceived ? parseFloat(amountReceived) : null,
+        change: selectedPaymentMethod === 'cash' && amountReceived ? Math.max(0, parseFloat(amountReceived) - parseFloat(order.total)) : null
       };
 
       const response = await api.post(`/orders/${order.id}/confirm-payment`, payload);
 
       if (response.data.success) {
-        toast.success('Pagamento confirmado! Pedido enviado para produção.');
+        const methodLabels = { credit: 'Crédito', debit: 'Débito', pix: 'PIX', cash: 'Dinheiro' };
+        toast.success(`Pagamento (${methodLabels[selectedPaymentMethod]}) confirmado! Pedido enviado para produção.`);
         playSuccess();
         setConfirmPaymentModal(null);
         setAmountReceived('');
+        setSelectedPaymentMethod(null);
         fetchPendingPayments();
         fetchDashboard();
       } else {
@@ -933,6 +951,7 @@ export default function PainelAtendente() {
               onClick={() => {
                 setConfirmPaymentModal(null);
                 setAmountReceived('');
+                setSelectedPaymentMethod(null);
               }}
             >
               <motion.div
@@ -951,6 +970,7 @@ export default function PainelAtendente() {
                     onClick={() => {
                       setConfirmPaymentModal(null);
                       setAmountReceived('');
+                      setSelectedPaymentMethod(null);
                     }}
                     className="text-gray-400 hover:text-white"
                   >
@@ -968,15 +988,9 @@ export default function PainelAtendente() {
                     <span className="text-gray-400">Mesa</span>
                     <span className="text-white">{confirmPaymentModal.table?.number || 'Balcão'}</span>
                   </div>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-400">Cliente</span>
                     <span className="text-white">{confirmPaymentModal.customer?.nome || 'Cliente'}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Forma de Pagamento</span>
-                    <span className="text-green-400 font-semibold">
-                      {confirmPaymentModal.paymentLabel || confirmPaymentModal.paymentMethod}
-                    </span>
                   </div>
                 </div>
 
@@ -986,11 +1000,69 @@ export default function PainelAtendente() {
                   <p className="text-3xl font-bold text-green-400">{formatCurrency(confirmPaymentModal.total)}</p>
                 </div>
 
+                {/* Seleção de Forma de Pagamento */}
+                <div className="mb-4">
+                  <label className="block text-gray-400 text-sm mb-3">
+                    Como o cliente pagou?
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setSelectedPaymentMethod('credit')}
+                      className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        selectedPaymentMethod === 'credit'
+                          ? 'border-blue-500 bg-blue-500/20 text-blue-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                      }`}
+                    >
+                      <CreditCard className="w-6 h-6" />
+                      <span className="font-semibold">Crédito</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedPaymentMethod('debit')}
+                      className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        selectedPaymentMethod === 'debit'
+                          ? 'border-purple-500 bg-purple-500/20 text-purple-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                      }`}
+                    >
+                      <CreditCard className="w-6 h-6" />
+                      <span className="font-semibold">Débito</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedPaymentMethod('pix')}
+                      className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        selectedPaymentMethod === 'pix'
+                          ? 'border-green-500 bg-green-500/20 text-green-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                      }`}
+                    >
+                      <Zap className="w-6 h-6" />
+                      <span className="font-semibold">PIX</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedPaymentMethod('cash')}
+                      className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                        selectedPaymentMethod === 'cash'
+                          ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
+                          : 'border-gray-700 bg-gray-800 text-gray-300 hover:border-gray-600'
+                      }`}
+                    >
+                      <Banknote className="w-6 h-6" />
+                      <span className="font-semibold">Dinheiro</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Campo para valor recebido (se for dinheiro) */}
-                {confirmPaymentModal.paymentMethod === 'cash' && (
-                  <div className="mb-4">
+                {selectedPaymentMethod === 'cash' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-4"
+                  >
                     <label className="block text-gray-400 text-sm mb-2">
-                      Valor Recebido (opcional)
+                      Valor Recebido (opcional - para calcular troco)
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">R$</span>
@@ -1000,26 +1072,30 @@ export default function PainelAtendente() {
                         value={amountReceived}
                         onChange={(e) => setAmountReceived(e.target.value)}
                         placeholder="0,00"
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none"
                       />
                     </div>
                     {amountReceived && parseFloat(amountReceived) > parseFloat(confirmPaymentModal.total) && (
-                      <div className="mt-2 p-2 bg-yellow-600/20 rounded-lg">
-                        <p className="text-yellow-400 text-sm flex items-center gap-2">
-                          <Calculator className="w-4 h-4" />
+                      <div className="mt-2 p-3 bg-yellow-600/20 rounded-lg">
+                        <p className="text-yellow-400 text-lg font-bold flex items-center gap-2">
+                          <Calculator className="w-5 h-5" />
                           Troco: {formatCurrency(parseFloat(amountReceived) - parseFloat(confirmPaymentModal.total))}
                         </p>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Botões */}
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleConfirmPayment(confirmPaymentModal)}
-                    disabled={isConfirmingPayment}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    disabled={isConfirmingPayment || !selectedPaymentMethod}
+                    className={`flex-1 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${
+                      selectedPaymentMethod
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
                     {isConfirmingPayment ? (
                       <>
@@ -1029,7 +1105,7 @@ export default function PainelAtendente() {
                     ) : (
                       <>
                         <CheckCircle className="w-5 h-5" />
-                        Confirmar Recebimento
+                        {selectedPaymentMethod ? 'Confirmar Recebimento' : 'Selecione o método'}
                       </>
                     )}
                   </button>
@@ -1037,9 +1113,10 @@ export default function PainelAtendente() {
                     onClick={() => {
                       setConfirmPaymentModal(null);
                       setAmountReceived('');
+                      setSelectedPaymentMethod(null);
                     }}
                     disabled={isConfirmingPayment}
-                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
+                    className="bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors disabled:opacity-50"
                   >
                     Cancelar
                   </button>

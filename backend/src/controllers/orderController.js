@@ -495,11 +495,12 @@ class OrderController {
   async confirmAttendantPayment(req, res) {
     try {
       const { id } = req.params;
-      const { amountReceived, change } = req.body;
+      const { paymentMethod, amountReceived, change } = req.body;
       const attendantId = req.user.id;
       const attendantName = req.user.nome;
 
       console.log(`💳 [CONFIRM PAYMENT] Atendente ${attendantName} confirmando pagamento do pedido ${id}`);
+      console.log(`💳 [CONFIRM PAYMENT] Método selecionado: ${paymentMethod}`);
 
       const order = await Order.findByPk(id, {
         include: [
@@ -549,38 +550,45 @@ class OrderController {
         });
       }
 
-      // Atualizar pedido
-      await order.update({
+      // Atualizar pedido - incluindo o método de pagamento real selecionado pelo atendente
+      const updateData = {
         status: 'confirmed',
         paymentStatus: 'completed',
         attendantId,
         confirmedAt: new Date()
-      });
+      };
 
-      console.log(`✅ [CONFIRM PAYMENT] Pedido #${order.orderNumber} confirmado! Indo para produção.`);
+      // Se atendente selecionou um método diferente, atualizar
+      if (paymentMethod) {
+        updateData.paymentMethod = paymentMethod;
+      }
+
+      await order.update(updateData);
+
+      console.log(`✅ [CONFIRM PAYMENT] Pedido #${order.orderNumber} confirmado com ${paymentMethod || order.paymentMethod}! Indo para produção.`);
 
       // Notificar via WebSocket (cozinha/bar agora podem preparar)
       socketService.notifyPaymentConfirmed(order, attendantName);
 
-      // Registrar movimento no caixa (se for dinheiro)
-      if (order.paymentMethod === 'cash') {
-        try {
-          const CashMovement = require('../models/CashMovement');
-          await CashMovement.create({
-            type: 'entrada',
-            amount: parseFloat(order.total),
-            paymentMethod: 'cash',
-            description: `Pedido #${order.orderNumber} - Pagamento em dinheiro`,
-            orderId: order.id,
-            userId: attendantId,
-            amountReceived: amountReceived ? parseFloat(amountReceived) : null,
-            change: change ? parseFloat(change) : null
-          });
-          console.log(`💰 [CAIXA] Movimento registrado para pedido #${order.orderNumber}`);
-        } catch (cashError) {
-          console.error('⚠️ Erro ao registrar movimento no caixa:', cashError);
-          // Não falha a operação se caixa der erro
-        }
+      // Registrar movimento no caixa para todos os métodos de pagamento
+      const finalPaymentMethod = paymentMethod || order.paymentMethod;
+      const paymentLabels = { credit: 'Crédito', debit: 'Débito', pix: 'PIX', cash: 'Dinheiro' };
+      try {
+        const CashMovement = require('../models/CashMovement');
+        await CashMovement.create({
+          type: 'entrada',
+          amount: parseFloat(order.total),
+          paymentMethod: finalPaymentMethod,
+          description: `Pedido #${order.orderNumber} - Pagamento em ${paymentLabels[finalPaymentMethod] || finalPaymentMethod}`,
+          orderId: order.id,
+          userId: attendantId,
+          amountReceived: finalPaymentMethod === 'cash' && amountReceived ? parseFloat(amountReceived) : null,
+          change: finalPaymentMethod === 'cash' && change ? parseFloat(change) : null
+        });
+        console.log(`💰 [CAIXA] Movimento registrado para pedido #${order.orderNumber} (${paymentLabels[finalPaymentMethod]})`);
+      } catch (cashError) {
+        console.error('⚠️ Erro ao registrar movimento no caixa:', cashError);
+        // Não falha a operação se caixa der erro
       }
 
       // Push notification para cliente
@@ -731,16 +739,62 @@ class OrderController {
         }
       }
 
+      // Devolver cashback usado (se houver)
+      const cashbackUsed = parseFloat(order.cashbackUsed) || 0;
+      if (cashbackUsed > 0) {
+        try {
+          const user = await User.findByPk(userId);
+          if (user) {
+            await user.addCashback(
+              cashbackUsed,
+              order.id,
+              `Devolução de cashback - Pedido #${order.orderNumber} cancelado`
+            );
+            console.log(`💰 Devolvido R$${cashbackUsed.toFixed(2)} de cashback para usuário ${userId}`);
+          }
+        } catch (cashbackError) {
+          console.error('Erro ao devolver cashback:', cashbackError);
+          // Não falha o cancelamento se houver erro na devolução
+        }
+      }
+
       // Atualizar status
-      await order.update({ 
+      await order.update({
         status: 'cancelled',
         paymentStatus: 'cancelled'
       });
 
+      // Buscar dados completos do pedido para notificação
+      const fullOrder = await Order.findByPk(order.id, {
+        include: [
+          { model: Table, as: 'table', attributes: ['id', 'number', 'name'] },
+          { model: User, as: 'customer', attributes: ['id', 'nome'] },
+          { model: OrderItem, as: 'items' }
+        ]
+      });
+
+      // Notificar staff via Socket.IO
+      try {
+        socketService.notifyOrderStatusChange(order.id, 'cancelled', {
+          orderNumber: order.orderNumber,
+          tableNumber: fullOrder.table?.number || 'Balcão',
+          customerName: fullOrder.customer?.nome,
+          reason: 'Cancelado pelo cliente',
+          cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined
+        });
+        console.log(`📡 Notificação de cancelamento enviada para staff - Pedido #${order.orderNumber}`);
+      } catch (socketError) {
+        console.error('Erro ao notificar via Socket:', socketError);
+        // Não falha o cancelamento se houver erro na notificação
+      }
+
       res.status(200).json({
         success: true,
         message: 'Pedido cancelado com sucesso',
-        data: { order }
+        data: {
+          order,
+          cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined
+        }
       });
     } catch (error) {
       console.error('Erro ao cancelar pedido:', error);

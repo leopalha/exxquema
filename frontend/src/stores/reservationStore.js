@@ -4,6 +4,20 @@ import { toast } from 'react-hot-toast';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 // Status de reserva
 export const RESERVATION_STATUS = {
   PENDING: 'pending',
@@ -71,7 +85,7 @@ export const useReservationStore = create(
       createReservation: async (reservationData) => {
         set({ loading: true, error: null });
         try {
-          const token = localStorage.getItem('token');
+          const token = getAuthToken();
 
           const response = await fetch(`${API_BASE_URL}/reservations`, {
             method: 'POST',
@@ -111,7 +125,7 @@ export const useReservationStore = create(
        * Buscar minhas reservas (cliente logado)
        */
       fetchMyReservations: async () => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return [];
 
         set({ loading: true, error: null });
@@ -167,7 +181,7 @@ export const useReservationStore = create(
        * Atualizar reserva (apenas se pending)
        */
       updateReservation: async (id, updates) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
           toast.error('Você precisa estar logado');
           return { success: false };
@@ -208,7 +222,7 @@ export const useReservationStore = create(
        * Cancelar reserva
        */
       cancelReservation: async (id, reason = '') => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) {
           toast.error('Você precisa estar logado');
           return { success: false };
@@ -251,7 +265,7 @@ export const useReservationStore = create(
        * Buscar todas as reservas (admin)
        */
       fetchAllReservations: async (filters = {}) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return [];
 
         set({ loading: true, error: null });
@@ -286,7 +300,7 @@ export const useReservationStore = create(
        * Confirmar reserva (admin)
        */
       confirmReservation: async (id, tableId = null) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return { success: false };
 
         set({ loading: true, error: null });
@@ -324,7 +338,7 @@ export const useReservationStore = create(
        * Marcar chegada (admin)
        */
       markArrived: async (id) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return { success: false };
 
         set({ loading: true, error: null });
@@ -360,7 +374,7 @@ export const useReservationStore = create(
        * Enviar lembrete (admin)
        */
       sendReminder: async (id) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return { success: false };
 
         set({ loading: true, error: null });
@@ -395,7 +409,7 @@ export const useReservationStore = create(
        * Buscar estatísticas (admin)
        */
       fetchStats: async (days = 30) => {
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         if (!token) return null;
 
         set({ loading: true, error: null });

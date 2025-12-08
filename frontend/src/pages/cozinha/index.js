@@ -63,7 +63,16 @@ export default function PainelCozinha() {
     loadDashboard();
 
     // Conectar ao Socket.IO
-    const token = localStorage.getItem('token');
+    const authData = localStorage.getItem('flame-auth');
+    let token = null;
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed?.state?.token;
+      } catch (e) {
+        console.error('Erro ao parsear token:', e);
+      }
+    }
     socketService.connect(token);
     socketService.joinKitchenRoom();
 

@@ -17,10 +17,14 @@ import {
 } from 'lucide-react';
 import useCashierStore from '../../stores/cashierStore';
 import { useAuthStore } from '../../stores/authStore';
+import socketService from '../../services/socket';
+import useNotificationSound from '../../hooks/useNotificationSound';
+import { toast } from 'react-hot-toast';
 
 export default function CaixaPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { playSuccess, playNewOrder, playAlert } = useNotificationSound();
   const {
     currentCashier,
     cashierHistory,
@@ -77,6 +81,69 @@ export default function CaixaPage() {
     fetchCashierHistory(1);
     fetchCashierStats(30);
   }, [isAuthenticated, user, router]);
+
+  // Socket.IO para atualizações em tempo real
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (user?.tipo !== 'staff' && user?.tipo !== 'admin') return;
+
+    // Conectar ao Socket.IO
+    const authData = localStorage.getItem('flame-auth');
+    let token = null;
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed?.state?.token;
+      } catch (e) {
+        console.error('Erro ao parsear token:', e);
+      }
+    }
+
+    if (token) {
+      socketService.connect(token);
+
+      // Caixa ouve a sala de atendentes para pedidos pagos
+      socketService.joinWaiterRoom();
+
+      // Listener para pedidos atualizados (especialmente pagamentos)
+      const handleOrderUpdated = (order) => {
+        console.log('🔄 [Caixa] Pedido atualizado via Socket:', order);
+
+        // Se o pedido foi pago/entregue, atualiza o caixa
+        if (order.status === 'delivered' || order.paymentStatus === 'paid') {
+          toast.success(`Pedido #${order.orderNumber || order.id?.substring(0, 8)} - Pagamento recebido!`, {
+            icon: '💰',
+            duration: 4000
+          });
+          playSuccess();
+
+          // Atualiza o caixa atual se houver
+          if (currentCashier) {
+            fetchCurrentCashier();
+          }
+        }
+      };
+
+      // Listener para novos pedidos (para monitoramento geral)
+      const handleOrderCreated = (order) => {
+        console.log('📦 [Caixa] Novo pedido via Socket:', order);
+        // Apenas notifica visualmente sem som forte
+        toast(`Novo pedido #${order.orderNumber || order.id?.substring(0, 8)}`, {
+          icon: '📋',
+          duration: 3000
+        });
+      };
+
+      socketService.onOrderUpdated(handleOrderUpdated);
+      socketService.onOrderCreated(handleOrderCreated);
+
+      // Cleanup
+      return () => {
+        socketService.removeListener('order_updated', handleOrderUpdated);
+        socketService.removeListener('order_created', handleOrderCreated);
+      };
+    }
+  }, [isAuthenticated, user, playSuccess, currentCashier, fetchCurrentCashier]);
 
   const handleLogout = () => {
     router.push('/login');

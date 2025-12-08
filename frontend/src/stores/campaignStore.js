@@ -3,6 +3,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 const useCampaignStore = create((set, get) => ({
   // State
   campaigns: [],
@@ -35,7 +49,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/campaigns`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filters
@@ -60,7 +74,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/campaigns/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -83,7 +97,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/campaigns/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -109,7 +123,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns`, data, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -136,7 +150,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.put(`${API_URL}/campaigns/${id}`, data, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -166,7 +180,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       await axios.delete(`${API_URL}/campaigns/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -191,7 +205,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/campaigns/${id}/audience`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -217,7 +231,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns/${id}/simulate`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -243,7 +257,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns/${id}/execute`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -273,7 +287,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns/${id}/pause`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -302,7 +316,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns/${id}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -331,7 +345,7 @@ const useCampaignStore = create((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(`${API_URL}/campaigns/quick-reactivation`, { days }, {
         headers: { Authorization: `Bearer ${token}` }
       });

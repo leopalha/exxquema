@@ -4,6 +4,20 @@ import api from '../services/api';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 export const useHookahStore = create(
   persist(
     (set, get) => ({
@@ -40,7 +54,7 @@ export const useHookahStore = create(
         try {
           const response = await fetch(`${API_BASE_URL}/hookah/sessions`, {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
           });
           const data = await response.json();
@@ -63,7 +77,7 @@ export const useHookahStore = create(
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
             body: JSON.stringify({
               mesaId,
@@ -97,7 +111,7 @@ export const useHookahStore = create(
           const response = await fetch(`${API_BASE_URL}/hookah/sessions/${sessionId}/coal`, {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
           });
 
@@ -123,7 +137,7 @@ export const useHookahStore = create(
           const response = await fetch(`${API_BASE_URL}/hookah/sessions/${sessionId}/pause`, {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
           });
 
@@ -149,7 +163,7 @@ export const useHookahStore = create(
           const response = await fetch(`${API_BASE_URL}/hookah/sessions/${sessionId}/resume`, {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
           });
 
@@ -177,7 +191,7 @@ export const useHookahStore = create(
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Authorization': `Bearer ${getAuthToken()}`,
             },
             body: JSON.stringify({ notes }),
           });
@@ -209,7 +223,7 @@ export const useHookahStore = create(
             `${API_BASE_URL}/hookah/history?days=${days}`,
             {
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${getAuthToken()}`,
               },
             }
           );
@@ -234,7 +248,7 @@ export const useHookahStore = create(
             `${API_BASE_URL}/hookah/revenue-report?days=${days}`,
             {
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Authorization': `Bearer ${getAuthToken()}`,
               },
             }
           );

@@ -3,6 +3,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
+// Helper para obter token do Zustand persist storage
+const getAuthToken = () => {
+  try {
+    const authData = localStorage.getItem('flame-auth');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      return parsed?.state?.token;
+    }
+  } catch (e) {
+    console.error('Erro ao parsear token:', e);
+  }
+  return null;
+};
+
 const useCashierStore = create((set, get) => ({
   // State
   currentCashier: null,
@@ -21,7 +35,7 @@ const useCashierStore = create((set, get) => ({
   openCashier: async (openingAmount, notes) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/cashier/open`,
         { openingAmount: parseFloat(openingAmount), notes },
@@ -47,7 +61,7 @@ const useCashierStore = create((set, get) => ({
   fetchCurrentCashier: async () => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/cashier/current`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -77,7 +91,7 @@ const useCashierStore = create((set, get) => ({
   registerDeposit: async (cashierId, amount, description) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/cashier/deposit`,
         {
@@ -106,7 +120,7 @@ const useCashierStore = create((set, get) => ({
   registerWithdrawal: async (cashierId, amount, description) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/cashier/withdrawal`,
         {
@@ -135,7 +149,7 @@ const useCashierStore = create((set, get) => ({
   closeCashier: async (cashierId, closingAmount, notes) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.post(
         `${API_URL}/cashier/close`,
         {
@@ -165,7 +179,7 @@ const useCashierStore = create((set, get) => ({
   fetchCashierHistory: async (page = 1, limit = 20, filters = {}) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
@@ -196,7 +210,7 @@ const useCashierStore = create((set, get) => ({
   fetchCashierDetails: async (cashierId) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/cashier/${cashierId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -220,7 +234,7 @@ const useCashierStore = create((set, get) => ({
   fetchCashierStats: async (days = 30) => {
     set({ loading: true, error: null });
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await axios.get(`${API_URL}/cashier/stats?days=${days}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

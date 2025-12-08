@@ -27,6 +27,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { formatCurrency, formatRelativeTime } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import { api } from '../../services/api';
+import socketService from '../../services/socket';
+import useNotificationSound from '../../hooks/useNotificationSound';
 
 const STATUS_CONFIG = {
   pending: { label: 'Pendente', color: 'bg-yellow-500', icon: AlertCircle },
@@ -43,6 +45,7 @@ const STATUS_OPTIONS = ['all', 'pending', 'confirmed', 'preparing', 'ready', 'on
 export default function AdminOrders() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
+  const { playNewOrder, playSuccess, playAlert } = useNotificationSound();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +71,71 @@ export default function AdminOrders() {
       return;
     }
   }, [isAuthenticated, user, router]);
+
+  // Socket.IO para atualizações em tempo real
+  useEffect(() => {
+    if (!isAuthenticated || user?.role !== 'admin') return;
+
+    // Conectar ao Socket.IO
+    const authData = localStorage.getItem('flame-auth');
+    let token = null;
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed?.state?.token;
+      } catch (e) {
+        console.error('Erro ao parsear token:', e);
+      }
+    }
+
+    if (token) {
+      socketService.connect(token);
+
+      // Admin ouve todas as salas
+      socketService.joinWaiterRoom();
+
+      // Listener para novos pedidos
+      const handleOrderCreated = (order) => {
+        console.log('📦 [Admin Orders] Novo pedido via Socket:', order);
+        toast.success(`Novo pedido #${order.orderNumber || order.id?.substring(0, 8)}`, {
+          icon: '🔔',
+          duration: 5000
+        });
+        playNewOrder();
+        fetchOrders();
+      };
+
+      // Listener para atualizações de pedidos
+      const handleOrderUpdated = (order) => {
+        console.log('🔄 [Admin Orders] Pedido atualizado via Socket:', order);
+
+        // Atualiza localmente se possível
+        setOrders(prev => {
+          const exists = prev.find(o => o.id === order.id);
+          if (exists) {
+            return prev.map(o => o.id === order.id ? { ...o, ...order } : o);
+          }
+          return prev;
+        });
+
+        // Atualiza o pedido selecionado se for o mesmo
+        if (selectedOrder?.id === order.id) {
+          setSelectedOrder(prev => ({ ...prev, ...order }));
+        }
+
+        playSuccess();
+      };
+
+      socketService.onOrderCreated(handleOrderCreated);
+      socketService.onOrderUpdated(handleOrderUpdated);
+
+      // Cleanup
+      return () => {
+        socketService.removeListener('order_created', handleOrderCreated);
+        socketService.removeListener('order_updated', handleOrderUpdated);
+      };
+    }
+  }, [isAuthenticated, user, playNewOrder, playSuccess]);
 
   // Fetch orders from API
   const fetchOrders = useCallback(async () => {

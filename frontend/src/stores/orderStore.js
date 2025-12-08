@@ -319,13 +319,12 @@ export const useOrderStore = create(
         }
       },
 
-      // Cancelar pedido
+      // Cancelar pedido - Chama API real
       cancelOrder: async (orderId) => {
         set({ loading: true });
 
         try {
-          await new Promise(resolve => setTimeout(resolve, 500));
-
+          // Buscar o pedido local para pegar o ID real (UUID)
           const order = get().getOrderById(orderId);
 
           if (!order) {
@@ -333,23 +332,42 @@ export const useOrderStore = create(
             return { success: false };
           }
 
+          // Verificar localmente se pode cancelar
           if ([ORDER_STATUS.READY, ORDER_STATUS.DELIVERED].includes(order.status)) {
             toast.error('Este pedido nao pode mais ser cancelado');
             return { success: false };
           }
 
-          set(state => ({
-            orders: state.orders.map(o =>
-              o.id === orderId
-                ? { ...o, status: ORDER_STATUS.CANCELLED, cancelledAt: new Date().toISOString() }
-                : o
-            )
-          }));
+          // Usar o orderId (UUID) se disponivel, senao usar o id do pedido
+          const realOrderId = order.orderId || orderId;
 
-          toast.success('Pedido cancelado');
-          return { success: true };
+          console.log('🚫 Cancelando pedido:', realOrderId);
+
+          // Chamar API real para cancelar
+          const response = await api.patch(`/orders/${realOrderId}/cancel`);
+
+          console.log('📥 Resposta do cancelamento:', response.data);
+
+          if (response.data.success) {
+            // Atualizar estado local
+            set(state => ({
+              orders: state.orders.map(o =>
+                (o.id === orderId || o.orderId === realOrderId)
+                  ? { ...o, status: ORDER_STATUS.CANCELLED, cancelledAt: new Date().toISOString() }
+                  : o
+              )
+            }));
+
+            toast.success('Pedido cancelado com sucesso');
+            return { success: true };
+          } else {
+            toast.error(response.data.message || 'Erro ao cancelar pedido');
+            return { success: false };
+          }
         } catch (error) {
-          toast.error('Erro ao cancelar pedido');
+          console.error('❌ Erro ao cancelar pedido:', error);
+          const message = error.response?.data?.message || 'Erro ao cancelar pedido';
+          toast.error(message);
           return { success: false };
         } finally {
           set({ loading: false });
