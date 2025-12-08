@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, Search, Phone } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import {
   countries,
   getCountryByCode,
   getCountriesForDropdown,
-  formatPhoneDisplay
+  formatPhoneDisplay,
+  getPhonePlaceholder
 } from '../data/countries';
 
 /**
@@ -28,11 +29,14 @@ export default function PhoneInput({
   label = 'Número do Celular',
   disabled = false,
   className = '',
-  initialCountry = null, // Não define país padrão - usuário deve escolher
+  initialCountry = 'BR', // Brasil como padrão
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(() => {
+    // Inicializar com Brasil por padrão
+    return getCountryByCode('BR');
+  });
   const [phoneNumber, setPhoneNumber] = useState('');
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
@@ -56,8 +60,8 @@ export default function PhoneInput({
       }
     }
 
-    // Se não tem valor mas tem país inicial
-    if (initialCountry && !selectedCountry) {
+    // Se não tem valor e tem país inicial diferente do default
+    if (!value && initialCountry && initialCountry !== 'BR') {
       const country = getCountryByCode(initialCountry);
       if (country) {
         setSelectedCountry(country);
@@ -156,16 +160,10 @@ export default function PhoneInput({
     ? formatPhoneDisplay(phoneNumber, selectedCountry.code)
     : phoneNumber;
 
-  // Placeholder dinâmico
+  // Placeholder com máscara do país
   const getPlaceholder = () => {
-    if (!selectedCountry) return 'Selecione o país primeiro';
-
-    const { digits } = selectedCountry;
-    const count = digits.min === digits.max
-      ? `${digits.min} dígitos`
-      : `${digits.min}-${digits.max} dígitos`;
-
-    return `Digite seu número (${count})`;
+    if (!selectedCountry) return 'Selecione o país';
+    return getPhonePlaceholder(selectedCountry.code);
   };
 
   return (
@@ -236,20 +234,13 @@ export default function PhoneInput({
                         key={item.code}
                         type="button"
                         onClick={() => handleCountrySelect(item)}
-                        className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-700 transition-colors text-left ${
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-700 transition-colors text-left ${
                           selectedCountry?.code === item.code ? 'bg-neutral-700' : ''
                         }`}
                       >
                         <span className="text-xl">{item.flag}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm truncate">{item.name}</p>
-                          <p className="text-neutral-400 text-xs">
-                            {item.dial} • {item.digits.min === item.digits.max
-                              ? `${item.digits.min} dígitos`
-                              : `${item.digits.min}-${item.digits.max} dígitos`
-                            }
-                          </p>
-                        </div>
+                        <span className="text-white text-sm flex-1 truncate">{item.name}</span>
+                        <span className="text-neutral-400 text-sm font-mono">{item.dial}</span>
                         {selectedCountry?.code === item.code && (
                           <div className="w-2 h-2 rounded-full bg-[var(--theme-primary)]" />
                         )}
@@ -267,10 +258,7 @@ export default function PhoneInput({
         </div>
 
         {/* Input do Número */}
-        <div className="flex-1 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Phone className="h-5 w-5 text-neutral-400" />
-          </div>
+        <div className="flex-1">
           <input
             ref={inputRef}
             type="tel"
@@ -281,7 +269,7 @@ export default function PhoneInput({
             onKeyDown={handleKeyDown}
             placeholder={getPlaceholder()}
             disabled={disabled || !selectedCountry}
-            className="w-full pl-10 pr-3 py-3 bg-transparent text-white placeholder-neutral-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg"
+            className="w-full px-4 py-3 bg-transparent text-white placeholder-neutral-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg"
           />
         </div>
       </div>
@@ -289,14 +277,6 @@ export default function PhoneInput({
       {/* Mensagem de Erro */}
       {error && (
         <p className="mt-2 text-sm text-red-400">{error}</p>
-      )}
-
-      {/* Info do país selecionado */}
-      {selectedCountry && !error && (
-        <p className="mt-1 text-xs text-neutral-500">
-          {selectedCountry.name} ({selectedCountry.dial})
-          {phoneNumber && ` • ${phoneNumber.length}/${selectedCountry.digits.max} dígitos`}
-        </p>
       )}
     </div>
   );

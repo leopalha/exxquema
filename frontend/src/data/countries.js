@@ -197,4 +197,61 @@ export const toE164 = (phone, countryCode) => {
   return `${country.dial}${digits}`;
 };
 
+/**
+ * Retorna placeholder com máscara visual para cada país
+ * Ex: Brasil (11 dígitos) = (XX) XXXXX-XXXX
+ * Ex: EUA (10 dígitos) = (XXX) XXX-XXXX
+ */
+export const getPhonePlaceholder = (countryCode) => {
+  const country = getCountryByCode(countryCode);
+  if (!country) return '';
+
+  // Máscaras específicas por país
+  const masks = {
+    // Brasil: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+    'BR': '(XX) XXXXX-XXXX',
+    // EUA/Canadá: (XXX) XXX-XXXX
+    'US': '(XXX) XXX-XXXX',
+    'CA': '(XXX) XXX-XXXX',
+    // Portugal: XXX XXX XXX
+    'PT': 'XXX XXX XXX',
+    // Argentina: (XX) XXXX-XXXX
+    'AR': '(XX) XXXX-XXXX',
+    // Chile: X XXXX XXXX
+    'CL': 'X XXXX XXXX',
+    // Colômbia: XXX XXX XXXX
+    'CO': 'XXX XXX XXXX',
+    // México: (XX) XXXX-XXXX
+    'MX': '(XX) XXXX-XXXX',
+    // Reino Unido: XXXX XXX XXX
+    'GB': 'XXXX XXX XXX',
+    // Alemanha: XXX XXXXXXXX
+    'DE': 'XXX XXXXXXXX',
+    // França: X XX XX XX XX
+    'FR': 'X XX XX XX XX',
+    // Itália: XXX XXX XXXX
+    'IT': 'XXX XXX XXXX',
+    // Espanha: XXX XX XX XX
+    'ES': 'XXX XX XX XX',
+    // Japão: XXX-XXXX-XXXX
+    'JP': 'XXX-XXXX-XXXX',
+    // Austrália: XXX XXX XXX
+    'AU': 'XXX XXX XXX',
+  };
+
+  // Se tem máscara específica, usa ela
+  if (masks[countryCode]) {
+    return masks[countryCode];
+  }
+
+  // Máscara genérica baseada no número de dígitos
+  const digits = country.digits.max;
+  if (digits <= 7) return 'XXX XXXX';
+  if (digits === 8) return 'XXXX XXXX';
+  if (digits === 9) return 'XXX XXX XXX';
+  if (digits === 10) return 'XXX XXX XXXX';
+  if (digits === 11) return 'XX XXXXX XXXX';
+  return 'X'.repeat(digits);
+};
+
 export default countries;
