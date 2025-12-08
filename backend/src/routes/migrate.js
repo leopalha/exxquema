@@ -1170,4 +1170,49 @@ router.post('/add-order-timeline-fields', async (req, res) => {
   }
 });
 
+// Migration: Add cashbackUsed and discount columns to orders table
+router.post('/add-order-cashback-fields', async (req, res) => {
+  try {
+    const columns = [
+      { name: 'cashbackUsed', type: 'DECIMAL(10,2)', default: '0.00' },
+      { name: 'discount', type: 'DECIMAL(10,2)', default: '0.00' }
+    ];
+
+    const results = [];
+
+    for (const col of columns) {
+      // Check if column exists
+      const [existing] = await sequelize.query(`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'orders'
+        AND column_name = '${col.name}'
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already exists' });
+      } else {
+        await sequelize.query(`
+          ALTER TABLE "orders"
+          ADD COLUMN "${col.name}" ${col.type} DEFAULT ${col.default}
+        `);
+        results.push({ column: col.name, status: 'added' });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Campos cashbackUsed e discount verificados/adicionados',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração order cashback fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
