@@ -213,10 +213,9 @@ export default function Home() {
               >
                 <Link
                   href="/cardapio"
-                  className="group relative px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl sm:hover:scale-105 overflow-hidden w-full sm:w-auto hover:opacity-90"
+                  className="btn-link group relative px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 shadow-xl sm:hover:scale-105 overflow-hidden w-full sm:w-auto hover:opacity-90"
                   style={{
-                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`,
-                    color: 'white'
+                    background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
                   }}
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -228,10 +227,9 @@ export default function Home() {
 
                 <Link
                   href="/historia"
-                  className="group bg-black/40 backdrop-blur-sm border-2 px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
+                  className="btn-link group bg-black/40 backdrop-blur-sm border-2 px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all inline-flex items-center justify-center gap-2 sm:gap-3 sm:hover:scale-105 shadow-xl shadow-black/50 w-full sm:w-auto"
                   style={{
-                    borderColor: 'var(--theme-primary)',
-                    color: 'white'
+                    borderColor: 'var(--theme-primary)'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--theme-primary)'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.4)'}

@@ -700,11 +700,46 @@ class OrderController {
         });
       }
 
-      // Cancelar pagamento se houver
+      // Cancelar ou estornar pagamento se houver
+      let refundInfo = null;
       if (order.paymentId) {
-        const cancelResult = await paymentService.cancelPayment(order.paymentId);
-        if (!cancelResult.success) {
-          console.error('Erro ao cancelar pagamento:', cancelResult.error);
+        // Verificar status atual do pagamento no Stripe
+        const paymentStatus = await paymentService.getPaymentStatus(order.paymentId);
+        console.log(`💳 Status do pagamento ${order.paymentId}: ${paymentStatus.status}`);
+
+        if (paymentStatus.success) {
+          if (paymentStatus.status === 'succeeded') {
+            // Pagamento já foi capturado - fazer REFUND (estorno real)
+            console.log(`💰 Pagamento já capturado, criando refund...`);
+            const refundResult = await paymentService.createRefund(order.paymentId);
+
+            if (refundResult.success) {
+              console.log(`✅ Refund criado: ${refundResult.refundId} - R$${refundResult.amount}`);
+              refundInfo = {
+                refundId: refundResult.refundId,
+                amount: refundResult.amount,
+                status: refundResult.status,
+                estimatedDays: '5-10 dias úteis'
+              };
+              // Atualizar status do pagamento para refunded
+              await order.update({ paymentStatus: 'refunded' });
+            } else {
+              console.error('❌ Erro ao criar refund:', refundResult.error);
+            }
+          } else if (['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing'].includes(paymentStatus.status)) {
+            // Pagamento ainda não foi capturado - apenas cancelar
+            console.log(`🚫 Pagamento não capturado, cancelando PaymentIntent...`);
+            const cancelResult = await paymentService.cancelPayment(order.paymentId);
+            if (!cancelResult.success) {
+              console.error('❌ Erro ao cancelar pagamento:', cancelResult.error);
+            } else {
+              console.log(`✅ PaymentIntent cancelado`);
+            }
+          } else {
+            console.log(`⚠️ Status do pagamento desconhecido: ${paymentStatus.status}`);
+          }
+        } else {
+          console.error('❌ Erro ao verificar status do pagamento:', paymentStatus.error);
         }
       }
 
@@ -788,12 +823,35 @@ class OrderController {
         // Não falha o cancelamento se houver erro na notificação
       }
 
+      // Notificar cliente via push se houve estorno
+      if (refundInfo) {
+        try {
+          await pushService.sendToUser(userId, {
+            title: 'FLAME - Pedido Cancelado',
+            body: `Seu pedido #${order.orderNumber} foi cancelado. Estorno de R$${refundInfo.amount.toFixed(2)} em ${refundInfo.estimatedDays}.`,
+            icon: '/icons/icon-192x192.png',
+            tag: 'order-refund',
+            data: {
+              type: 'order_refunded',
+              orderId: order.id,
+              refundAmount: refundInfo.amount
+            }
+          });
+          console.log(`📱 Push de estorno enviado para usuário ${userId}`);
+        } catch (pushError) {
+          console.error('Erro ao enviar push de estorno:', pushError);
+        }
+      }
+
       res.status(200).json({
         success: true,
-        message: 'Pedido cancelado com sucesso',
+        message: refundInfo
+          ? `Pedido cancelado. Estorno de R$${refundInfo.amount.toFixed(2)} em ${refundInfo.estimatedDays}.`
+          : 'Pedido cancelado com sucesso',
         data: {
           order,
-          cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined
+          cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined,
+          refund: refundInfo || undefined
         }
       });
     } catch (error) {

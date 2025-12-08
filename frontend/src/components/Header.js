@@ -316,10 +316,9 @@ const Header = () => {
             ) : (
               <Link
                 href="/login"
-                className="px-6 py-2 rounded-lg font-medium text-sm transition-all shadow-lg hover:opacity-90"
+                className="btn-link px-6 py-2 rounded-lg font-medium text-sm transition-all shadow-lg hover:opacity-90"
                 style={{
-                  background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`,
-                  color: 'white'
+                  background: `linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))`
                 }}
               >
                 Entrar

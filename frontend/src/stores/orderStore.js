@@ -358,8 +358,20 @@ export const useOrderStore = create(
               )
             }));
 
-            toast.success('Pedido cancelado com sucesso');
-            return { success: true };
+            // Mostrar mensagem apropriada (com ou sem estorno)
+            const message = response.data.message || 'Pedido cancelado com sucesso';
+            toast.success(message, { duration: 5000 });
+
+            // Se houve estorno, mostrar info adicional
+            if (response.data.data?.refund) {
+              const refund = response.data.data.refund;
+              toast(`Estorno de R$${refund.amount.toFixed(2)} sera creditado em ${refund.estimatedDays}`, {
+                icon: '💳',
+                duration: 8000
+              });
+            }
+
+            return { success: true, refund: response.data.data?.refund };
           } else {
             toast.error(response.data.message || 'Erro ao cancelar pedido');
             return { success: false };

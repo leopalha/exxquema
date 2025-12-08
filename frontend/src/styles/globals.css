@@ -238,6 +238,19 @@ a:hover {
   color: var(--theme-secondary);
 }
 
+/* Links que funcionam como botões - não aplicar cor padrão de link */
+a.btn-link,
+a[style*="background"],
+a[style*="linear-gradient"] {
+  color: white !important;
+}
+
+a.btn-link:hover,
+a[style*="background"]:hover,
+a[style*="linear-gradient"]:hover {
+  color: white !important;
+}
+
 a:focus-visible {
   outline: 2px solid var(--theme-primary);
   outline-offset: 4px;
