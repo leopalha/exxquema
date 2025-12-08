@@ -176,7 +176,7 @@ export default function PhoneInput({
         </label>
       )}
 
-      <div className={`flex border rounded-lg bg-neutral-800 overflow-hidden transition-colors ${
+      <div className={`flex border rounded-lg bg-neutral-800 transition-colors ${
         error ? 'border-red-500' : 'border-neutral-600 focus-within:border-[var(--theme-primary)] focus-within:ring-2 focus-within:ring-[var(--theme-primary)]/20'
       }`}>
         {/* Seletor de País */}
@@ -185,7 +185,7 @@ export default function PhoneInput({
             type="button"
             onClick={handleToggleDropdown}
             disabled={disabled}
-            className={`flex items-center gap-2 px-3 py-3 bg-neutral-700 hover:bg-neutral-600 transition-colors border-r border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] ${
+            className={`flex items-center gap-2 px-3 py-3 bg-neutral-700 hover:bg-neutral-600 transition-colors border-r border-neutral-600 rounded-l-lg disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] ${
               !selectedCountry ? 'text-neutral-400' : ''
             }`}
           >
@@ -281,7 +281,7 @@ export default function PhoneInput({
             onKeyDown={handleKeyDown}
             placeholder={getPlaceholder()}
             disabled={disabled || !selectedCountry}
-            className="w-full pl-10 pr-3 py-3 bg-transparent text-white placeholder-neutral-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full pl-10 pr-3 py-3 bg-transparent text-white placeholder-neutral-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed rounded-r-lg"
           />
         </div>
       </div>
