@@ -349,10 +349,9 @@ export default function Avaliacoes() {
                   href="/cardapio"
                   style={{
                     background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))',
-                    boxShadow: 'rgba(var(--theme-primary-rgb, 255, 0, 110), 0.3) 0 0 20px',
-                    color: 'white'
+                    boxShadow: 'rgba(var(--theme-primary-rgb, 255, 0, 110), 0.3) 0 0 20px'
                   }}
-                  className="inline-block font-semibold px-8 py-3 rounded-lg transition-all hover:opacity-90"
+                  className="btn-link inline-block font-semibold px-8 py-3 rounded-lg transition-all hover:opacity-90"
                 >
                   Ver Cardapio
                 </a>

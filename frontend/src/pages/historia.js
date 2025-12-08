@@ -102,8 +102,8 @@ export default function Historia() {
               >
                 <a
                   href="#timeline"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
-                  style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' }}
+                  className="btn-link inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                  style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
@@ -330,8 +330,8 @@ export default function Historia() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/conceito"
-                  className="px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
-                  style={{ background: 'linear-gradient(to right, var(--theme-secondary), var(--theme-accent))', color: 'white' }}
+                  className="btn-link px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                  style={{ background: 'linear-gradient(to right, var(--theme-secondary), var(--theme-accent))' }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
@@ -339,8 +339,8 @@ export default function Historia() {
                 </Link>
                 <Link
                   href="/cardapio"
-                  className="px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
-                  style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))', color: 'white' }}
+                  className="btn-link px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                  style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-secondary))' }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >

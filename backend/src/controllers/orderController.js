@@ -82,6 +82,36 @@ class OrderController {
             message: 'Mesa não encontrada ou inativa'
           });
         }
+
+        // Sprint 54: Verificar se mesa ja tem pedidos ativos de OUTRO usuario
+        // Permite adicionar pedidos a mesa se for o mesmo usuario
+        const { allowShared } = req.body; // Flag para permitir compartilhar mesa
+        const activeOrdersOnTable = await Order.findAll({
+          where: {
+            tableId: tableId,
+            status: {
+              [Op.notIn]: ['delivered', 'cancelled']
+            }
+          }
+        });
+
+        if (activeOrdersOnTable.length > 0 && !allowShared) {
+          // Verificar se todos os pedidos ativos sao do mesmo usuario
+          const otherUserOrders = activeOrdersOnTable.filter(o => o.userId !== userId);
+
+          if (otherUserOrders.length > 0) {
+            console.log(`⚠️ [CREATE ORDER] Mesa ${table.number} ocupada por outro usuario`);
+            return res.status(400).json({
+              success: false,
+              message: `Mesa ${table.number} ja esta ocupada por outro cliente. Escolha outra mesa ou solicite ao atendente.`,
+              code: 'TABLE_OCCUPIED',
+              tableNumber: table.number
+            });
+          }
+
+          // Se sao pedidos do mesmo usuario, permitir (adicionar mais itens)
+          console.log(`📦 [CREATE ORDER] Mesa ${table.number} tem ${activeOrdersOnTable.length} pedido(s) ativo(s) do mesmo usuario`);
+        }
       }
 
       // Calcular tempo estimado baseado nos produtos
@@ -814,6 +844,7 @@ class OrderController {
           orderNumber: order.orderNumber,
           tableNumber: fullOrder.table?.number || 'Balcão',
           customerName: fullOrder.customer?.nome,
+          userId: order.userId, // Para notificar o cliente via socket
           reason: 'Cancelado pelo cliente',
           cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined
         });
@@ -1085,6 +1116,7 @@ class OrderController {
         orderNumber: order.orderNumber,
         tableNumber: order.table?.number || 'Balcão',
         customerName: order.customer?.nome,
+        userId: order.userId, // Para notificar o cliente via socket
         previousStatus: currentStatus,
         changedBy: req.user.nome,
         changedByRole: userRole

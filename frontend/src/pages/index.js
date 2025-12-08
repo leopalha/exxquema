@@ -462,11 +462,10 @@ export default function Home() {
                 >
                   <Link
                     href="/cardapio"
-                    className="group relative px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
+                    className="btn-link group relative px-12 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
                     style={{
                       background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
-                      color: 'white'
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
                     }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -563,11 +562,10 @@ export default function Home() {
                   <Link
                     href="https://maps.google.com"
                     target="_blank"
-                    className="group relative px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
+                    className="btn-link group relative px-10 py-5 rounded-xl font-bold text-lg transition-all inline-flex items-center gap-3 shadow-2xl hover:scale-105 hover:opacity-90 overflow-hidden"
                     style={{
                       background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
-                      color: 'white'
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)'
                     }}
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />

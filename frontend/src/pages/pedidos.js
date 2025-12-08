@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -10,6 +10,7 @@ import useThemeStore from '../stores/themeStore';
 import { useOrderStore, ORDER_STATUS, ORDER_STATUS_LABELS, PAYMENT_METHODS, CONSUMPTION_TYPES } from '../stores/orderStore';
 import { useCartStore } from '../stores/cartStore';
 import { formatCurrency } from '../utils/format';
+import socketService from '../services/socket';
 import {
   ShoppingBag,
   Clock,
@@ -24,7 +25,9 @@ import {
   Package,
   Truck,
   X,
-  AlertCircle
+  AlertCircle,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -45,7 +48,66 @@ export default function MeusPedidos() {
   const [filter, setFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [socketConnected, setSocketConnected] = useState(false);
 
+  // Funcao helper para obter token do Zustand
+  const getAuthToken = useCallback(() => {
+    try {
+      const stored = localStorage.getItem('flame-auth');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed?.state?.token || null;
+      }
+    } catch (e) {
+      console.error('Erro ao ler token:', e);
+    }
+    return null;
+  }, []);
+
+  // Handler para atualização de status do pedido via Socket
+  const handleOrderStatusUpdate = useCallback((data) => {
+    console.log('📦 Pedido atualizado via Socket:', data);
+
+    const { orderId, status, orderNumber } = data;
+
+    // Atualizar o pedido no store local
+    const { updateOrderStatus } = useOrderStore.getState();
+    updateOrderStatus(orderId || orderNumber, status);
+
+    // Mostrar notificação baseada no novo status
+    const statusMessages = {
+      'confirmed': { msg: 'Seu pedido foi confirmado!', icon: '✅' },
+      'preparing': { msg: 'Seu pedido está sendo preparado!', icon: '👨‍🍳' },
+      'ready': { msg: 'Seu pedido está pronto!', icon: '🎉' },
+      'on_way': { msg: 'Seu pedido saiu para entrega!', icon: '🚗' },
+      'delivered': { msg: 'Pedido entregue! Obrigado!', icon: '🙏' },
+      'cancelled': { msg: 'Pedido cancelado', icon: '❌' }
+    };
+
+    const statusInfo = statusMessages[status];
+    if (statusInfo) {
+      toast(statusInfo.msg, { icon: statusInfo.icon, duration: 5000 });
+    }
+  }, []);
+
+  // Handler para pedido pronto (notificação especial)
+  const handleOrderReady = useCallback((data) => {
+    console.log('🎉 Pedido pronto via Socket:', data);
+
+    toast.success(
+      `Pedido #${data.orderNumber || data.orderId} está pronto para retirada!`,
+      { duration: 8000, icon: '🔔' }
+    );
+
+    // Tentar tocar som de notificação
+    try {
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  }, []);
+
+  // Conectar Socket.IO quando autenticado
   useEffect(() => {
     if (!isAuthenticated) {
       toast.error('Faça login para ver seus pedidos');
@@ -53,9 +115,55 @@ export default function MeusPedidos() {
       return;
     }
 
-    // Simular carregamento
-    setTimeout(() => setIsLoading(false), 500);
-  }, [isAuthenticated, router]);
+    setIsLoading(true);
+
+    // Conectar ao Socket.IO
+    const token = getAuthToken();
+    if (token) {
+      console.log('🔌 Conectando Socket.IO para cliente...');
+      socketService.connect(token);
+
+      // Verificar conexão após um tempo
+      const checkConnection = setTimeout(() => {
+        const status = socketService.getConnectionStatus();
+        setSocketConnected(status.connected);
+        if (status.connected) {
+          console.log('✅ Socket.IO conectado para cliente');
+
+          // Entrar na sala do usuário para receber updates dos seus pedidos
+          if (user?.id) {
+            socketService.joinRoom(`user_${user.id}`);
+          }
+        }
+      }, 1000);
+
+      // Adicionar listeners para eventos de pedidos
+      socketService.onOrderStatusChanged(handleOrderStatusUpdate);
+      socketService.onOrderUpdated(handleOrderStatusUpdate);
+      socketService.onOrderReady(handleOrderReady);
+
+      // Listener generico para qualquer update
+      socketService.on('order_status_updated', handleOrderStatusUpdate);
+
+      setTimeout(() => setIsLoading(false), 500);
+
+      return () => {
+        clearTimeout(checkConnection);
+        // Remover listeners ao desmontar
+        socketService.off('order_status_changed', handleOrderStatusUpdate);
+        socketService.off('order_updated', handleOrderStatusUpdate);
+        socketService.off('order_ready', handleOrderReady);
+        socketService.off('order_status_updated', handleOrderStatusUpdate);
+
+        // Sair da sala do usuário
+        if (user?.id) {
+          socketService.leaveRoom(`user_${user.id}`);
+        }
+      };
+    } else {
+      setTimeout(() => setIsLoading(false), 500);
+    }
+  }, [isAuthenticated, router, user?.id, getAuthToken, handleOrderStatusUpdate, handleOrderReady]);
 
   const getStatusInfo = (status) => {
     const statuses = {
@@ -148,7 +256,27 @@ export default function MeusPedidos() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-2">Meus Pedidos</h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-4xl font-bold text-white mb-2">Meus Pedidos</h1>
+                {/* Indicador de conexão em tempo real */}
+                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
+                  socketConnected
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  {socketConnected ? (
+                    <>
+                      <Wifi className="w-3 h-3" />
+                      <span>Ao vivo</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="w-3 h-3" />
+                      <span>Offline</span>
+                    </>
+                  )}
+                </div>
+              </div>
               <p className="text-gray-400">
                 Acompanhe seus pedidos em tempo real
               </p>

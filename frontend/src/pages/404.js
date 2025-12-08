@@ -55,8 +55,8 @@ export default function NotFound() {
             >
               <Link
                 href="/"
-                className="px-8 py-4 rounded-lg font-semibold transition-all inline-flex items-center justify-center gap-2 hover:opacity-90"
-                style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))', color: 'white' }}
+                className="btn-link px-8 py-4 rounded-lg font-semibold transition-all inline-flex items-center justify-center gap-2 hover:opacity-90"
+                style={{ background: 'linear-gradient(to right, var(--theme-primary), var(--theme-accent), var(--theme-secondary))' }}
               >
                 <Home className="w-5 h-5" />
                 Voltar para Início
@@ -64,8 +64,7 @@ export default function NotFound() {
 
               <Link
                 href="/cardapio"
-                className="bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center gap-2 border border-gray-700"
-                style={{ color: 'white' }}
+                className="btn-link bg-gray-800 hover:bg-gray-700 px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center gap-2 border border-gray-700"
               >
                 <Search className="w-5 h-5" />
                 Ver Cardápio

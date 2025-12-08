@@ -2,9 +2,9 @@
 
 ## STATUS ATUAL DO PROJETO
 
-**Data Atualização**: 08/12/2024 (23:59)
-**Versão**: 4.2.0
-**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-50 IMPLEMENTADAS
+**Data Atualização**: 08/12/2024 (Sprint 53)
+**Versão**: 4.3.0
+**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-53 IMPLEMENTADAS
 **Sincronizado com**: PRD v3.5.0 e User Flows v3.5.0
 
 > **SPRINTS 21-30 COMPLETAS**:
@@ -18,7 +18,7 @@
 > - ✅ Sprint 29: Sistema de Indicação (R$15) + Bônus Avaliação (R$2)
 > - ✅ Sprint 30: Upload de Imagens + Gestão de Estoque Melhorada
 >
-> **SPRINTS 41-50 COMPLETAS (08/12/2024)**:
+> **SPRINTS 41-53 COMPLETAS (08/12/2024)**:
 > - ✅ Sprint 41: Cadastro Internacional (PhoneInput com seletor de país, countries.js)
 > - ✅ Sprint 42: Taxa de Serviço 10% (serviceFee, removível pelo cliente)
 > - ✅ Sprint 43: Pagamento com Atendente (pay_later, card_at_table, pending_payment)
@@ -27,6 +27,9 @@
 > - ✅ Sprint 47: Timeline Pedido (calculateTimeline em orderStatus.service.js)
 > - ✅ Sprint 49: Correções Críticas de Rotas e Socket.IO (08/12/2024)
 > - ✅ Sprint 50: Socket.IO em todas as páginas staff + Correção tokens (08/12/2024)
+> - ✅ Sprint 51: Fix Admin Dashboard (hydration) + Cancel Order Real API
+> - ✅ Sprint 52: Estorno Stripe Real (refund para pagamentos capturados)
+> - ✅ Sprint 53: Mapeamento Completo de Usuarios, Fluxos e Gaps
 >
 > - ✅ Sprint 31: Ficha Técnica UI (modal em admin/products.js com CRUD de RecipeItem)
 > - ✅ Sprint 33: Alertas Push Automáticos (push.service.js - notifyOrderReady, notifyOrderStatus)
@@ -1689,54 +1692,203 @@ images: {
 **Prioridade**: P1 (ALTA - UX operacional)
 **Status**: ✅ COMPLETA (08/12/2024)
 
+---
+
+### SPRINT 51 - FIX ADMIN DASHBOARD + CANCEL ORDER REAL ✅ COMPLETA
+
+**Objetivo**: Corrigir tela branca no admin e implementar cancelamento real de pedidos
+
+**Prioridade**: P0 (CRITICA)
+**Status**: ✅ COMPLETA (08/12/2024)
+
 #### Tarefas Implementadas:
 
-1. ✅ **Cozinha (`/cozinha`)**
-   - Recebe novos pedidos automaticamente via Socket.IO
-   - Som de notificação com useNotificationSound hook
-   - Corrigido token para ler de `flame-auth` (Zustand persist)
-   - Arquivo: `frontend/src/pages/cozinha/index.js`
+1. ✅ **Fix Hydration Admin Dashboard**
+   - Adicionado estado `isHydrated` para aguardar Zustand
+   - Wrapped store calls em `useMemo` com try/catch
+   - Arquivo: `frontend/src/pages/admin/index.js`
 
-2. ✅ **Bar (`/staff/bar`)**
-   - Já tinha Socket.IO implementado
-   - Verificado funcionamento correto
-   - Arquivo: `frontend/src/pages/staff/bar.js`
+2. ✅ **Cancel Order com API Real**
+   - Substituido mock com setTimeout por chamada real
+   - Chama `PATCH /api/orders/:id/cancel`
+   - Mostra info de estorno ao cliente
+   - Arquivo: `frontend/src/stores/orderStore.js`
 
-3. ✅ **Caixa (`/staff/caixa`)**
-   - Implementado Socket.IO com listeners para pedidos pagos
-   - Notificação quando pedido é pago/entregue
-   - Atualiza caixa em tempo real
-   - Arquivo: `frontend/src/pages/staff/caixa.js`
+3. ✅ **Devolucao de Cashback no Cancelamento**
+   - Se cliente usou cashback, devolve ao saldo
+   - Registra no historico de cashback
+   - Arquivo: `backend/src/controllers/orderController.js`
 
-4. ✅ **Admin Orders (`/admin/orders`)**
-   - Implementado Socket.IO com room 'waiter'
-   - Toast + som para novos pedidos
-   - Atualização automática da lista
-   - Arquivo: `frontend/src/pages/admin/orders.js`
+4. ✅ **Socket.IO para Cancelamento**
+   - Emite `order_cancelled` para staff
+   - Atendente recebe notificacao
+   - Arquivo: `backend/src/services/socket.service.js`
 
-5. ✅ **Atendente (`/atendente`)**
-   - Corrigido token para ler de `flame-auth`
-   - Já tinha Socket.IO completo
-   - Arquivo: `frontend/src/pages/atendente/index.js`
+---
 
-6. ✅ **Correção de Tokens em todos os Stores**
-   - Todos stores migrados de `localStorage.getItem('token')` para `flame-auth`
-   - Adicionada função helper `getAuthToken()` em cada store
-   - Arquivos:
-     - `frontend/src/stores/cashierStore.js`
-     - `frontend/src/stores/campaignStore.js`
-     - `frontend/src/stores/cashbackStore.js`
-     - `frontend/src/stores/crmStore.js`
-     - `frontend/src/stores/hookahStore.js`
-     - `frontend/src/stores/reservationStore.js`
-     - `frontend/src/stores/reportStore.js`
+### SPRINT 52 - ESTORNO STRIPE REAL ✅ COMPLETA
 
-#### Sistema de Sons (useNotificationSound hook):
-- `playNewOrder()` - Sons ascendentes para novo pedido
-- `playSuccess()` - Triple beep para sucesso
-- `playAlert()` - Double beep para alertas
-- `playUrgent()` - Triple agudo para urgente
-- Arquivo: `frontend/src/hooks/useNotificationSound.js`
+**Objetivo**: Implementar estorno real quando pedido pago online e cancelado
+
+**Prioridade**: P0 (CRITICA - Financeiro)
+**Status**: ✅ COMPLETA (08/12/2024)
+
+#### Tarefas Implementadas:
+
+1. ✅ **Verificar Status de Pagamento**
+   - Checa se pagamento foi capturado (succeeded) ou nao
+   - Se succeeded: usa `createRefund()`
+   - Se outro: usa `cancelPayment()`
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+2. ✅ **Mostrar Info de Estorno ao Cliente**
+   - Toast com valor e prazo estimado
+   - Retorna `refund` no response
+   - Arquivo: `frontend/src/stores/orderStore.js`
+
+3. ✅ **Documentacao de Fluxos**
+   - Criado `docs/MAPEAMENTO_FLUXOS_COMPLETO.md`
+   - Diagramas de status e pagamento
+   - Arquivo: `docs/MAPEAMENTO_FLUXOS_COMPLETO.md`
+
+---
+
+### SPRINT 53 - MAPEAMENTO USUARIOS E FLUXOS ✅ COMPLETA
+
+**Objetivo**: Mapear todos os tipos de usuarios, fluxos e identificar gaps
+
+**Prioridade**: P1 (Planejamento)
+**Status**: ✅ COMPLETA (08/12/2024)
+
+#### Documentacao Criada:
+
+1. ✅ **Mapeamento de Usuarios**
+   - 7 roles: cliente, atendente, cozinha, bar, caixa, gerente, admin
+   - Paginas de acesso por role
+   - Matriz de permissoes
+   - Arquivo: `docs/MAPEAMENTO_USUARIOS_FLUXOS.md`
+
+2. ✅ **Fluxos Completos**
+   - Fluxo de pedido end-to-end
+   - Fluxo de cancelamento
+   - Fluxos por tipo de usuario
+   - Socket.IO eventos por role
+
+3. ✅ **Gaps Identificados**
+   - 3 gaps P0 (criticos)
+   - 4 gaps P1 (altos)
+   - 4 gaps P2 (medios)
+   - 3 gaps P3 (baixos)
+
+---
+
+### SPRINT 54 - CORRECOES CRITICAS (PLANEJADA)
+
+**Objetivo**: Corrigir gaps criticos identificados no mapeamento
+
+**Prioridade**: P0 (CRITICA)
+**Status**: Pendente
+**Estimativa**: 2-3 dias
+**Referencia**: `docs/MAPEAMENTO_USUARIOS_FLUXOS.md`
+
+#### Tarefas:
+
+1. [ ] **Socket.IO na Pagina /pedidos do Cliente**
+   - Conectar socketService quando pagina monta
+   - Escutar `order_status_updated`, `order_ready`
+   - Atualizar UI em tempo real
+   - Arquivo: `frontend/src/pages/pedidos.js`
+
+2. [ ] **Validar Mesa Livre ao Criar Pedido**
+   - Verificar se tableId tem pedidos ativos (nao delivered/cancelled)
+   - Retornar erro 400 se mesa ocupada
+   - Adicionar flag `allowShared` para override
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+3. [ ] **Testar Push Notifications End-to-End**
+   - Verificar service worker ativo
+   - Testar `notifyOrderReady` em producao
+   - Testar em dispositivo movel
+   - Arquivo: `backend/src/services/push.service.js`
+
+#### Criterios de Aceitacao:
+- [ ] Cliente ve pedido atualizar em tempo real em /pedidos
+- [ ] Sistema impede dois pedidos ativos na mesma mesa
+- [ ] Push notification funciona no celular
+
+---
+
+### SPRINT 55 - MELHORIAS STAFF (PLANEJADA)
+
+**Objetivo**: Melhorar UX das paginas de staff
+
+**Prioridade**: P1 (ALTA)
+**Status**: Pendente
+**Estimativa**: 2-3 dias
+
+#### Tarefas:
+
+1. [ ] **Filtrar Itens por Categoria na Cozinha/Bar**
+   - Cozinha ve apenas itens de comida
+   - Bar ve apenas itens de bebida
+   - Criar flag `itemType` no backend ou filtrar por categoria
+   - Arquivo: `backend/src/controllers/staffController.js`
+
+2. [ ] **Integrar Caixa com Confirm-Payment**
+   - Quando atendente confirma pagamento pay_later
+   - Registrar automaticamente no caixa aberto
+   - Arquivo: `backend/src/controllers/orderController.js`
+
+3. [ ] **Alertas de Tempo**
+   - Pedido > 15min: alert amarelo no staff
+   - Pedido > 30min: notificar gerente
+   - Criar job ou verificar no frontend
+   - Arquivo: `frontend/src/components/StaffOrderCard.js`
+
+4. [ ] **Mapa Visual de Mesas**
+   - Componente mostrando layout das mesas
+   - Cores por status (livre, ocupada, reservada)
+   - Click para ver pedidos da mesa
+   - Arquivo: `frontend/src/components/TableMap.js` (NOVO)
+
+#### Criterios de Aceitacao:
+- [ ] Cozinha nao ve bebidas, Bar nao ve comida
+- [ ] Vendas pay_later entram automaticamente no caixa
+- [ ] Staff ve alerta visual de pedidos atrasados
+- [ ] Atendente ve mapa de mesas
+
+---
+
+### SPRINT 56 - UX CLIENTE (PLANEJADA)
+
+**Objetivo**: Melhorar experiencia do cliente
+
+**Prioridade**: P2 (MEDIA)
+**Status**: Pendente
+**Estimativa**: 2 dias
+
+#### Tarefas:
+
+1. [ ] **Opcao de Gorjeta**
+   - Slider no checkout com valores sugeridos (10%, 15%, 20%)
+   - Campo para valor customizado
+   - Adicionar campo `tip` no Order model
+   - Arquivo: `frontend/src/pages/checkout.js`
+
+2. [ ] **Adicionar Itens a Pedido Existente**
+   - Botao "Adicionar mais itens" em pedidos ativos
+   - Cria sub-pedido vinculado ao principal
+   - Arquivo: `frontend/src/pages/pedidos.js`
+
+3. [ ] **Chat com Atendente**
+   - Sistema de mensagens no pedido
+   - Notificacao para atendente
+   - Arquivo: `frontend/src/components/OrderChat.js` (NOVO)
+
+#### Criterios de Aceitacao:
+- [ ] Cliente pode dar gorjeta no checkout
+- [ ] Cliente pode adicionar itens a pedido em andamento
+- [ ] Cliente pode enviar mensagem para atendente
 
 ---
 
@@ -1764,63 +1916,54 @@ images: {
 | **48** | **Notificação Cashback** | **P2** | 0.5 dia | Pendente |
 | **49** | **Correções Rotas/Socket** | **P0** | 0.5 dia | **✅ Completa** |
 | **50** | **Socket.IO Todas Páginas + Tokens** | **P1** | 1-2 dias | **✅ Completa** |
-
-**Total estimado (31-40)**: 15-22 dias
-**Total estimado (41-48)**: 13-18 dias
-**TOTAL GERAL**: 28-40 dias
+| **51** | **Fix Admin + Cancel Order Real** | **P0** | 1 dia | **✅ Completa** |
+| **52** | **Estorno Stripe Real** | **P0** | 0.5 dia | **✅ Completa** |
+| **53** | **Mapeamento Usuarios/Fluxos** | **P1** | 1 dia | **✅ Completa** |
+| **54** | **Correcoes Criticas** | **P0** | 2-3 dias | Pendente |
+| **55** | **Melhorias Staff** | **P1** | 2-3 dias | Pendente |
+| **56** | **UX Cliente** | **P2** | 2 dias | Pendente |
 
 ---
 
-## 🎯 ORDEM DE EXECUÇÃO SUGERIDA (ATUALIZADA)
+## 🎯 PROXIMAS SPRINTS PRIORITARIAS
 
-### 🚨 PRIORIDADE MÁXIMA (P0 - Fazer PRIMEIRO!)
+### 🚨 P0 - CRITICO (Fazer PRIMEIRO)
 
-**Sprint 46** → Fix Imagens Cardápio (0.5 dia)
-- Bug crítico que afeta todos os clientes
+1. **Sprint 54** - Correcoes Criticas (2-3 dias)
+   - Socket.IO na pagina /pedidos do cliente
+   - Validar mesa livre ao criar pedido
+   - Testar push notifications em producao
 
-**Sprint 41** → Cadastro CPF/Idade/Telefone Internacional (3-4 dias)
-- Bloqueador LEGAL - venda de bebidas para menores
-- Seletor de país para telefone com detecção automática de nacionalidade
-- Validação de telefone internacional (libphonenumber-js)
+### ⚠️ P1 - ALTA
 
-**Sprint 42** → Taxa de Serviço 10% (1-2 dias)
-- Receita operacional básica
+2. **Sprint 55** - Melhorias Staff (2-3 dias)
+   - Filtrar itens por categoria (cozinha/bar)
+   - Integrar caixa com confirm-payment
+   - Alertas de tempo
+   - Mapa visual de mesas
 
-**Sprint 43** → Pagamento com Atendente (3-4 dias)
-- Fluxo básico de restaurante
+### 📋 P2 - MEDIA
 
-### 🟡 ALTA PRIORIDADE (P1)
+3. **Sprint 56** - UX Cliente (2 dias)
+   - Opcao de gorjeta
+   - Adicionar itens a pedido existente
+   - Chat com atendente
 
-**Sprint 44** → Cashback Instagram (2-3 dias)
-- Marketing e engajamento
+---
 
-**Sprint 45** → Painel Retirada Bar (1 dia)
-- Operação de balcão
+## 📁 DOCUMENTACAO DE REFERENCIA
 
-**Sprint 47** → Acompanhamento Pedido (1 dia)
-- UX do cliente
+| Documento | Descricao |
+|-----------|-----------|
+| [ANALISE_PRD_VS_SISTEMA.md](./ANALISE_PRD_VS_SISTEMA.md) | Divergencias entre PRD e sistema atual |
+| [ANALISE_FLUXOS_CRITICOS.md](./ANALISE_FLUXOS_CRITICOS.md) | Analise inicial de fluxos |
+| [MAPEAMENTO_FLUXOS_COMPLETO.md](./MAPEAMENTO_FLUXOS_COMPLETO.md) | Fluxos de pedido e pagamento |
+| [MAPEAMENTO_USUARIOS_FLUXOS.md](./MAPEAMENTO_USUARIOS_FLUXOS.md) | Usuarios, permissoes e gaps |
 
-### 📋 SPRINTS ORIGINAIS (31-40)
+---
 
-**Fase 1 - Essenciais (Sprints 31, 33)**
-- Ficha técnica + Alertas push
-- Completa gestão de estoque e operação em tempo real
-
-**Fase 2 - Análise (Sprints 32, 37)**
-- Relatórios + Dashboard
-- Visão gerencial completa
-
-**Fase 3 - Automação (Sprints 35, 36)**
-- CRM + No-show
-- Marketing automatizado
-
-**Fase 4 - Extras (Sprints 34, 38, 39)**
-- Fornecedores + QR + Venda manual
-- Funcionalidades complementares
-
-**Fase 5 - Qualidade (Sprint 40)**
-- Testes + Documentação
-- Preparação para produção
+**Atualizado em**: 08/12/2024 (Sprint 53)
+**Proxima revisao**: Apos Sprint 54
 
 ---
 

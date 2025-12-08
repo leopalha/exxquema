@@ -355,6 +355,23 @@ class SocketService {
     // Notificar cliente que está acompanhando o pedido
     this.emitToRoom(`order_${orderId}`, 'order_status_updated', eventData);
 
+    // IMPORTANTE: Notificar diretamente o dono do pedido via sua sala pessoal
+    // Isso garante que mesmo se o cliente nao estiver na sala do pedido, ele receba a notificacao
+    if (additionalData.userId) {
+      console.log(`📡 [SOCKET] Notificando usuario ${additionalData.userId} sobre status ${status}`);
+      this.emitToRoom(`user_${additionalData.userId}`, 'order_status_updated', eventData);
+
+      // Se pedido ficou pronto, enviar evento especial
+      if (status === 'ready') {
+        this.emitToRoom(`user_${additionalData.userId}`, 'order_ready', {
+          orderId,
+          orderNumber: additionalData.orderNumber,
+          message: 'Seu pedido está pronto!',
+          timestamp: new Date()
+        });
+      }
+    }
+
     // SEMPRE notificar admins sobre QUALQUER mudança de status
     console.log(`📡 [SOCKET] Notificando admins sobre status ${status} do pedido ${orderId}`);
     this.emitToRoom('admins', 'order_status_changed', eventData);
