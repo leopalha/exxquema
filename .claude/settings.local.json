@@ -16,7 +16,9 @@
       "Bash(git checkout:*)",
       "Bash(node -c:*)",
       "Bash(railway logs:*)",
-      "Bash(npx vercel --prod)"
+      "Bash(npx vercel --prod)",
+      "Bash(CLIENTE_TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjYjU5M2JkOS03NDJmLTQ1ZDEtYmI0NS03NjcyMDEwYTEwMTEiLCJpYXQiOjE3NjUxNTE3MDYsImV4cCI6MTc2NTc1NjUwNn0.l65AmUAEQykd_z7dSonFdwu0aF2PZpSb3Va9Xz6GEl0\")",
+      "Bash(__NEW_LINE__ curl -s -X POST \"https://backend-production-28c3.up.railway.app/api/orders\" )"
     ],
     "deny": [],
     "ask": []

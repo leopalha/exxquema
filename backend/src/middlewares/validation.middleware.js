@@ -161,7 +161,7 @@ const validateOrder = [
     
   body('paymentMethod')
     .optional()
-    .isIn(['credit_card', 'debit_card', 'pix', 'apple_pay', 'cash'])
+    .isIn(['credit_card', 'debit_card', 'pix', 'apple_pay', 'cash', 'pay_later', 'card'])
     .withMessage('Método de pagamento inválido'),
     
   body('notes')

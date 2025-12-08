@@ -13,7 +13,7 @@ const createOrderValidation = [
   body('items.*.productId').isUUID().withMessage('ID do produto é obrigatório'),
   body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantidade deve ser maior que zero'),
   body('items.*.notes').optional({ nullable: true }).isString(),
-  body('paymentMethod').optional({ nullable: true }).isIn(['cash', 'card', 'pix', 'credit_card', 'debit_card']).withMessage('Método de pagamento inválido'),
+  body('paymentMethod').optional({ nullable: true }).isIn(['cash', 'card', 'pix', 'credit_card', 'debit_card', 'pay_later', 'apple_pay']).withMessage('Método de pagamento inválido'),
   body('notes').optional({ nullable: true }).isString()
 ];
 
