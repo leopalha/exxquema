@@ -201,6 +201,92 @@ class HookahController {
   }
 
   /**
+   * PUT /api/hookah/sessions/:id/preparing
+   * Marcar sessão como preparando
+   */
+  static async markAsPreparing(req, res) {
+    try {
+      const { id } = req.params;
+
+      const session = await hookahService.markAsPreparing(id);
+
+      // Notificar via Socket.IO
+      socketService.emitToRoom('attendants', 'hookah:status_changed', {
+        sessionId: id,
+        status: 'preparing',
+        session,
+        timestamp: new Date()
+      });
+      socketService.emitToRoom('bar', 'hookah:status_changed', {
+        sessionId: id,
+        status: 'preparing',
+        session,
+        timestamp: new Date()
+      });
+      socketService.emitToRoom('admin', 'hookah:status_changed', {
+        sessionId: id,
+        status: 'preparing',
+        session,
+        timestamp: new Date()
+      });
+
+      return res.json({
+        success: true,
+        data: session,
+        message: 'Narguilé marcado como preparando',
+      });
+    } catch (error) {
+      console.error('Erro ao marcar como preparando:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * PUT /api/hookah/sessions/:id/ready
+   * Marcar sessão como pronta
+   */
+  static async markAsReady(req, res) {
+    try {
+      const { id } = req.params;
+
+      const session = await hookahService.markAsReady(id);
+
+      // Notificar via Socket.IO
+      socketService.emitToRoom('attendants', 'hookah:ready', {
+        sessionId: id,
+        session,
+        message: `Narguilé da mesa ${session.mesa?.number || '?'} está PRONTO!`,
+        timestamp: new Date()
+      });
+      socketService.emitToRoom('bar', 'hookah:ready', {
+        sessionId: id,
+        session,
+        timestamp: new Date()
+      });
+      socketService.emitToRoom('admin', 'hookah:ready', {
+        sessionId: id,
+        session,
+        timestamp: new Date()
+      });
+
+      return res.json({
+        success: true,
+        data: session,
+        message: 'Narguilé marcado como pronto para entrega',
+      });
+    } catch (error) {
+      console.error('Erro ao marcar como pronto:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
    * PUT /api/hookah/sessions/:id/end
    * Finalizar sessão
    */

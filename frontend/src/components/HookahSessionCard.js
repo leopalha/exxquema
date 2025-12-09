@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Pause, Play, Flame, Clock, Zap, X } from 'lucide-react';
+import { Pause, Play, Flame, Clock, Zap, X, CheckCircle, ChefHat, Package } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import { toast } from 'react-hot-toast';
 
@@ -10,6 +10,8 @@ export default function HookahSessionCard({
   onPause,
   onResume,
   onEnd,
+  onMarkReady,
+  onMarkPreparing,
   useThemeStore,
 }) {
   const [showActions, setShowActions] = useState(false);
@@ -59,29 +61,66 @@ export default function HookahSessionCard({
     }
   };
 
+  const handleMarkReady = async () => {
+    try {
+      await onMarkReady?.(session.id);
+      toast.success('Narguilé marcado como pronto!', { icon: '✅' });
+    } catch (error) {
+      toast.error('Erro ao marcar como pronto');
+    }
+  };
+
+  const handleMarkPreparing = async () => {
+    try {
+      await onMarkPreparing?.(session.id);
+      toast.success('Narguilé em preparação!', { icon: '👨‍🍳' });
+    } catch (error) {
+      toast.error('Erro ao marcar como preparando');
+    }
+  };
+
+  // Determinar cor da borda baseado no status
+  const getBorderClass = () => {
+    switch (session.status) {
+      case 'active':
+        return 'border-green-500/50 bg-green-950/20';
+      case 'paused':
+        return 'border-yellow-500/50 bg-yellow-950/20';
+      case 'preparing':
+        return 'border-orange-500/50 bg-orange-950/20';
+      case 'ready':
+        return 'border-blue-500/50 bg-blue-950/20';
+      default:
+        return 'border-gray-700 bg-gray-900/20';
+    }
+  };
+
+  // Cor do indicador de status
+  const getStatusColor = () => {
+    switch (session.status) {
+      case 'active':
+        return '#22c55e';
+      case 'paused':
+        return '#eab308';
+      case 'preparing':
+        return '#f97316';
+      case 'ready':
+        return '#3b82f6';
+      default:
+        return '#6b7280';
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.01, translateY: -2 }}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
-      className={`relative rounded-lg border-2 overflow-hidden transition-all ${
-        session.status === 'active'
-          ? 'border-green-500/50 bg-green-950/20'
-          : session.status === 'paused'
-          ? 'border-yellow-500/50 bg-yellow-950/20'
-          : 'border-gray-700 bg-gray-900/20'
-      }`}
+      className={`relative rounded-lg border-2 overflow-hidden transition-all ${getBorderClass()}`}
     >
       {/* Status Indicator */}
       <div className="absolute top-0 right-0 w-3 h-3 rounded-full mt-2 mr-2"
-        style={{
-          backgroundColor:
-            session.status === 'active'
-              ? '#22c55e'
-              : session.status === 'paused'
-              ? '#eab308'
-              : '#6b7280',
-        }}
+        style={{ backgroundColor: getStatusColor() }}
       />
 
       <div className="p-4 space-y-3">
@@ -159,22 +198,66 @@ export default function HookahSessionCard({
 
         {/* Coal Change Button (if active) */}
         {session.status === 'active' && (
+          <div className="space-y-2">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleCoalChange}
+              className="w-full py-2 px-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded font-semibold text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <Zap size={16} />
+              Trocar Carvão
+            </motion.button>
+          </div>
+        )}
+
+        {/* Preparing Button - Mostrar quando ativo para iniciar preparação */}
+        {(session.status === 'active' || session.status === 'paused') && onMarkPreparing && (
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleCoalChange}
-            className="w-full py-2 px-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded font-semibold text-sm transition-all flex items-center justify-center gap-2"
+            onClick={handleMarkPreparing}
+            className="w-full py-2 px-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded font-semibold text-sm transition-all flex items-center justify-center gap-2"
           >
-            <Zap size={16} />
-            Trocar Carvão
+            <ChefHat size={16} />
+            Iniciar Preparação
           </motion.button>
         )}
 
-        {/* Status Badge */}
+        {/* Ready Button - Mostrar quando em preparo para marcar como pronto */}
+        {session.status === 'preparing' && onMarkReady && (
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleMarkReady}
+            className="w-full py-2 px-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded font-semibold text-sm transition-all flex items-center justify-center gap-2 animate-pulse"
+          >
+            <CheckCircle size={16} />
+            Marcar como PRONTO
+          </motion.button>
+        )}
+
+        {/* Status Badge - Paused */}
         {session.status === 'paused' && (
           <div className="flex items-center justify-center gap-2 py-2 bg-yellow-500/20 border border-yellow-500/50 rounded text-yellow-400 text-xs font-semibold">
             <Clock size={14} />
             PAUSADA
+          </div>
+        )}
+
+        {/* Status Badge - Preparing */}
+        {session.status === 'preparing' && (
+          <div className="flex items-center justify-center gap-2 py-2 bg-orange-500/20 border border-orange-500/50 rounded text-orange-400 text-xs font-semibold animate-pulse">
+            <ChefHat size={14} />
+            EM PREPARAÇÃO
+          </div>
+        )}
+
+        {/* Status Badge - Ready */}
+        {session.status === 'ready' && (
+          <div className="flex items-center justify-center gap-2 py-2 bg-blue-500/20 border border-blue-500/50 rounded text-blue-400 text-xs font-semibold">
+            <Package size={14} />
+            PRONTO PARA ENTREGA
           </div>
         )}
 

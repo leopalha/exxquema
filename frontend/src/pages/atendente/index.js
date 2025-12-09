@@ -51,7 +51,9 @@ export default function PainelAtendente() {
     registerCoalChange,
     pauseSession,
     resumeSession,
-    endSession
+    endSession,
+    markAsPreparing,
+    markAsReady
   } = useHookahStore();
 
   // Sprint 58: Ref para evitar listeners duplicados
@@ -756,9 +758,9 @@ export default function PainelAtendente() {
                     <h3 className="text-lg font-bold text-white">Narguilé</h3>
                     <p className="text-sm text-gray-400">Sessões ativas de narguilé</p>
                   </div>
-                  {(hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0) > 0 && (
+                  {(hookahSessions?.filter(s => ['active', 'paused', 'preparing', 'ready'].includes(s.status)).length || 0) > 0 && (
                     <span className="ml-2 px-3 py-1 text-white text-sm font-bold rounded-full" style={{ background: 'var(--theme-primary)' }}>
-                      {hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0}
+                      {hookahSessions?.filter(s => ['active', 'paused', 'preparing', 'ready'].includes(s.status)).length || 0}
                     </span>
                   )}
                 </div>
@@ -831,7 +833,7 @@ export default function PainelAtendente() {
                       </div>
 
                       {/* Lista de Sessões */}
-                      {(!hookahSessions || hookahSessions.filter(s => s.status === 'active' || s.status === 'paused').length === 0) ? (
+                      {(!hookahSessions || hookahSessions.filter(s => ['active', 'paused', 'preparing', 'ready'].includes(s.status)).length === 0) ? (
                         <div className="text-center py-8">
                           <Flame className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                           <p className="text-gray-400">Nenhuma sessão de narguilé ativa</p>
@@ -839,7 +841,7 @@ export default function PainelAtendente() {
                       ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {hookahSessions
-                            .filter(s => s.status === 'active' || s.status === 'paused')
+                            .filter(s => ['active', 'paused', 'preparing', 'ready'].includes(s.status))
                             .map((session) => (
                               <HookahSessionCard
                                 key={session.id}
@@ -862,6 +864,14 @@ export default function PainelAtendente() {
                                     endSession(session.id);
                                     toast.success('Sessão finalizada');
                                   }
+                                }}
+                                onMarkPreparing={() => {
+                                  markAsPreparing(session.id);
+                                  soundService.playSuccess();
+                                }}
+                                onMarkReady={() => {
+                                  markAsReady(session.id);
+                                  soundService.playAlert();
                                 }}
                               />
                             ))}

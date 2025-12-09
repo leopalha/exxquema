@@ -35,7 +35,8 @@
       "Bash(__NEW_LINE__ echo \"=== TESTE 4: Pagamentos pendentes ===\")",
       "Bash(npm run build:*)",
       "Bash(railway status:*)",
-      "Bash(timeout 15 railway logs:*)"
+      "Bash(timeout 15 railway logs:*)",
+      "Bash(npx next lint:*)"
     ],
     "deny": [],
     "ask": []

@@ -58,12 +58,17 @@ class HookahService {
 
   /**
    * Obter todas as sessões ativas com detalhes
-   * @returns {Array} Lista de sessões ativas
+   * @returns {Array} Lista de sessões ativas (active, paused, preparing, ready)
    */
   static async getActiveSessions() {
     try {
+      const { Op } = require('sequelize');
       const sessions = await HookahSession.findAll({
-        where: { status: 'active' },
+        where: {
+          status: {
+            [Op.in]: ['active', 'paused', 'preparing', 'ready']
+          }
+        },
         include: [
           {
             model: Table,
@@ -171,6 +176,68 @@ class HookahService {
       return this.enrichSession(session);
     } catch (error) {
       throw new Error(`Erro ao retomar sessão: ${error.message}`);
+    }
+  }
+
+  /**
+   * Marcar sessão como preparando
+   * @param {UUID} sessionId - ID da sessão
+   * @returns {Object} Sessão atualizada
+   */
+  static async markAsPreparing(sessionId) {
+    try {
+      const session = await HookahSession.findByPk(sessionId, {
+        include: [
+          { model: Table, attributes: ['id', 'number'] },
+          { model: HookahFlavor },
+        ],
+      });
+
+      if (!session) {
+        throw new Error('Sessão não encontrada');
+      }
+
+      if (session.status === 'ended') {
+        throw new Error('Sessão já foi finalizada');
+      }
+
+      session.status = 'preparing';
+      await session.save();
+
+      return this.enrichSession(session);
+    } catch (error) {
+      throw new Error(`Erro ao marcar como preparando: ${error.message}`);
+    }
+  }
+
+  /**
+   * Marcar sessão como pronta
+   * @param {UUID} sessionId - ID da sessão
+   * @returns {Object} Sessão atualizada
+   */
+  static async markAsReady(sessionId) {
+    try {
+      const session = await HookahSession.findByPk(sessionId, {
+        include: [
+          { model: Table, attributes: ['id', 'number'] },
+          { model: HookahFlavor },
+        ],
+      });
+
+      if (!session) {
+        throw new Error('Sessão não encontrada');
+      }
+
+      if (session.status === 'ended') {
+        throw new Error('Sessão já foi finalizada');
+      }
+
+      session.status = 'ready';
+      await session.save();
+
+      return this.enrichSession(session);
+    } catch (error) {
+      throw new Error(`Erro ao marcar como pronto: ${error.message}`);
     }
   }
 

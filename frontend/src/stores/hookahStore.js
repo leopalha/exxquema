@@ -183,6 +183,58 @@ export const useHookahStore = create(
         }
       },
 
+      // Mark as preparing
+      markAsPreparing: async (sessionId) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/hookah/sessions/${sessionId}/preparing`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${getAuthToken()}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            set((state) => ({
+              sessions: state.sessions.map((s) =>
+                s.id === sessionId ? data.data : s
+              ),
+            }));
+            return data.data;
+          }
+        } catch (error) {
+          console.error('Erro ao marcar como preparando:', error);
+          set({ error: error.message });
+        }
+      },
+
+      // Mark as ready
+      markAsReady: async (sessionId) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/hookah/sessions/${sessionId}/ready`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${getAuthToken()}`,
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            set((state) => ({
+              sessions: state.sessions.map((s) =>
+                s.id === sessionId ? data.data : s
+              ),
+            }));
+            return data.data;
+          }
+        } catch (error) {
+          console.error('Erro ao marcar como pronto:', error);
+          set({ error: error.message });
+        }
+      },
+
       // End session
       endSession: async (sessionId, notes = '') => {
         set({ loading: true, error: null });

@@ -71,6 +71,22 @@ router.put(
   hookahController.resumeSession
 );
 
+// PUT /api/hookah/sessions/:id/preparing - Marcar como preparando
+router.put(
+  '/sessions/:id/preparing',
+  authenticate,
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
+  hookahController.markAsPreparing
+);
+
+// PUT /api/hookah/sessions/:id/ready - Marcar como pronto
+router.put(
+  '/sessions/:id/ready',
+  authenticate,
+  requireRole(['atendente', 'bar', 'staff', 'admin']),
+  hookahController.markAsReady
+);
+
 // PUT /api/hookah/sessions/:id/end - Finalizar sessão
 router.put(
   '/sessions/:id/end',

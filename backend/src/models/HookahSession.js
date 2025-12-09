@@ -45,7 +45,7 @@ const HookahSession = sequelize.define('HookahSession', {
     comment: 'Quando foi pausada (se aplicável)',
   },
   status: {
-    type: DataTypes.ENUM('active', 'paused', 'ended'),
+    type: DataTypes.ENUM('active', 'paused', 'preparing', 'ready', 'ended'),
     defaultValue: 'active',
   },
   duration: {
