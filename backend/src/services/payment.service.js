@@ -260,13 +260,45 @@ class PaymentService {
   async handlePaymentSucceeded(paymentIntent) {
     try {
       console.log('Pagamento bem-sucedido:', paymentIntent.id);
-      
-      // Aqui você pode atualizar o status do pedido no banco de dados
+
       const orderNumber = paymentIntent.metadata.orderNumber;
-      
+
       if (orderNumber) {
-        // TODO: Atualizar status do pedido para 'confirmed'
-        console.log(`Pedido ${orderNumber} confirmado via pagamento ${paymentIntent.id}`);
+        // Importar Order model e atualizar status
+        const { Order } = require('../models');
+        const order = await Order.findOne({ where: { orderNumber } });
+
+        if (order) {
+          await order.update({
+            status: 'confirmed',
+            paymentStatus: 'paid',
+            paymentIntentId: paymentIntent.id,
+            paidAt: new Date()
+          });
+
+          console.log(`Pedido ${orderNumber} confirmado via pagamento ${paymentIntent.id}`);
+
+          // Notificar via Socket.IO
+          try {
+            const socketService = require('./socket.service');
+            const io = socketService.getIO();
+            if (io) {
+              io.to('staff').emit('order:paid', {
+                orderNumber,
+                orderId: order.id,
+                status: 'confirmed'
+              });
+              io.to('kitchen').emit('order:new', {
+                orderNumber,
+                orderId: order.id
+              });
+            }
+          } catch (socketErr) {
+            console.error('Erro ao notificar via Socket:', socketErr.message);
+          }
+        } else {
+          console.warn(`Pedido ${orderNumber} nao encontrado para confirmar pagamento`);
+        }
       }
 
       return {
@@ -288,12 +320,35 @@ class PaymentService {
   async handlePaymentFailed(paymentIntent) {
     try {
       console.log('Pagamento falhado:', paymentIntent.id);
-      
+
       const orderNumber = paymentIntent.metadata.orderNumber;
-      
+
       if (orderNumber) {
-        // TODO: Atualizar status do pedido para 'payment_failed'
-        console.log(`Pagamento do pedido ${orderNumber} falhado: ${paymentIntent.id}`);
+        const { Order } = require('../models');
+        const order = await Order.findOne({ where: { orderNumber } });
+
+        if (order) {
+          await order.update({
+            paymentStatus: 'failed',
+            paymentError: paymentIntent.last_payment_error?.message || 'Pagamento falhou'
+          });
+
+          console.log(`Pagamento do pedido ${orderNumber} falhado: ${paymentIntent.id}`);
+
+          // Notificar cliente via Socket.IO
+          try {
+            const socketService = require('./socket.service');
+            const io = socketService.getIO();
+            if (io && order.userId) {
+              io.to(`user:${order.userId}`).emit('payment:failed', {
+                orderNumber,
+                message: 'Pagamento falhou. Tente novamente.'
+              });
+            }
+          } catch (socketErr) {
+            console.error('Erro ao notificar via Socket:', socketErr.message);
+          }
+        }
       }
 
       return {
@@ -315,12 +370,37 @@ class PaymentService {
   async handlePaymentCanceled(paymentIntent) {
     try {
       console.log('Pagamento cancelado:', paymentIntent.id);
-      
+
       const orderNumber = paymentIntent.metadata.orderNumber;
-      
+
       if (orderNumber) {
-        // TODO: Atualizar status do pedido para 'cancelled'
-        console.log(`Pedido ${orderNumber} cancelado: ${paymentIntent.id}`);
+        const { Order } = require('../models');
+        const order = await Order.findOne({ where: { orderNumber } });
+
+        if (order) {
+          await order.update({
+            status: 'cancelled',
+            paymentStatus: 'cancelled',
+            cancelledAt: new Date(),
+            cancelReason: 'Pagamento cancelado pelo cliente'
+          });
+
+          console.log(`Pedido ${orderNumber} cancelado: ${paymentIntent.id}`);
+
+          // Notificar via Socket.IO
+          try {
+            const socketService = require('./socket.service');
+            const io = socketService.getIO();
+            if (io) {
+              io.to('staff').emit('order:cancelled', {
+                orderNumber,
+                orderId: order.id
+              });
+            }
+          } catch (socketErr) {
+            console.error('Erro ao notificar via Socket:', socketErr.message);
+          }
+        }
       }
 
       return {

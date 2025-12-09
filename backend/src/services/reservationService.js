@@ -322,17 +322,67 @@ class ReservationService {
   /**
    * Obter slots disponíveis para uma data
    * @param {string} date - Data (YYYY-MM-DD)
-   * @returns {Array} Slots disponíveis
+   * @returns {Array} Slots disponíveis com informacao de ocupacao
    */
   static async getAvailableSlots(date) {
     try {
       const dateObj = new Date(date);
       const slots = Reservation.getAvailableSlots(dateObj);
 
-      // TODO: Implementar lógica de ocupação real
-      // Por enquanto retorna todos os slots como disponíveis
+      // Buscar todas as reservas confirmadas/pending para o dia
+      const startOfDay = new Date(dateObj);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(dateObj);
+      endOfDay.setHours(23, 59, 59, 999);
 
-      return slots;
+      const existingReservations = await Reservation.findAll({
+        where: {
+          reservationDate: {
+            [Op.between]: [startOfDay, endOfDay]
+          },
+          status: {
+            [Op.in]: ['pending', 'confirmed', 'arrived']
+          }
+        },
+        attributes: ['reservationDate', 'partySize']
+      });
+
+      // Obter capacidade total das mesas
+      const tables = await Table.findAll({
+        where: { status: 'available' },
+        attributes: ['capacity']
+      });
+      const totalCapacity = tables.reduce((sum, t) => sum + t.capacity, 0) || 100;
+
+      // Calcular ocupacao por slot (assume 2h por reserva)
+      const slotsWithAvailability = slots.map(slot => {
+        const slotTime = new Date(dateObj);
+        const [hours, minutes] = slot.time.split(':');
+        slotTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+        // Reservas que afetam este slot (dentro de 2h antes ou depois)
+        const conflictingReservations = existingReservations.filter(r => {
+          const resTime = new Date(r.reservationDate);
+          const diffMs = Math.abs(slotTime - resTime);
+          const diffHours = diffMs / (1000 * 60 * 60);
+          return diffHours < 2; // Reservas dentro de 2 horas do slot
+        });
+
+        const occupiedSeats = conflictingReservations.reduce((sum, r) => sum + r.partySize, 0);
+        const availableSeats = Math.max(0, totalCapacity - occupiedSeats);
+
+        return {
+          ...slot,
+          occupiedSeats,
+          availableSeats,
+          totalCapacity,
+          occupancyPercent: Math.round((occupiedSeats / totalCapacity) * 100),
+          isAvailable: availableSeats > 0,
+          isFull: availableSeats === 0
+        };
+      });
+
+      return slotsWithAvailability;
     } catch (error) {
       throw new Error(`Erro ao obter slots: ${error.message}`);
     }

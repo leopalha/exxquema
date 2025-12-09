@@ -13,6 +13,7 @@ const cashbackExpiryJob = require('./cashbackExpiry.job');
 const dailyReportJob = require('./dailyReport.job');
 const welcomeBonusJob = require('./welcomeBonus.job');
 const birthdayBonusJob = require('./birthdayBonus.job');
+const referralBonusJob = require('./referralBonus.job');
 
 // Lista de todos os jobs
 const jobs = [
@@ -22,7 +23,8 @@ const jobs = [
   cashbackExpiryJob,
   dailyReportJob,
   welcomeBonusJob,
-  birthdayBonusJob
+  birthdayBonusJob,
+  referralBonusJob
 ];
 
 // Armazenar referências dos jobs ativos
@@ -188,7 +190,8 @@ function getJobDescription(jobName) {
     cashbackExpiry: 'Expira cashback após 90 dias de inatividade (diário 00h)',
     dailyReport: 'Gera relatório do dia anterior (diário 06h)',
     welcomeBonus: 'Bônus R$10 para novos cadastros completos (a cada hora)',
-    birthdayBonus: 'Bônus de aniversário baseado no tier (diário 08h)'
+    birthdayBonus: 'Bônus de aniversário baseado no tier (diário 08h)',
+    referralBonus: 'Processa bônus de indicação R$10+R$15 (a cada hora)'
   };
   return descriptions[jobName] || 'Sem descrição';
 }

@@ -72,25 +72,7 @@ router.get('/',
 router.post('/',
   authenticate,
   requireCompleteProfile, // Requer perfil completo para fazer pedidos
-  // Debug: logar o body antes da validação
-  (req, res, next) => {
-    console.log('🔍 [DEBUG ORDER] Body recebido:', JSON.stringify(req.body, null, 2));
-    console.log('🔍 [DEBUG ORDER] Headers:', JSON.stringify({
-      contentType: req.headers['content-type'],
-      authorization: req.headers.authorization ? 'Bearer ***' : 'MISSING'
-    }));
-    next();
-  },
   createOrderValidation,
-  // Debug: logar erros de validação antes de retornar
-  (req, res, next) => {
-    const { validationResult } = require('express-validator');
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      console.log('❌ [VALIDATION ERROR] Erros:', JSON.stringify(errors.array(), null, 2));
-    }
-    next();
-  },
   handleValidationErrors,
   orderController.createOrder
 );
