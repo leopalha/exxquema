@@ -82,7 +82,8 @@ const limiter = rateLimit({
       '/api/health',
       '/api/staff/dashboard',
       '/api/orders/pending-payments',
-      '/api/orders/my-orders'
+      '/api/orders/my-orders',
+      '/api/orders' // Todas as operações de pedidos (criar, atualizar status, etc)
     ];
     return skipPaths.some(path => req.path.startsWith(path));
   },
