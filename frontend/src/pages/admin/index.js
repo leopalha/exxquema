@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import {
   BarChart3,
   TrendingUp,
@@ -21,7 +22,8 @@ import {
   Star,
   ChefHat,
   CheckCircle,
-  Layers
+  Layers,
+  RefreshCw
 } from 'lucide-react';
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonChart, SkeletonCard } from '../../components/LoadingSpinner';
@@ -30,6 +32,9 @@ import { useOrderStore, ORDER_STATUS } from '../../stores/orderStore';
 import { useReservationStore } from '../../stores/reservationStore';
 import useThemeStore from '../../stores/themeStore';
 import { formatCurrency, formatNumber, formatRelativeTime } from '../../utils/format';
+import socketService from '../../services/socket';
+import soundService from '../../services/soundService';
+import api from '../../services/api';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -40,11 +45,96 @@ export default function AdminDashboard() {
   const palette = getPalette();
   const [dateRange, setDateRange] = useState('today');
   const [isHydrated, setIsHydrated] = useState(false);
+  const [realtimeStats, setRealtimeStats] = useState(null);
+  const listenersSetup = useRef(false);
 
   // Wait for Zustand persist to hydrate
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // Buscar estatísticas reais da API
+  const fetchRealtimeStats = useCallback(async () => {
+    try {
+      const response = await api.get('/staff/dashboard');
+      if (response.data.success) {
+        setRealtimeStats(response.data.data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    }
+  }, []);
+
+  // Conectar Socket.IO para atualizações em tempo real
+  useEffect(() => {
+    if (!isAuthenticated || !isHydrated || user?.role !== 'admin') return;
+
+    // Obter token do localStorage
+    const authData = localStorage.getItem('flame-auth');
+    let token = null;
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData);
+        token = parsed?.state?.token;
+      } catch (e) {
+        console.error('Erro ao parsear token:', e);
+      }
+    }
+
+    if (token && !listenersSetup.current) {
+      listenersSetup.current = true;
+
+      // Conectar socket
+      socketService.connect(token);
+      socketService.joinWaiterRoom();
+
+      // Buscar dados iniciais
+      fetchRealtimeStats();
+
+      // Listener para novos pedidos
+      const handleOrderCreated = (order) => {
+        console.log('📦 [Admin] Novo pedido:', order);
+        toast.success(`🆕 Novo pedido #${order.orderNumber}`, { duration: 5000 });
+        soundService.playNewOrder();
+        fetchRealtimeStats();
+      };
+
+      // Listener para atualizações de pedidos
+      const handleOrderUpdated = (order) => {
+        console.log('🔄 [Admin] Pedido atualizado:', order);
+        fetchRealtimeStats();
+      };
+
+      // Listener para mudança de status
+      const handleOrderStatusChanged = (data) => {
+        console.log('🔄 [Admin] Status alterado:', data);
+        fetchRealtimeStats();
+      };
+
+      // Listener para pagamentos
+      const handlePaymentRequest = (data) => {
+        console.log('💳 [Admin] Pagamento solicitado:', data);
+        toast(`💳 Mesa ${data.tableNumber}: Pagamento ${data.paymentLabel}`, { duration: 8000 });
+        soundService.playPaymentRequest();
+        fetchRealtimeStats();
+      };
+
+      socketService.onOrderCreated(handleOrderCreated);
+      socketService.onOrderUpdated(handleOrderUpdated);
+      socketService.onOrderStatusChanged(handleOrderStatusChanged);
+      socketService.on('payment_request', handlePaymentRequest);
+
+      // Cleanup
+      return () => {
+        socketService.off('order_created', handleOrderCreated);
+        socketService.off('order_updated', handleOrderUpdated);
+        socketService.off('order_status_changed', handleOrderStatusChanged);
+        socketService.off('payment_request', handlePaymentRequest);
+        socketService.leaveWaiterRoom();
+        listenersSetup.current = false;
+      };
+    }
+  }, [isAuthenticated, isHydrated, user, fetchRealtimeStats]);
 
   // Dados calculados dos stores - com try/catch para evitar crash
   const activeOrders = useMemo(() => {

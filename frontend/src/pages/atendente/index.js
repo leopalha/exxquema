@@ -128,7 +128,7 @@ export default function PainelAtendente() {
           duration: 5000,
           icon: '🆕'
         });
-        soundService.playNotification();
+        soundService.playNewOrder();
         fetchDashboard();
       };
 
@@ -179,10 +179,11 @@ export default function PainelAtendente() {
       const handlePaymentRequest = (data) => {
         console.log('💳 Nova solicitação de pagamento:', data);
         toast.success(`💳 Mesa ${data.tableNumber}: ${data.paymentLabel} - ${formatCurrency(data.total)}`, {
-          duration: 10000,
+          duration: 15000,
           icon: '💰'
         });
-        soundService.playAlert();
+        // Som específico e mais forte para pagamento pendente
+        soundService.playPaymentRequest();
         fetchPendingPayments();
         setCollapsedSections(prev => ({ ...prev, payments: false }));
       };

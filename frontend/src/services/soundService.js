@@ -144,6 +144,19 @@ class SoundService {
     this.playBeep(600, 200, 0.3);
     setTimeout(() => this.playBeep(600, 200, 0.3), 300);
   }
+
+  // Pagamento pendente (para atendente) - som mais forte e perceptível
+  playPaymentRequest() {
+    if (!this.canPlay('paymentRequest')) return;
+
+    console.log('🔔 Som: Pagamento pendente');
+    // Sequência mais longa e perceptível - tipo alarme
+    this.playBeep(880, 150, 0.5);
+    setTimeout(() => this.playBeep(660, 150, 0.5), 200);
+    setTimeout(() => this.playBeep(880, 150, 0.5), 400);
+    setTimeout(() => this.playBeep(660, 150, 0.5), 600);
+    setTimeout(() => this.playBeep(880, 200, 0.5), 800);
+  }
 }
 
 // Singleton
