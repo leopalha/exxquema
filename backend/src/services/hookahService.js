@@ -72,10 +72,12 @@ class HookahService {
         include: [
           {
             model: Table,
+            as: 'Table',
             attributes: ['id', 'number'],
           },
           {
             model: HookahFlavor,
+            as: 'HookahFlavor',
             attributes: ['id', 'name', 'category', 'image', 'price'],
           },
         ],
@@ -100,6 +102,7 @@ class HookahService {
         include: [
           {
             model: HookahFlavor,
+            as: 'HookahFlavor',
             attributes: ['id', 'name', 'category', 'image', 'price'],
           },
         ],
@@ -141,7 +144,7 @@ class HookahService {
   static async pauseSession(sessionId) {
     try {
       const session = await HookahSession.findByPk(sessionId, {
-        include: [HookahFlavor],
+        include: [{ model: HookahFlavor, as: 'HookahFlavor' }],
       });
 
       if (!session) {
@@ -164,7 +167,7 @@ class HookahService {
   static async resumeSession(sessionId) {
     try {
       const session = await HookahSession.findByPk(sessionId, {
-        include: [HookahFlavor],
+        include: [{ model: HookahFlavor, as: 'HookahFlavor' }],
       });
 
       if (!session) {
@@ -188,8 +191,8 @@ class HookahService {
     try {
       const session = await HookahSession.findByPk(sessionId, {
         include: [
-          { model: Table, attributes: ['id', 'number'] },
-          { model: HookahFlavor },
+          { model: Table, as: 'Table', attributes: ['id', 'number'] },
+          { model: HookahFlavor, as: 'HookahFlavor' },
         ],
       });
 
@@ -219,8 +222,8 @@ class HookahService {
     try {
       const session = await HookahSession.findByPk(sessionId, {
         include: [
-          { model: Table, attributes: ['id', 'number'] },
-          { model: HookahFlavor },
+          { model: Table, as: 'Table', attributes: ['id', 'number'] },
+          { model: HookahFlavor, as: 'HookahFlavor' },
         ],
       });
 
@@ -249,7 +252,7 @@ class HookahService {
   static async endSession(sessionId) {
     try {
       const session = await HookahSession.findByPk(sessionId, {
-        include: [HookahFlavor],
+        include: [{ model: HookahFlavor, as: 'HookahFlavor' }],
       });
 
       if (!session) {
@@ -286,8 +289,8 @@ class HookahService {
     try {
       const session = await HookahSession.findByPk(sessionId, {
         include: [
-          { model: Table, attributes: ['id', 'number'] },
-          { model: HookahFlavor },
+          { model: Table, as: 'Table', attributes: ['id', 'number'] },
+          { model: HookahFlavor, as: 'HookahFlavor' },
         ],
       });
 
@@ -319,8 +322,8 @@ class HookahService {
           },
         },
         include: [
-          { model: Table, attributes: ['id', 'number'] },
-          { model: HookahFlavor, attributes: ['id', 'name', 'category'] },
+          { model: Table, as: 'Table', attributes: ['id', 'number'] },
+          { model: HookahFlavor, as: 'HookahFlavor', attributes: ['id', 'name', 'category'] },
         ],
         order: [['endedAt', 'DESC']],
       });

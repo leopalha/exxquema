@@ -142,6 +142,23 @@ class SocketService {
 
   // Eventos gerais do usuário
   setupUserEvents(socket) {
+    // Handler genérico para entrar em rooms (usado pelo frontend)
+    socket.on('join_room', (room) => {
+      // Validar rooms permitidas
+      const allowedRooms = ['kitchen', 'bar', 'attendants', 'waiter', 'admin', 'admins', 'caixa', 'reservations'];
+      if (allowedRooms.includes(room)) {
+        socket.join(room);
+        console.log(`🔗 [SOCKET] ${socket.user.nome} entrou na sala: ${room}`);
+      } else {
+        console.log(`⚠️ [SOCKET] Sala não permitida: ${room}`);
+      }
+    });
+
+    socket.on('leave_room', (room) => {
+      socket.leave(room);
+      console.log(`🔗 [SOCKET] ${socket.user.nome} saiu da sala: ${room}`);
+    });
+
     socket.on('join_table', (tableId) => {
       socket.join(`table_${tableId}`);
       console.log(`Usuário ${socket.user.nome} entrou na mesa ${tableId}`);

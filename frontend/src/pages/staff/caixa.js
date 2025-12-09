@@ -74,8 +74,11 @@ export default function CaixaPage() {
       return;
     }
 
-    // Verifica se o usuário tem permissão (staff ou admin)
-    if (user?.tipo !== 'staff' && user?.tipo !== 'admin') {
+    // Verifica se o usuário tem permissão (caixa, admin, gerente)
+    const allowedRoles = ['caixa', 'admin', 'gerente', 'staff'];
+    if (!allowedRoles.includes(user?.role)) {
+      console.log('[Caixa] Acesso negado. Role:', user?.role);
+      toast.error(`Acesso negado. Sua role é: ${user?.role}`);
       router.push('/');
       return;
     }
@@ -88,7 +91,8 @@ export default function CaixaPage() {
   // Socket.IO para atualizações em tempo real
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (user?.tipo !== 'staff' && user?.tipo !== 'admin') return;
+    const allowedRoles = ['caixa', 'admin', 'gerente', 'staff'];
+    if (!allowedRoles.includes(user?.role)) return;
     // Evita configurar listeners duplicados
     if (listenersSetup.current) return;
 
