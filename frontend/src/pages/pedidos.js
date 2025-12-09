@@ -193,6 +193,13 @@ export default function MeusPedidos() {
         borderColor: 'border-yellow-500/30',
         icon: Clock
       },
+      [ORDER_STATUS.PENDING_PAYMENT]: {
+        label: ORDER_STATUS_LABELS.pending_payment,
+        color: 'text-orange-400',
+        bgColor: 'bg-orange-600/20',
+        borderColor: 'border-orange-500/30',
+        icon: Clock
+      },
       [ORDER_STATUS.CONFIRMED]: {
         label: ORDER_STATUS_LABELS.confirmed,
         color: 'text-[var(--theme-secondary)]',

@@ -6,6 +6,7 @@ import { api } from '../services/api';
 // Status dos pedidos (valores em inglês para match com backend)
 export const ORDER_STATUS = {
   PENDING: 'pending',
+  PENDING_PAYMENT: 'pending_payment',
   CONFIRMED: 'confirmed',
   PREPARING: 'preparing',
   READY: 'ready',
@@ -17,6 +18,7 @@ export const ORDER_STATUS = {
 // Labels em português para exibição
 export const ORDER_STATUS_LABELS = {
   pending: 'Aguardando',
+  pending_payment: 'Aguardando Pagamento',
   confirmed: 'Confirmado',
   preparing: 'Em Preparo',
   ready: 'Pronto',
