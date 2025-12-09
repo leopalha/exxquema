@@ -39,9 +39,10 @@ class StaffController {
       };
 
       // Buscar pedidos pendentes e em preparação
+      // Inclui pending_payment para que atendentes vejam pedidos aguardando pagamento
       let pendingOrders = await Order.findAll({
         where: {
-          status: { [Op.in]: ['pending', 'confirmed'] }
+          status: { [Op.in]: ['pending', 'pending_payment', 'confirmed'] }
         },
         include: [
           {
