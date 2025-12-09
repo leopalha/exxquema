@@ -607,19 +607,26 @@ class OrderController {
       const finalPaymentMethod = paymentMethod || order.paymentMethod;
       const paymentLabels = { credit: 'Crédito', debit: 'Débito', pix: 'PIX', cash: 'Dinheiro', credit_card: 'Crédito', debit_card: 'Débito' };
       try {
-        const CashierMovement = require('../models/CashierMovement');
-        await CashierMovement.create({
-          type: 'sale',
-          amount: parseFloat(order.total),
-          paymentMethod: finalPaymentMethod,
-          description: `Pedido #${order.orderNumber} - Pagamento em ${paymentLabels[finalPaymentMethod] || finalPaymentMethod}`,
-          orderId: order.id,
-          orderNumber: order.orderNumber,
-          userId: attendantId
-        });
-        console.log(`💰 [CAIXA] Movimento registrado para pedido #${order.orderNumber} (${paymentLabels[finalPaymentMethod]})`);
+        const { Cashier, CashierMovement } = require('../models');
+        // Buscar caixa aberto
+        const openCashier = await Cashier.findOne({ where: { status: 'open' } });
+        if (openCashier) {
+          await CashierMovement.create({
+            cashierId: openCashier.id,
+            type: 'sale',
+            amount: parseFloat(order.total),
+            paymentMethod: finalPaymentMethod,
+            description: `Pedido #${order.orderNumber} - Pagamento em ${paymentLabels[finalPaymentMethod] || finalPaymentMethod}`,
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            createdBy: attendantId
+          });
+          console.log(`💰 [CAIXA] Movimento registrado para pedido #${order.orderNumber} (${paymentLabels[finalPaymentMethod]})`);
+        } else {
+          console.log(`⚠️ [CAIXA] Nenhum caixa aberto - movimento não registrado para pedido #${order.orderNumber}`);
+        }
       } catch (cashError) {
-        console.error('⚠️ Erro ao registrar movimento no caixa:', cashError);
+        console.error('⚠️ Erro ao registrar movimento no caixa:', cashError.message);
         // Não falha a operação se caixa der erro
       }
 

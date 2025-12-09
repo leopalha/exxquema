@@ -344,6 +344,39 @@ export default function PainelAtendente() {
 
   const readyOrders = orders.ready || [];
 
+  // Sprint 62: Helper para agrupar pedidos por mesa
+  const groupOrdersByTable = (ordersList) => {
+    if (!ordersList || ordersList.length === 0) return [];
+
+    // Agrupa por tableNumber
+    const grouped = ordersList.reduce((acc, order) => {
+      const tableKey = order.table?.number || order.tableNumber || 'balcao';
+      if (!acc[tableKey]) {
+        acc[tableKey] = [];
+      }
+      acc[tableKey].push(order);
+      return acc;
+    }, {});
+
+    // Converte para array ordenado por mesa
+    return Object.entries(grouped)
+      .sort((a, b) => {
+        // Balcão vai pro final
+        if (a[0] === 'balcao') return 1;
+        if (b[0] === 'balcao') return -1;
+        return parseInt(a[0]) - parseInt(b[0]);
+      })
+      .map(([tableNumber, tableOrders]) => ({
+        tableNumber,
+        orders: tableOrders,
+        totalItems: tableOrders.reduce((sum, o) => sum + (o.items?.length || 0), 0),
+        totalValue: tableOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+      }));
+  };
+
+  // Pedidos prontos agrupados por mesa para entrega mais eficiente
+  const readyGrouped = groupOrdersByTable(orders.ready);
+
   return (
     <>
       <Head>
@@ -665,15 +698,37 @@ export default function PainelAtendente() {
                           <p className="text-gray-400">Nenhum pedido pronto</p>
                         </div>
                       ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {orders.ready.map((order) => (
-                            <StaffOrderCard
-                              key={order.id}
-                              order={order}
-                              onStatusUpdate={handleStatusUpdate}
-                              onTimerAlert={handleTimerAlert}
-                              userRole="atendente"
-                            />
+                        <div className="space-y-6">
+                          {/* Sprint 62: Pedidos agrupados por mesa */}
+                          {readyGrouped.map((group) => (
+                            <div key={group.tableNumber} className="relative">
+                              {/* Header da Mesa */}
+                              <div className="flex items-center gap-3 mb-3 pb-2 border-b border-gray-700">
+                                <div className="px-3 py-1 rounded-lg font-bold text-white" style={{ background: 'var(--theme-primary)' }}>
+                                  {group.tableNumber === 'balcao' ? '🏪 Balcão' : `🍽️ Mesa ${group.tableNumber}`}
+                                </div>
+                                <span className="text-sm text-gray-400">
+                                  {group.orders.length} pedido{group.orders.length > 1 ? 's' : ''} • {group.totalItems} item{group.totalItems > 1 ? 's' : ''}
+                                </span>
+                                {group.orders.length > 1 && (
+                                  <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full font-semibold">
+                                    💡 Levar juntos!
+                                  </span>
+                                )}
+                              </div>
+                              {/* Cards dos pedidos dessa mesa */}
+                              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {group.orders.map((order) => (
+                                  <StaffOrderCard
+                                    key={order.id}
+                                    order={order}
+                                    onStatusUpdate={handleStatusUpdate}
+                                    onTimerAlert={handleTimerAlert}
+                                    userRole="atendente"
+                                  />
+                                ))}
+                              </div>
+                            </div>
                           ))}
                         </div>
                       )}
