@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Users, MapPin, FileText, Zap } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, MapPin, FileText, Zap, MessageCircle } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import useThemeStore from '../stores/themeStore';
 import useStaffStore from '../stores/staffStore';
+import OrderChat from './OrderChat';
+import soundService from '../services/soundService';
 
 const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff' }) => {
   const { getPalette } = useThemeStore();
   const { updateOrderStatus } = useStaffStore();
   const [expanded, setExpanded] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showChat, setShowChat] = useState(false); // Sprint 56: Chat
   const palette = getPalette();
 
   // Obter cor baseada no status
@@ -103,13 +106,24 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
   // Passar para próximo status
   const handleNextStatus = async () => {
     const config = getRoleActionConfig();
-    if (!config.enabled || !config.nextStatus) return;
+    console.log('🔄 handleNextStatus chamado:', { orderId: order.id, config, userRole });
+
+    if (!config.enabled || !config.nextStatus) {
+      console.log('❌ Ação não permitida:', { enabled: config.enabled, nextStatus: config.nextStatus });
+      return;
+    }
 
     setUpdatingStatus(true);
     try {
-      await updateOrderStatus(order.id, config.nextStatus);
+      // Sprint 58: Som ao clicar no botão de ação
+      soundService.playStatusChange();
+
+      console.log('📡 Chamando updateOrderStatus:', order.id, config.nextStatus);
+      const result = await updateOrderStatus(order.id, config.nextStatus);
+      console.log('✅ Status atualizado com sucesso:', result);
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
+      console.error('❌ Erro ao atualizar status:', error);
+      alert('Erro ao atualizar: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setUpdatingStatus(false);
     }
@@ -184,6 +198,25 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
             </div>
           )}
         </div>
+
+        {/* Sprint 57: Botão de Ação Principal - sempre visível no header */}
+        {order.status !== 'delivered' && order.status !== 'cancelled' && (() => {
+          const config = getRoleActionConfig();
+          if (!config.enabled) return null;
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Evita expandir o card ao clicar no botão
+                handleNextStatus();
+              }}
+              disabled={updatingStatus}
+              className="mt-3 w-full py-3 px-4 rounded-lg font-semibold text-white transition-all disabled:opacity-50 hover:scale-[1.02] cursor-pointer"
+              style={{ backgroundColor: config.color || statusColor }}
+            >
+              {updatingStatus ? 'Atualizando...' : config.label}
+            </button>
+          );
+        })()}
       </div>
 
       {/* Conteúdo Expandido */}
@@ -233,21 +266,29 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
             </div>
           </div>
 
-          {/* Botão de Ação baseado no Role */}
-          {order.status !== 'delivered' && order.status !== 'cancelled' && (() => {
-            const config = getRoleActionConfig();
-            return (
-              <button
-                onClick={handleNextStatus}
-                disabled={updatingStatus || !config.enabled}
-                className={`w-full py-2 px-4 rounded-lg font-semibold text-white transition-all disabled:opacity-50 ${config.enabled ? 'hover:scale-105 cursor-pointer' : 'cursor-not-allowed'}`}
-                style={{ backgroundColor: config.color || statusColor }}
-              >
-                {updatingStatus ? 'Atualizando...' : config.label || 'Aguardando...'}
-              </button>
-            );
-          })()}
+          {/* Botão de Chat - Sprint 56 */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowChat(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg transition-colors"
+              title="Chat com cliente"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-sm">Chat</span>
+            </button>
+          </div>
         </motion.div>
+      )}
+
+      {/* Sprint 56: Componente de Chat */}
+      {showChat && (
+        <OrderChat
+          orderId={order.id}
+          orderNumber={order.orderNumber}
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+          isStaff={true}
+        />
       )}
     </motion.div>
   );

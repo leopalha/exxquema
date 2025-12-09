@@ -2,6 +2,7 @@ const { Order, OrderItem, Product, Table, User, sequelize } = require('../models
 const { Op } = require('sequelize');
 const smsService = require('../services/sms.service');
 const pushService = require('../services/push.service');
+const socketService = require('../services/socket.service');
 
 class StaffController {
   /**
@@ -273,7 +274,7 @@ class StaffController {
       const { status, notes } = req.body;
 
       // Validar status permitido
-      const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'];
+      const validStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'on_way', 'delivered', 'cancelled'];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({
           success: false,
@@ -281,7 +282,12 @@ class StaffController {
         });
       }
 
-      const order = await Order.findByPk(id);
+      const order = await Order.findByPk(id, {
+        include: [
+          { model: Table, as: 'table' },
+          { model: User, as: 'customer', attributes: ['id', 'nome', 'email'] }
+        ]
+      });
       if (!order) {
         return res.status(404).json({
           success: false,
@@ -289,11 +295,26 @@ class StaffController {
         });
       }
 
+      const previousStatus = order.status;
+
       // Atualizar status
       await order.update({
         status,
         notes: notes || order.notes
       });
+
+      // IMPORTANTE: Emitir evento Socket.IO para notificar todos (cliente, staff, admins)
+      socketService.notifyOrderStatusChange(id, status, {
+        previousStatus,
+        orderNumber: order.orderNumber,
+        tableNumber: order.table?.number,
+        customerName: order.customer?.nome,
+        userId: order.userId,
+        updatedBy: req.user?.nome || 'Sistema',
+        timestamp: new Date()
+      });
+
+      console.log(`📡 [STAFF] Status do pedido #${order.orderNumber} alterado: ${previousStatus} → ${status}`);
 
       res.json({
         success: true,

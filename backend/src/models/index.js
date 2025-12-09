@@ -18,6 +18,7 @@ const Campaign = require('./Campaign');
 const Ingredient = require('./Ingredient');
 const RecipeItem = require('./RecipeItem');
 const IngredientMovement = require('./IngredientMovement');
+const Message = require('./Message');
 
 // Define associations
 const defineAssociations = () => {
@@ -284,6 +285,27 @@ const defineAssociations = () => {
     foreignKey: 'userId',
     as: 'user'
   });
+
+  // Sprint 56: Message associations (Chat staff-cliente)
+  Message.belongsTo(Order, {
+    foreignKey: 'orderId',
+    as: 'order'
+  });
+
+  Message.belongsTo(User, {
+    foreignKey: 'senderId',
+    as: 'sender'
+  });
+
+  Order.hasMany(Message, {
+    foreignKey: 'orderId',
+    as: 'messages'
+  });
+
+  User.hasMany(Message, {
+    foreignKey: 'senderId',
+    as: 'sentMessages'
+  });
 };
 
 // Initialize associations
@@ -386,6 +408,7 @@ module.exports = {
   Ingredient,
   RecipeItem,
   IngredientMovement,
+  Message,
   syncDatabase,
   createTables,
   dropTables

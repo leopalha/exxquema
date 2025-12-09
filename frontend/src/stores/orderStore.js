@@ -164,7 +164,7 @@ export const useOrderStore = create(
       },
 
       // Criar pedido - Envia para API real
-      createOrder: async (cartItems, cartTotal, userId, userName, useCashback = 0) => {
+      createOrder: async (cartItems, cartTotal, userId, userName, useCashback = 0, tipAmount = 0) => {
         set({ loading: true });
 
         try {
@@ -227,7 +227,8 @@ export const useOrderStore = create(
             items,
             notes: checkoutData.observacoes,
             paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
-            useCashback: useCashback || 0
+            useCashback: useCashback || 0,
+            tip: tipAmount || 0
           });
 
           const response = await api.post('/orders', {
@@ -235,7 +236,8 @@ export const useOrderStore = create(
             items,
             notes: checkoutData.observacoes || null,
             paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
-            useCashback: useCashback || 0 // Cashback a ser usado como desconto
+            useCashback: useCashback || 0, // Cashback a ser usado como desconto
+            tip: tipAmount || 0 // Gorjeta opcional
           });
 
           console.log('📥 Resposta do servidor:', response.data);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import useThemeStore from '../../stores/themeStore';
 import { toast } from 'react-hot-toast';
 import socketService from '../../services/socket';
 import StaffOrderCard from '../../components/StaffOrderCard';
-import useNotificationSound from '../../hooks/useNotificationSound';
+import soundService from '../../services/soundService';
 import {
   Wine,
   Clock,
@@ -16,7 +16,10 @@ import {
   Package,
   LogOut,
   AlertTriangle,
-  Flame
+  Flame,
+  Filter,
+  X,
+  Bell
 } from 'lucide-react';
 
 // NOTA: Narguilé foi migrado para /atendente (Sprint 23)
@@ -25,8 +28,32 @@ export default function PainelBar() {
   const router = useRouter();
   const { user, token, isAuthenticated, logout } = useAuthStore();
   const { stats, orders, alerts, fetchDashboard, updateOrderStatus } = useStaffStore();
-  const { playNewOrder, playSuccess, playUrgent } = useNotificationSound();
   const [isHydrated, setIsHydrated] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const listenersSetup = useRef(false); // Evitar duplicacao de listeners
+
+  // Categorias disponiveis para filtro no bar
+  const categories = [
+    { id: 'all', name: 'Todos', icon: '🍹' },
+    { id: 'coqueteis', name: 'Coqueteis', icon: '🍸' },
+    { id: 'cervejas', name: 'Cervejas', icon: '🍺' },
+    { id: 'vinhos', name: 'Vinhos', icon: '🍷' },
+    { id: 'destilados', name: 'Destilados', icon: '🥃' },
+    { id: 'drinks', name: 'Drinks', icon: '🧉' },
+    { id: 'sem-alcool', name: 'Sem Alcool', icon: '🥤' }
+  ];
+
+  // Filtrar pedidos por categoria
+  const filterOrdersByCategory = (ordersList) => {
+    if (!ordersList || categoryFilter === 'all') return ordersList;
+    return ordersList.filter(order => {
+      if (!order.items) return false;
+      return order.items.some(item => {
+        const productCategory = item.product?.category?.toLowerCase() || '';
+        return productCategory.includes(categoryFilter);
+      });
+    });
+  };
 
   // Wait for Zustand persist to hydrate
   useEffect(() => {
@@ -54,38 +81,44 @@ export default function PainelBar() {
 
     loadDashboard();
 
-    // Conectar ao Socket.IO com token do store
-    if (token) {
+    // Conectar ao Socket.IO com token do store (apenas uma vez)
+    if (token && !listenersSetup.current) {
+      listenersSetup.current = true;
+
       socketService.connect(token);
       socketService.joinBarRoom();
 
-      // Listener para novos pedidos
-      socketService.onOrderCreated((order) => {
-        console.log('🆕 Novo pedido recebido:', order);
+      // Handler para novos pedidos (usando funcao nomeada para cleanup)
+      const handleNewOrder = (order) => {
+        console.log('🆕 [BAR] Novo pedido recebido:', order);
         toast.success(`Novo pedido #${order.orderNumber || order.id}`);
-        playNewOrder();
+        soundService.playNewOrder();
         fetchDashboard();
-      });
+      };
 
-      // Listener para atualização de status
-      socketService.onOrderUpdated((updatedOrder) => {
-        console.log('🔄 Pedido atualizado:', updatedOrder);
+      // Handler para atualizacao de status
+      const handleOrderUpdated = (updatedOrder) => {
+        console.log('🔄 [BAR] Pedido atualizado:', updatedOrder);
         fetchDashboard();
-      });
+      };
+
+      socketService.on('order_created', handleNewOrder);
+      socketService.on('order_updated', handleOrderUpdated);
+
+      // Cleanup
+      return () => {
+        socketService.leaveBarRoom();
+        socketService.off('order_created', handleNewOrder);
+        socketService.off('order_updated', handleOrderUpdated);
+        listenersSetup.current = false;
+      };
     }
-
-    // Cleanup
-    return () => {
-      socketService.leaveBarRoom();
-      socketService.removeAllListeners('order_created');
-      socketService.removeAllListeners('order_updated');
-    };
-  }, [isAuthenticated, isHydrated, token, router, fetchDashboard, playNewOrder]);
+  }, [isAuthenticated, isHydrated, token, router, fetchDashboard]);
 
   const handleStatusUpdate = async (orderId) => {
     try {
       toast.success('Status da bebida atualizado');
-      playSuccess();
+      soundService.playStatusChange();
       // Recarregar dashboard após atualizar
       await fetchDashboard();
     } catch (error) {
@@ -96,7 +129,7 @@ export default function PainelBar() {
 
   const handleTimerAlert = (orderId) => {
     console.log('⏰ Alerta de atraso para pedido:', orderId);
-    playUrgent();
+    soundService.playUrgent();
     toast(
       `⏰ Bebida #${orderId} está atrasada (>15 min)`,
       {
@@ -143,6 +176,18 @@ export default function PainelBar() {
               </div>
 
               <div className="flex items-center gap-4">
+                {/* Sprint 57: Notification Badge para novas bebidas */}
+                {((orders.pending?.length || 0) + (orders.preparing?.length || 0)) > 0 && (
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse" style={{ background: 'var(--theme-primary-20)' }}>
+                      <Bell className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+                    </div>
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white font-bold" style={{ background: 'var(--theme-primary)' }}>
+                      {(orders.pending?.length || 0) + (orders.preparing?.length || 0)}
+                    </span>
+                  </div>
+                )}
+
                 {/* Current Time */}
                 <div className="text-right">
                   <p className="text-2xl font-bold text-white">
@@ -239,69 +284,111 @@ export default function PainelBar() {
 
           {/* Fila de Bebidas */}
           <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Wine className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
                 Fila de Bebidas
               </h2>
               <span className="text-gray-400">
-                {(orders.pending?.length || 0) + (orders.preparing?.length || 0)} {
-                  ((orders.pending?.length || 0) + (orders.preparing?.length || 0)) === 1 ? 'bebida' : 'bebidas'
+                {(filterOrdersByCategory(orders.pending)?.length || 0) + (filterOrdersByCategory(orders.preparing)?.length || 0)} {
+                  ((filterOrdersByCategory(orders.pending)?.length || 0) + (filterOrdersByCategory(orders.preparing)?.length || 0)) === 1 ? 'bebida' : 'bebidas'
                 }
               </span>
             </div>
 
-            {(!orders.pending || orders.pending.length === 0) && (!orders.preparing || orders.preparing.length === 0) ? (
-              <div className="text-center py-12">
-                <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-10 h-10 text-gray-600" />
-                </div>
-                <p className="text-gray-400">Nenhuma bebida na fila</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Preparing Orders First */}
-                <AnimatePresence>
-                  {orders.preparing && orders.preparing.length > 0 && (
-                    <>
-                      <div className="mb-4 px-2">
-                        <p className="text-sm font-semibold text-yellow-400">EM PREPARO ({orders.preparing.length})</p>
-                      </div>
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        {orders.preparing.map((order) => (
-                          <StaffOrderCard
-                            key={order.id}
-                            order={order}
-                            onStatusUpdate={handleStatusUpdate}
-                            onTimerAlert={handleTimerAlert}
-                            userRole="bar"
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
+            {/* Filtro por Categoria */}
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+              <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                    categoryFilter === cat.id
+                      ? 'text-white'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  }`}
+                  style={categoryFilter === cat.id ? { background: 'var(--theme-primary)' } : {}}
+                >
+                  {cat.icon} {cat.name}
+                </button>
+              ))}
+              {categoryFilter !== 'all' && (
+                <button
+                  onClick={() => setCategoryFilter('all')}
+                  className="p-2 rounded-lg bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all"
+                  title="Limpar filtro"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
-                  {orders.pending && orders.pending.length > 0 && (
-                    <>
-                      <div className="mb-4 px-2">
-                        <p className="text-sm font-semibold text-green-400">AGUARDANDO ({orders.pending.length})</p>
-                      </div>
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {orders.pending.map((order) => (
-                          <StaffOrderCard
-                            key={order.id}
-                            order={order}
-                            onStatusUpdate={handleStatusUpdate}
-                            onTimerAlert={handleTimerAlert}
-                            userRole="bar"
-                          />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+            {(() => {
+              const filteredPending = filterOrdersByCategory(orders.pending);
+              const filteredPreparing = filterOrdersByCategory(orders.preparing);
+              const hasOrders = (filteredPending?.length || 0) + (filteredPreparing?.length || 0) > 0;
+
+              if (!hasOrders) {
+                return (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-10 h-10 text-gray-600" />
+                    </div>
+                    <p className="text-gray-400">
+                      {categoryFilter !== 'all'
+                        ? `Nenhuma bebida de "${categories.find(c => c.id === categoryFilter)?.name}" na fila`
+                        : 'Nenhuma bebida na fila'
+                      }
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {filteredPreparing && filteredPreparing.length > 0 && (
+                      <>
+                        <div className="mb-4 px-2">
+                          <p className="text-sm font-semibold text-yellow-400">EM PREPARO ({filteredPreparing.length})</p>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                          {filteredPreparing.map((order) => (
+                            <StaffOrderCard
+                              key={order.id}
+                              order={order}
+                              onStatusUpdate={handleStatusUpdate}
+                              onTimerAlert={handleTimerAlert}
+                              userRole="bar"
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {filteredPending && filteredPending.length > 0 && (
+                      <>
+                        <div className="mb-4 px-2">
+                          <p className="text-sm font-semibold text-green-400">AGUARDANDO ({filteredPending.length})</p>
+                        </div>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {filteredPending.map((order) => (
+                            <StaffOrderCard
+                              key={order.id}
+                              order={order}
+                              onStatusUpdate={handleStatusUpdate}
+                              onTimerAlert={handleTimerAlert}
+                              userRole="bar"
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -115,11 +115,11 @@ export default function PWANotifications() {
       <AnimatePresence>
         {showPermissionPrompt && permissionStatus === 'default' && (
           <motion.div
-            initial={{ y: -100, opacity: 0 }}
+            initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
+            exit={{ y: 100, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto"
+            className="fixed bottom-24 left-4 right-4 z-40 max-w-md mx-auto"
           >
             <div className="bg-gray-900 rounded-xl p-4 shadow-2xl border border-gray-700">
               <div className="flex items-start gap-3">

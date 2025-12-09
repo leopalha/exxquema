@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ import socketService from '../../services/socket';
 import api from '../../services/api';
 import StaffOrderCard from '../../components/StaffOrderCard';
 import HookahSessionCard from '../../components/HookahSessionCard';
-import useNotificationSound from '../../hooks/useNotificationSound';
+import soundService from '../../services/soundService';
 import {
   Bell,
   Clock,
@@ -36,7 +36,9 @@ import {
   Zap,
   CreditCard,
   Banknote,
-  Calculator
+  Calculator,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 export default function PainelAtendente() {
@@ -51,9 +53,18 @@ export default function PainelAtendente() {
     resumeSession,
     endSession
   } = useHookahStore();
-  const { playSuccess, playAlert } = useNotificationSound();
 
-  const [activeTab, setActiveTab] = useState('payments'); // payments, new, ready, delivered, pickup, hookah
+  // Sprint 58: Ref para evitar listeners duplicados
+  const listenersSetup = useRef(false);
+
+  // Sprint 57: Seções colapsáveis ao invés de abas
+  const [collapsedSections, setCollapsedSections] = useState({
+    payments: false,
+    new: false,
+    ready: false,
+    onWay: false,
+    hookah: false
+  });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [callCustomerModal, setCallCustomerModal] = useState(null);
   const [isCallingCustomer, setIsCallingCustomer] = useState(false);
@@ -106,36 +117,43 @@ export default function PainelAtendente() {
     socketService.connect(token);
     socketService.joinWaiterRoom();
 
-    // Listener para novos pedidos prontos
-    socketService.onOrderReady((order) => {
-      console.log('✅ Pedido pronto para retirar:', order);
-      toast.success(`⚠️ Pedido #${order.orderNumber || order.id} PRONTO para retirar!`, {
-        duration: 10000,
-        icon: '🔔'
-      });
-      playAlert();
-      // Recarregar dashboard para incluir pedido pronto
-      fetchDashboard();
-    });
+    // Sprint 58: Configurar listeners apenas uma vez
+    if (!listenersSetup.current) {
+      listenersSetup.current = true;
 
-    // Listener para atualização de status
-    socketService.onOrderUpdated((updatedOrder) => {
-      console.log('🔄 Pedido atualizado:', updatedOrder);
-      // Recarregar dashboard quando pedido é atualizado
-      fetchDashboard();
-    });
+      // Handler para pedidos prontos
+      const handleOrderReady = (order) => {
+        console.log('✅ Pedido pronto para retirar:', order);
+        toast.success(`⚠️ Pedido #${order.orderNumber || order.id} PRONTO para retirar!`, {
+          duration: 10000,
+          icon: '🔔'
+        });
+        soundService.playAlert();
+        fetchDashboard();
+      };
 
-    // Listener para solicitação de pagamento
-    socketService.on('payment_request', (data) => {
-      console.log('💳 Nova solicitação de pagamento:', data);
-      toast.success(`💳 Mesa ${data.tableNumber}: ${data.paymentLabel} - ${formatCurrency(data.total)}`, {
-        duration: 10000,
-        icon: '💰'
-      });
-      playAlert();
-      fetchPendingPayments();
-      setActiveTab('payments'); // Ir para aba de pagamentos
-    });
+      // Handler para atualizações
+      const handleOrderUpdated = (updatedOrder) => {
+        console.log('🔄 Pedido atualizado:', updatedOrder);
+        fetchDashboard();
+      };
+
+      // Handler para solicitação de pagamento
+      const handlePaymentRequest = (data) => {
+        console.log('💳 Nova solicitação de pagamento:', data);
+        toast.success(`💳 Mesa ${data.tableNumber}: ${data.paymentLabel} - ${formatCurrency(data.total)}`, {
+          duration: 10000,
+          icon: '💰'
+        });
+        soundService.playAlert();
+        fetchPendingPayments();
+        setCollapsedSections(prev => ({ ...prev, payments: false }));
+      };
+
+      socketService.onOrderReady(handleOrderReady);
+      socketService.onOrderUpdated(handleOrderUpdated);
+      socketService.on('payment_request', handlePaymentRequest);
+    }
 
     // Cleanup
     return () => {
@@ -143,6 +161,7 @@ export default function PainelAtendente() {
       socketService.removeAllListeners('order_ready');
       socketService.removeAllListeners('order_updated');
       socketService.removeAllListeners('payment_request');
+      listenersSetup.current = false;
     };
   }, [isAuthenticated, isHydrated, router, fetchDashboard]);
 
@@ -178,7 +197,7 @@ export default function PainelAtendente() {
       if (response.data.success) {
         const methodLabels = { credit: 'Crédito', debit: 'Débito', pix: 'PIX', cash: 'Dinheiro' };
         toast.success(`Pagamento (${methodLabels[selectedPaymentMethod]}) confirmado! Pedido enviado para produção.`);
-        playSuccess();
+        soundService.playSuccess();
         setConfirmPaymentModal(null);
         setAmountReceived('');
         setSelectedPaymentMethod(null);
@@ -198,7 +217,7 @@ export default function PainelAtendente() {
   const handleStatusUpdate = async (orderId) => {
     try {
       toast.success('Status do pedido atualizado');
-      playSuccess();
+      soundService.playSuccess();
       // Recarregar dashboard após atualizar
       await fetchDashboard();
     } catch (error) {
@@ -209,7 +228,7 @@ export default function PainelAtendente() {
 
   const handleTimerAlert = (orderId) => {
     console.log('⏰ Alerta de atraso para pedido:', orderId);
-    playAlert();
+    soundService.playUrgent();
     toast(
       `⏰ Pedido #${orderId} está aguardando há >15 min`,
       {
@@ -239,7 +258,7 @@ export default function PainelAtendente() {
 
       if (response.data.success) {
         toast.success('Cliente notificado com sucesso!');
-        playSuccess();
+        soundService.playSuccess();
       } else {
         toast.error('Erro ao notificar cliente');
       }
@@ -247,7 +266,7 @@ export default function PainelAtendente() {
       console.error('Erro ao chamar cliente:', error);
       // Simular sucesso em dev mode
       toast.success('Cliente notificado! (modo desenvolvimento)');
-      playSuccess();
+      soundService.playSuccess();
     } finally {
       setIsCallingCustomer(false);
       setCallCustomerModal(null);
@@ -351,454 +370,446 @@ export default function PainelAtendente() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Bell className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
-                Gerenciar Entrega
-              </h2>
-            </div>
+          {/* Sprint 57: Grupos Verticais (substituem as abas) */}
+          <div className="space-y-4">
 
-            {/* Tab Buttons */}
-            <div className="flex gap-2 mb-6 border-b border-gray-700 overflow-x-auto">
+            {/* ==================== SEÇÃO: PAGAMENTOS ==================== */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
               <button
-                onClick={() => setActiveTab('payments')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'payments'
-                    ? 'border-green-500 text-green-400'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
+                onClick={() => setCollapsedSections(prev => ({ ...prev, payments: !prev.payments }))}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
               >
-                <div className="flex items-center gap-2">
-                  <Banknote className="w-4 h-4" />
-                  Pagamentos ({pendingPayments.length})
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                    <Banknote className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-white">Pagamentos</h3>
+                    <p className="text-sm text-gray-400">Aguardando confirmação</p>
+                  </div>
                   {pendingPayments.length > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                    <span className="ml-2 px-3 py-1 bg-green-600 text-white text-sm font-bold rounded-full animate-pulse">
+                      {pendingPayments.length}
+                    </span>
                   )}
                 </div>
+                {collapsedSections.payments ? (
+                  <ChevronDown className="w-6 h-6 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-6 h-6 text-gray-400" />
+                )}
               </button>
-              <button
-                onClick={() => setActiveTab('new')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'new'
-                    ? 'border-yellow-500 text-yellow-400'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Novos ({(orders.pending?.length || 0) + (orders.preparing?.length || 0)})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('ready')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'ready'
-                    ? 'border-transparent'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-                style={activeTab === 'ready' ? { borderColor: 'var(--theme-primary)', color: 'var(--theme-primary)' } : {}}
-              >
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4" />
-                  Prontos ({orders.ready?.length || 0})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('delivered')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'delivered'
-                    ? 'border-green-500 text-green-400'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  Entregues ({stats.completedToday})
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('pickup')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'pickup'
-                    ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4" />
-                  Balcão
-                </div>
-              </button>
-              <button
-                onClick={() => setActiveTab('hookah')}
-                className={`px-4 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-                  activeTab === 'hookah'
-                    ? 'border-transparent'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                }`}
-                style={activeTab === 'hookah' ? { borderColor: 'var(--theme-primary)', color: 'var(--theme-primary)' } : {}}
-              >
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4" />
-                  Narguilé ({hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0})
-                </div>
-              </button>
+
+              <AnimatePresence>
+                {!collapsedSections.payments && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-gray-700"
+                  >
+                    <div className="p-6">
+                      {pendingPayments.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Banknote className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                          <p className="text-gray-400">Nenhum pagamento pendente</p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {pendingPayments.map((order) => (
+                            <motion.div
+                              key={order.id}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="bg-gray-800 border-2 border-green-500/50 rounded-xl p-4"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                                    <Banknote className="w-5 h-5 text-green-400" />
+                                  </div>
+                                  <div>
+                                    <p className="text-white font-bold">Mesa {order.table?.number || 'Balcão'}</p>
+                                    <p className="text-xs text-gray-400">#{order.orderNumber || order.id?.slice(-6)}</p>
+                                  </div>
+                                </div>
+                                <span className="px-2 py-1 rounded text-xs font-semibold bg-green-600/20 text-green-400">
+                                  {order.paymentLabel || order.paymentMethod}
+                                </span>
+                              </div>
+                              <div className="mb-3 pb-3 border-b border-gray-700">
+                                <p className="text-sm text-gray-400">Cliente</p>
+                                <p className="text-white font-medium">{order.customer?.nome || 'Cliente'}</p>
+                              </div>
+                              <div className="flex items-center justify-between mb-4">
+                                <div>
+                                  <p className="text-sm text-gray-400">Total</p>
+                                  <p className="text-2xl font-bold text-green-400">{formatCurrency(order.total)}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-400">Esperando</p>
+                                  <p className="text-lg font-semibold text-yellow-400">{order.waitingTime || 0} min</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setConfirmPaymentModal(order)}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                                Confirmar Pagamento
+                              </button>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Tab Content */}
-            <AnimatePresence mode="wait">
-              {activeTab === 'payments' && (
-                <motion.div
-                  key="payments"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  {pendingPayments.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Banknote className="w-10 h-10 text-gray-600" />
-                      </div>
-                      <p className="text-gray-400">Nenhum pagamento pendente</p>
-                      <p className="text-gray-500 text-sm mt-2">Pagamentos com atendente aparecerão aqui</p>
+            {/* ==================== SEÇÃO: NOVOS/EM PREPARO ==================== */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setCollapsedSections(prev => ({ ...prev, new: !prev.new }))}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-white">Novos / Em Preparo</h3>
+                    <p className="text-sm text-gray-400">Pedidos aguardando ou sendo preparados</p>
+                  </div>
+                  {((orders.pending?.length || 0) + (orders.preparing?.length || 0)) > 0 && (
+                    <span className="ml-2 px-3 py-1 bg-yellow-600 text-white text-sm font-bold rounded-full">
+                      {(orders.pending?.length || 0) + (orders.preparing?.length || 0)}
+                    </span>
+                  )}
+                </div>
+                {collapsedSections.new ? (
+                  <ChevronDown className="w-6 h-6 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-6 h-6 text-gray-400" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {!collapsedSections.new && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-gray-700"
+                  >
+                    <div className="p-6">
+                      {(!orders.pending || orders.pending.length === 0) && (!orders.preparing || orders.preparing.length === 0) ? (
+                        <div className="text-center py-8">
+                          <Clock className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                          <p className="text-gray-400">Nenhum pedido em andamento</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {orders.pending && orders.pending.length > 0 && (
+                            <>
+                              <div className="mb-4 px-2">
+                                <p className="text-sm font-semibold text-yellow-400">AGUARDANDO PREPARO ({orders.pending.length})</p>
+                              </div>
+                              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {orders.pending.map((order) => (
+                                  <StaffOrderCard
+                                    key={order.id}
+                                    order={order}
+                                    onStatusUpdate={handleStatusUpdate}
+                                    onTimerAlert={handleTimerAlert}
+                                    userRole="atendente"
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          {orders.preparing && orders.preparing.length > 0 && (
+                            <>
+                              <div className="mb-4 px-2 mt-6">
+                                <p className="text-sm font-semibold text-orange-400">EM PREPARO ({orders.preparing.length})</p>
+                              </div>
+                              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {orders.preparing.map((order) => (
+                                  <StaffOrderCard
+                                    key={order.id}
+                                    order={order}
+                                    onStatusUpdate={handleStatusUpdate}
+                                    onTimerAlert={handleTimerAlert}
+                                    userRole="atendente"
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {pendingPayments.map((order) => (
-                        <motion.div
-                          key={order.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="bg-gray-800 border-2 border-green-500/50 rounded-xl p-4"
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ==================== SEÇÃO: PRONTOS ==================== */}
+            <div className="bg-gray-900 border-2 rounded-xl overflow-hidden" style={{ borderColor: (orders.ready?.length || 0) > 0 ? 'var(--theme-primary)' : 'rgb(55, 65, 81)' }}>
+              <button
+                onClick={() => setCollapsedSections(prev => ({ ...prev, ready: !prev.ready }))}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--theme-primary-20)' }}>
+                    <Bell className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-white">Prontos para Retirar</h3>
+                    <p className="text-sm text-gray-400">Pedidos aguardando entrega na mesa</p>
+                  </div>
+                  {(orders.ready?.length || 0) > 0 && (
+                    <span className="ml-2 px-3 py-1 text-white text-sm font-bold rounded-full animate-pulse" style={{ background: 'var(--theme-primary)' }}>
+                      {orders.ready?.length || 0}
+                    </span>
+                  )}
+                </div>
+                {collapsedSections.ready ? (
+                  <ChevronDown className="w-6 h-6 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-6 h-6 text-gray-400" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {!collapsedSections.ready && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-gray-700"
+                  >
+                    <div className="p-6">
+                      {(!orders.ready || orders.ready.length === 0) ? (
+                        <div className="text-center py-8">
+                          <Bell className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                          <p className="text-gray-400">Nenhum pedido pronto</p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {orders.ready.map((order) => (
+                            <StaffOrderCard
+                              key={order.id}
+                              order={order}
+                              onStatusUpdate={handleStatusUpdate}
+                              onTimerAlert={handleTimerAlert}
+                              userRole="atendente"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ==================== SEÇÃO: EM ENTREGA ==================== */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setCollapsedSections(prev => ({ ...prev, onWay: !prev.onWay }))}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                    <Truck className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-white">Em Entrega</h3>
+                    <p className="text-sm text-gray-400">Pedidos a caminho da mesa</p>
+                  </div>
+                  {(orders.on_way?.length || 0) > 0 && (
+                    <span className="ml-2 px-3 py-1 bg-purple-600 text-white text-sm font-bold rounded-full">
+                      {orders.on_way?.length || 0}
+                    </span>
+                  )}
+                </div>
+                {collapsedSections.onWay ? (
+                  <ChevronDown className="w-6 h-6 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-6 h-6 text-gray-400" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {!collapsedSections.onWay && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-gray-700"
+                  >
+                    <div className="p-6">
+                      {(!orders.on_way || orders.on_way.length === 0) ? (
+                        <div className="text-center py-8">
+                          <Truck className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                          <p className="text-gray-400">Nenhum pedido em entrega</p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {orders.on_way.map((order) => (
+                            <StaffOrderCard
+                              key={order.id}
+                              order={order}
+                              onStatusUpdate={handleStatusUpdate}
+                              onTimerAlert={handleTimerAlert}
+                              userRole="atendente"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ==================== SEÇÃO: NARGUILÉ ==================== */}
+            <div className="bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setCollapsedSections(prev => ({ ...prev, hookah: !prev.hookah }))}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'var(--theme-primary-20)' }}>
+                    <Flame className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold text-white">Narguilé</h3>
+                    <p className="text-sm text-gray-400">Sessões ativas de narguilé</p>
+                  </div>
+                  {(hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0) > 0 && (
+                    <span className="ml-2 px-3 py-1 text-white text-sm font-bold rounded-full" style={{ background: 'var(--theme-primary)' }}>
+                      {hookahSessions?.filter(s => s.status === 'active' || s.status === 'paused').length || 0}
+                    </span>
+                  )}
+                </div>
+                {collapsedSections.hookah ? (
+                  <ChevronDown className="w-6 h-6 text-gray-400" />
+                ) : (
+                  <ChevronUp className="w-6 h-6 text-gray-400" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {!collapsedSections.hookah && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="border-t border-gray-700"
+                  >
+                    <div className="p-6">
+                      {/* Ações Rápidas */}
+                      <div className="flex flex-wrap gap-3 mb-6">
+                        <button
+                          onClick={() => {
+                            const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
+                            if (activeSessions.length === 0) {
+                              toast('Nenhuma sessão ativa', { icon: 'ℹ️' });
+                              return;
+                            }
+                            activeSessions.forEach(s => registerCoalChange(s.id));
+                            toast.success(`Carvão registrado para ${activeSessions.length} sessão(ões)`);
+                            soundService.playCoalChange();
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-colors hover:opacity-90"
+                          style={{ background: 'var(--theme-primary)' }}
                         >
-                          {/* Header */}
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
-                                <Banknote className="w-5 h-5 text-green-400" />
-                              </div>
-                              <div>
-                                <p className="text-white font-bold">Mesa {order.table?.number || 'Balcão'}</p>
-                                <p className="text-xs text-gray-400">#{order.orderNumber || order.id?.slice(-6)}</p>
-                              </div>
-                            </div>
-                            <span className="px-2 py-1 rounded text-xs font-semibold bg-green-600/20 text-green-400">
-                              {order.paymentLabel || order.paymentMethod}
-                            </span>
-                          </div>
+                          <Zap className="w-4 h-4" />
+                          Trocar Carvão (Todas)
+                        </button>
+                        <button
+                          onClick={() => {
+                            const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
+                            if (activeSessions.length === 0) {
+                              toast('Nenhuma sessão ativa para pausar', { icon: 'ℹ️' });
+                              return;
+                            }
+                            activeSessions.forEach(s => pauseSession(s.id));
+                            toast.success(`${activeSessions.length} sessão(ões) pausada(s)`);
+                          }}
+                          className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-white transition-colors"
+                        >
+                          <Pause className="w-4 h-4" />
+                          Pausar Todas
+                        </button>
+                        <button
+                          onClick={() => {
+                            const pausedSessions = hookahSessions?.filter(s => s.status === 'paused') || [];
+                            if (pausedSessions.length === 0) {
+                              toast('Nenhuma sessão pausada para retomar', { icon: 'ℹ️' });
+                              return;
+                            }
+                            pausedSessions.forEach(s => resumeSession(s.id));
+                            toast.success(`${pausedSessions.length} sessão(ões) retomada(s)`);
+                          }}
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
+                        >
+                          <Play className="w-4 h-4" />
+                          Retomar Todas
+                        </button>
+                      </div>
 
-                          {/* Cliente */}
-                          <div className="mb-3 pb-3 border-b border-gray-700">
-                            <p className="text-sm text-gray-400">Cliente</p>
-                            <p className="text-white font-medium">{order.customer?.nome || 'Cliente'}</p>
-                          </div>
-
-                          {/* Itens */}
-                          <div className="mb-3 pb-3 border-b border-gray-700 max-h-32 overflow-y-auto">
-                            {(order.items || []).slice(0, 3).map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-sm py-1">
-                                <span className="text-gray-300">{item.quantity}x {item.productName || item.product?.name}</span>
-                                <span className="text-gray-400">{formatCurrency((item.unitPrice || item.price) * item.quantity)}</span>
-                              </div>
+                      {/* Lista de Sessões */}
+                      {(!hookahSessions || hookahSessions.filter(s => s.status === 'active' || s.status === 'paused').length === 0) ? (
+                        <div className="text-center py-8">
+                          <Flame className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                          <p className="text-gray-400">Nenhuma sessão de narguilé ativa</p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {hookahSessions
+                            .filter(s => s.status === 'active' || s.status === 'paused')
+                            .map((session) => (
+                              <HookahSessionCard
+                                key={session.id}
+                                session={session}
+                                onCoalChange={() => {
+                                  registerCoalChange(session.id);
+                                  toast.success('Troca de carvão registrada!');
+                                  soundService.playCoalChange();
+                                }}
+                                onPause={() => {
+                                  pauseSession(session.id);
+                                  toast.success('Sessão pausada');
+                                }}
+                                onResume={() => {
+                                  resumeSession(session.id);
+                                  toast.success('Sessão retomada');
+                                }}
+                                onEnd={() => {
+                                  if (confirm('Finalizar esta sessão de narguilé?')) {
+                                    endSession(session.id);
+                                    toast.success('Sessão finalizada');
+                                  }
+                                }}
+                              />
                             ))}
-                            {(order.items || []).length > 3 && (
-                              <p className="text-xs text-gray-500 mt-1">+ {order.items.length - 3} itens</p>
-                            )}
-                          </div>
-
-                          {/* Total e Tempo */}
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <p className="text-sm text-gray-400">Total</p>
-                              <p className="text-2xl font-bold text-green-400">{formatCurrency(order.total)}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-400">Esperando</p>
-                              <p className="text-lg font-semibold text-yellow-400">{order.waitingTime || 0} min</p>
-                            </div>
-                          </div>
-
-                          {/* Botão Confirmar */}
-                          <button
-                            onClick={() => setConfirmPaymentModal(order)}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-                          >
-                            <CheckCircle className="w-5 h-5" />
-                            Confirmar Pagamento
-                          </button>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {activeTab === 'new' && (
-                <motion.div
-                  key="new"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  {(!orders.pending || orders.pending.length === 0) && (!orders.preparing || orders.preparing.length === 0) ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Clock className="w-10 h-10 text-gray-600" />
-                      </div>
-                      <p className="text-gray-400">Nenhum pedido em andamento</p>
-                      <p className="text-gray-500 text-sm mt-2">Os novos pedidos aparecerão aqui</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {/* Pedidos aguardando (pending) */}
-                      {orders.pending && orders.pending.length > 0 && (
-                        <>
-                          <div className="mb-4 px-2">
-                            <p className="text-sm font-semibold text-yellow-400">AGUARDANDO PREPARO ({orders.pending.length})</p>
-                          </div>
-                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <AnimatePresence>
-                              {orders.pending.map((order) => (
-                                <StaffOrderCard
-                                  key={order.id}
-                                  order={order}
-                                  onStatusUpdate={handleStatusUpdate}
-                                  onTimerAlert={handleTimerAlert}
-                                  userRole="atendente"
-                                />
-                              ))}
-                            </AnimatePresence>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Pedidos em preparo (preparing) */}
-                      {orders.preparing && orders.preparing.length > 0 && (
-                        <>
-                          <div className="mb-4 px-2 mt-6">
-                            <p className="text-sm font-semibold text-orange-400">EM PREPARO ({orders.preparing.length})</p>
-                          </div>
-                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <AnimatePresence>
-                              {orders.preparing.map((order) => (
-                                <StaffOrderCard
-                                  key={order.id}
-                                  order={order}
-                                  onStatusUpdate={handleStatusUpdate}
-                                  onTimerAlert={handleTimerAlert}
-                                  userRole="atendente"
-                                />
-                              ))}
-                            </AnimatePresence>
-                          </div>
-                        </>
+                        </div>
                       )}
                     </div>
-                  )}
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              {activeTab === 'ready' && (
-                <motion.div
-                  key="ready"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  {(!orders.ready || orders.ready.length === 0) && (!orders.on_way || orders.on_way.length === 0) ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-10 h-10 text-gray-600" />
-                      </div>
-                      <p className="text-gray-400">Nenhum pedido pronto</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {/* Pedidos em entrega (on_way) - mostrar primeiro */}
-                      {orders.on_way && orders.on_way.length > 0 && (
-                        <>
-                          <div className="mb-4 px-2">
-                            <p className="text-sm font-semibold text-purple-400">EM ENTREGA ({orders.on_way.length})</p>
-                          </div>
-                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <AnimatePresence>
-                              {orders.on_way.map((order) => (
-                                <StaffOrderCard
-                                  key={order.id}
-                                  order={order}
-                                  onStatusUpdate={handleStatusUpdate}
-                                  onTimerAlert={handleTimerAlert}
-                                  userRole="atendente"
-                                />
-                              ))}
-                            </AnimatePresence>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Pedidos prontos para retirar */}
-                      {orders.ready && orders.ready.length > 0 && (
-                        <>
-                          <div className="mb-4 px-2">
-                            <p className="text-sm font-semibold text-green-400">PRONTOS PARA RETIRAR ({orders.ready.length})</p>
-                          </div>
-                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <AnimatePresence>
-                              {orders.ready.map((order) => (
-                                <StaffOrderCard
-                                  key={order.id}
-                                  order={order}
-                                  onStatusUpdate={handleStatusUpdate}
-                                  onTimerAlert={handleTimerAlert}
-                                  userRole="atendente"
-                                />
-                              ))}
-                            </AnimatePresence>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {activeTab === 'delivered' && (
-                <motion.div
-                  key="delivered"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-10 h-10 text-green-600" />
-                    </div>
-                    <p className="text-gray-400">Histórico de entregas do dia</p>
-                    <p className="text-gray-500 text-sm mt-2">Total: {stats.completedToday} pedidos</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'pickup' && (
-                <motion.div
-                  key="pickup"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Package className="w-10 h-10 text-gray-600" />
-                    </div>
-                    <p className="text-gray-400">Pedidos para retirada no balcão</p>
-                    <p className="text-gray-500 text-sm mt-2">Nenhum pedido agora</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'hookah' && (
-                <motion.div
-                  key="hookah"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  {/* Ações Rápidas */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    <button
-                      onClick={() => {
-                        const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
-                        if (activeSessions.length === 0) {
-                          toast('Nenhuma sessão ativa', { icon: 'ℹ️' });
-                          return;
-                        }
-                        activeSessions.forEach(s => registerCoalChange(s.id));
-                        toast.success(`Carvão registrado para ${activeSessions.length} sessão(ões)`);
-                        playSuccess();
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-colors hover:opacity-90"
-                      style={{ background: 'var(--theme-primary)' }}
-                    >
-                      <Zap className="w-4 h-4" />
-                      Trocar Carvão (Todas)
-                    </button>
-                    <button
-                      onClick={() => {
-                        const activeSessions = hookahSessions?.filter(s => s.status === 'active') || [];
-                        if (activeSessions.length === 0) {
-                          toast('Nenhuma sessão ativa para pausar', { icon: 'ℹ️' });
-                          return;
-                        }
-                        activeSessions.forEach(s => pauseSession(s.id));
-                        toast.success(`${activeSessions.length} sessão(ões) pausada(s)`);
-                      }}
-                      className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-white transition-colors"
-                    >
-                      <Pause className="w-4 h-4" />
-                      Pausar Todas
-                    </button>
-                    <button
-                      onClick={() => {
-                        const pausedSessions = hookahSessions?.filter(s => s.status === 'paused') || [];
-                        if (pausedSessions.length === 0) {
-                          toast('Nenhuma sessão pausada para retomar', { icon: 'ℹ️' });
-                          return;
-                        }
-                        pausedSessions.forEach(s => resumeSession(s.id));
-                        toast.success(`${pausedSessions.length} sessão(ões) retomada(s)`);
-                      }}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition-colors"
-                    >
-                      <Play className="w-4 h-4" />
-                      Retomar Todas
-                    </button>
-                  </div>
-
-                  {/* Lista de Sessões */}
-                  {(!hookahSessions || hookahSessions.filter(s => s.status === 'active' || s.status === 'paused').length === 0) ? (
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Flame className="w-10 h-10 text-gray-600" />
-                      </div>
-                      <p className="text-gray-400">Nenhuma sessão de narguilé ativa</p>
-                      <p className="text-gray-500 text-sm mt-2">As sessões aparecerão aqui quando iniciadas</p>
-                    </div>
-                  ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {hookahSessions
-                        .filter(s => s.status === 'active' || s.status === 'paused')
-                        .map((session) => (
-                          <HookahSessionCard
-                            key={session.id}
-                            session={session}
-                            onCoalChange={() => {
-                              registerCoalChange(session.id);
-                              toast.success('Troca de carvão registrada!');
-                              playSuccess();
-                            }}
-                            onPause={() => {
-                              pauseSession(session.id);
-                              toast.success('Sessão pausada');
-                            }}
-                            onResume={() => {
-                              resumeSession(session.id);
-                              toast.success('Sessão retomada');
-                            }}
-                            onEnd={() => {
-                              if (confirm('Finalizar esta sessão de narguilé?')) {
-                                endSession(session.id);
-                                toast.success('Sessão finalizada');
-                              }
-                            }}
-                          />
-                        ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
 

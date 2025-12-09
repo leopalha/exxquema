@@ -120,6 +120,7 @@ app.use('/api/staff', require('./routes/staff'));
 app.use('/api/migrate', require('./routes/migrate')); // Temporário - para migração CPF
 app.use('/api/crm', require('./routes/crm'));
 app.use('/api/upload', require('./routes/upload.routes')); // Sprint 30 - Upload de imagens
+app.use('/api/chat', require('./routes/chat')); // Sprint 56 - Chat staff-cliente
 app.use('/api', require('./routes/seed-route'));
 
 // Serve uploaded files

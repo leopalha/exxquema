@@ -622,7 +622,7 @@ class TableController {
     try {
       const areas = await Table.findAll({
         attributes: ['area'],
-        where: { 
+        where: {
           area: { [Op.ne]: null },
           isActive: true
         },
@@ -638,6 +638,52 @@ class TableController {
       });
     } catch (error) {
       console.error('Erro ao listar áreas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+
+  // Sprint 56: Atualizar posições de múltiplas mesas (para mapa drag & drop)
+  async updatePositions(req, res) {
+    try {
+      const { positions } = req.body;
+
+      if (!Array.isArray(positions) || positions.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Lista de posições é obrigatória'
+        });
+      }
+
+      // Validar formato
+      for (const pos of positions) {
+        if (!pos.id || typeof pos.x !== 'number' || typeof pos.y !== 'number') {
+          return res.status(400).json({
+            success: false,
+            message: 'Cada posição deve ter id, x e y'
+          });
+        }
+      }
+
+      // Atualizar cada mesa
+      const updates = positions.map(pos =>
+        Table.update(
+          { position: { x: pos.x, y: pos.y } },
+          { where: { id: pos.id } }
+        )
+      );
+
+      await Promise.all(updates);
+
+      res.status(200).json({
+        success: true,
+        message: `${positions.length} posições atualizadas com sucesso`
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar posições:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',

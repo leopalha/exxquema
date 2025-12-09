@@ -14,7 +14,7 @@ const createOrderValidation = [
   body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantidade deve ser maior que zero'),
   body('items.*.notes').optional({ nullable: true }).isString(),
   body('paymentMethod').optional({ nullable: true }).isIn([
-    'cash', 'card', 'pix', 'credit_card', 'debit_card', 'pay_later', 'apple_pay', 'card_at_table', 'split'
+    'cash', 'card', 'pix', 'credit', 'debit', 'credit_card', 'debit_card', 'pay_later', 'apple_pay', 'card_at_table', 'split'
   ]).withMessage('Método de pagamento inválido'),
   body('notes').optional({ nullable: true }).isString()
 ];
@@ -25,11 +25,15 @@ const updateOrderStatusValidation = [
     .withMessage('Status inválido')
 ];
 
+// Sprint 58: Adicionado paymentMethod que é obrigatório no frontend do atendente
 const confirmAttendantPaymentValidation = [
   param('id').isUUID().withMessage('ID do pedido inválido'),
-  body('amountReceived').optional().isFloat({ min: 0 }).withMessage('Valor recebido inválido'),
-  body('change').optional().isFloat({ min: 0 }).withMessage('Troco inválido')
+  body('paymentMethod').isIn(['cash', 'credit', 'debit', 'pix', 'credit_card', 'debit_card'])
+    .withMessage('Método de pagamento inválido'),
+  body('amountReceived').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('Valor recebido inválido'),
+  body('change').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('Troco inválido')
 ];
+
 
 const rateOrderValidation = [
   param('id').isUUID().withMessage('ID inválido'),

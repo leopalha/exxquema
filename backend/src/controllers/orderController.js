@@ -15,12 +15,13 @@ class OrderController {
       console.log('📦 [CREATE ORDER] Iniciando criação de pedido');
       console.log('📦 [CREATE ORDER] Body:', JSON.stringify(req.body, null, 2));
 
-      const { tableId, items, notes, paymentMethod, useCashback } = req.body;
+      const { tableId, items, notes, paymentMethod, useCashback, tip } = req.body;
       const userId = req.user.id;
       console.log('📦 [CREATE ORDER] userId:', userId);
       console.log('📦 [CREATE ORDER] tableId:', tableId);
       console.log('📦 [CREATE ORDER] items:', JSON.stringify(items));
       console.log('📦 [CREATE ORDER] useCashback:', useCashback);
+      console.log('📦 [CREATE ORDER] tip:', tip);
 
       // Validar valor mínimo
       const minimumOrderValue = parseFloat(process.env.MINIMUM_ORDER_VALUE) || 15.00;
@@ -128,7 +129,8 @@ class OrderController {
       const serviceFeePercentage = parseFloat(process.env.SERVICE_FEE_PERCENTAGE) || 10;
       const serviceFee = (subtotal * serviceFeePercentage / 100);
       const taxes = 0;
-      let totalBeforeDiscount = subtotal + serviceFee + taxes;
+      const tipAmount = parseFloat(tip) || 0;
+      let totalBeforeDiscount = subtotal + serviceFee + taxes + tipAmount;
 
       // Processar uso de cashback
       let cashbackUsed = 0;
@@ -145,7 +147,7 @@ class OrderController {
       // Calcular total final com desconto
       const total = Math.max(0, totalBeforeDiscount - cashbackUsed);
 
-      console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'cashbackUsed:', cashbackUsed, 'total:', total);
+      console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'tip:', tipAmount, 'cashbackUsed:', cashbackUsed, 'total:', total);
 
       // Criar pedido (tableId é opcional para pedidos de balcão)
       const order = await Order.create({
@@ -156,6 +158,7 @@ class OrderController {
         taxes: taxes.toFixed(2),
         cashbackUsed: cashbackUsed.toFixed(2),
         discount: cashbackUsed.toFixed(2), // Por enquanto discount = cashbackUsed
+        tip: tipAmount.toFixed(2), // Gorjeta opcional
         total: total.toFixed(2),
         notes,
         paymentMethod,

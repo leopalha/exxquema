@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,13 +23,19 @@ import {
   Settings,
   QrCode,
   Download,
-  Upload
+  Upload,
+  Map,
+  Move,
+  ZoomIn,
+  ZoomOut
 } from 'lucide-react';
 import Layout from '../../components/Layout';
 import LoadingSpinner, { SkeletonCard } from '../../components/LoadingSpinner';
 import { useAuthStore } from '../../stores/authStore';
 import { useApi, useForm } from '../../hooks';
 import { formatDate, formatRelativeTime } from '../../utils/format';
+import { api } from '../../services/api';
+import { toast } from 'react-hot-toast';
 
 export default function AdminTables() {
   const router = useRouter();
@@ -41,10 +47,18 @@ export default function AdminTables() {
     status: 'all',
     capacity: 'all'
   });
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'map'
   const [showTableModal, setShowTableModal] = useState(false);
   const [editingTable, setEditingTable] = useState(null);
   const [selectedTables, setSelectedTables] = useState([]);
+
+  // Sprint 56: Estado para mapa visual
+  const [tablePositions, setTablePositions] = useState({});
+  const [draggingTable, setDraggingTable] = useState(null);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savingPositions, setSavingPositions] = useState(false);
+  const mapContainerRef = useRef(null);
 
   // API calls
   const { data: tablesData, loading: tablesLoading, refetch: refetchTables } = useApi(`/admin/tables?search=${filters.search}&status=${filters.status}&capacity=${filters.capacity}`);
@@ -96,6 +110,80 @@ export default function AdminTables() {
       resetForm();
     }
   }, [editingTable, setValues, resetForm]);
+
+  // Sprint 56: Inicializar posições das mesas do servidor
+  useEffect(() => {
+    if (tablesData?.tables) {
+      const positions = {};
+      tablesData.tables.forEach((table, index) => {
+        const saved = table.position;
+        positions[table.id || table._id] = saved || {
+          x: 50 + (index % 5) * 120,
+          y: 50 + Math.floor(index / 5) * 100
+        };
+      });
+      setTablePositions(positions);
+    }
+  }, [tablesData]);
+
+  // Sprint 56: Funcoes do mapa visual
+  const handleDragStart = useCallback((e, tableId) => {
+    setDraggingTable(tableId);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDrag = useCallback((e, tableId) => {
+    if (!mapContainerRef.current || !e.clientX) return;
+    const rect = mapContainerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / mapZoom;
+    const y = (e.clientY - rect.top) / mapZoom;
+
+    if (x > 0 && y > 0) {
+      setTablePositions(prev => ({
+        ...prev,
+        [tableId]: { x: Math.max(20, x - 40), y: Math.max(20, y - 30) }
+      }));
+      setHasUnsavedChanges(true);
+    }
+  }, [mapZoom]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingTable(null);
+  }, []);
+
+  const saveMapPositions = async () => {
+    setSavingPositions(true);
+    try {
+      const positions = Object.entries(tablePositions).map(([id, pos]) => ({
+        id,
+        x: Math.round(pos.x),
+        y: Math.round(pos.y)
+      }));
+
+      await api.patch('/tables/positions', { positions });
+      setHasUnsavedChanges(false);
+      toast.success('Posicoes das mesas salvas!');
+    } catch (error) {
+      console.error('Erro ao salvar posicoes:', error);
+      toast.error('Erro ao salvar posicoes');
+    } finally {
+      setSavingPositions(false);
+    }
+  };
+
+  const resetMapPositions = () => {
+    if (tablesData?.tables) {
+      const positions = {};
+      tablesData.tables.forEach((table, index) => {
+        positions[table.id || table._id] = {
+          x: 50 + (index % 5) * 120,
+          y: 50 + Math.floor(index / 5) * 100
+        };
+      });
+      setTablePositions(positions);
+      setHasUnsavedChanges(true);
+    }
+  };
 
   const statusColors = {
     available: 'bg-green-500',
@@ -328,6 +416,7 @@ export default function AdminTables() {
                         viewMode === 'grid' ? 'text-white' : 'text-gray-400 hover:text-white'
                       }`}
                       style={viewMode === 'grid' ? { background: 'var(--theme-primary)' } : {}}
+                      title="Visualizacao em grade"
                     >
                       <Grid className="w-4 h-4" />
                     </button>
@@ -337,8 +426,19 @@ export default function AdminTables() {
                         viewMode === 'list' ? 'text-white' : 'text-gray-400 hover:text-white'
                       }`}
                       style={viewMode === 'list' ? { background: 'var(--theme-primary)' } : {}}
+                      title="Visualizacao em lista"
                     >
                       <List className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('map')}
+                      className={`p-2 rounded transition-colors ${
+                        viewMode === 'map' ? 'text-white' : 'text-gray-400 hover:text-white'
+                      }`}
+                      style={viewMode === 'map' ? { background: 'var(--theme-primary)' } : {}}
+                      title="Mapa visual (drag & drop)"
+                    >
+                      <Map className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -473,18 +573,151 @@ export default function AdminTables() {
               </motion.div>
             )}
 
+            {/* Sprint 56: Map View */}
+            {viewMode === 'map' && (
+              <div className="bg-gray-900 rounded-xl border border-gray-700 p-4 mb-8">
+                {/* Map Controls */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Move className="w-4 h-4" />
+                      <span className="text-sm">Arraste as mesas para posicionar</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setMapZoom(z => Math.max(0.5, z - 0.1))}
+                        className="p-2 bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
+                        title="Diminuir zoom"
+                      >
+                        <ZoomOut className="w-4 h-4" />
+                      </button>
+                      <span className="text-gray-400 text-sm w-12 text-center">{Math.round(mapZoom * 100)}%</span>
+                      <button
+                        onClick={() => setMapZoom(z => Math.min(1.5, z + 0.1))}
+                        className="p-2 bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
+                        title="Aumentar zoom"
+                      >
+                        <ZoomIn className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={resetMapPositions}
+                      className="px-3 py-2 bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Resetar
+                    </button>
+                    {hasUnsavedChanges && (
+                      <button
+                        onClick={saveMapPositions}
+                        disabled={savingPositions}
+                        className="px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 flex items-center gap-2 text-sm"
+                        style={{ background: 'var(--theme-primary)' }}
+                      >
+                        {savingPositions ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Salvando...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            Salvar Posicoes
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Map Canvas */}
+                <div
+                  ref={mapContainerRef}
+                  className="relative bg-gray-800 rounded-lg overflow-hidden"
+                  style={{
+                    height: '500px',
+                    backgroundImage: 'radial-gradient(circle, #374151 1px, transparent 1px)',
+                    backgroundSize: `${20 * mapZoom}px ${20 * mapZoom}px`
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  {/* Status Legend */}
+                  <div className="absolute top-4 right-4 bg-gray-900/90 rounded-lg p-3 z-10">
+                    <div className="text-xs text-gray-400 mb-2 font-medium">Legenda</div>
+                    <div className="space-y-1">
+                      {Object.entries(statusLabels).map(([status, label]) => (
+                        <div key={status} className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded ${statusColors[status]}`} />
+                          <span className="text-xs text-gray-300">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tables on Map */}
+                  {tablesData?.tables?.map((table) => {
+                    const tableId = table.id || table._id;
+                    const pos = tablePositions[tableId] || { x: 50, y: 50 };
+                    const isDragging = draggingTable === tableId;
+
+                    return (
+                      <div
+                        key={tableId}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, tableId)}
+                        onDrag={(e) => handleDrag(e, tableId)}
+                        onDragEnd={handleDragEnd}
+                        className={`absolute cursor-move transition-shadow ${
+                          isDragging ? 'z-50 shadow-2xl' : 'z-10'
+                        }`}
+                        style={{
+                          left: pos.x * mapZoom,
+                          top: pos.y * mapZoom,
+                          transform: `scale(${mapZoom})`,
+                          transformOrigin: 'top left'
+                        }}
+                      >
+                        <div
+                          className={`w-20 h-16 rounded-lg flex flex-col items-center justify-center border-2 transition-all ${
+                            !table.isActive && !table.ativo
+                              ? 'bg-gray-700 border-gray-600'
+                              : `${statusColors[table.status]} bg-opacity-20 border-current`
+                          } ${isDragging ? 'ring-2 ring-white' : 'hover:ring-2 hover:ring-white/50'}`}
+                        >
+                          <span className="text-lg font-bold text-white">
+                            {table.number || table.numero}
+                          </span>
+                          <span className="text-xs text-gray-300">
+                            {table.capacity || table.capacidade}p
+                          </span>
+                        </div>
+                        {/* Status dot */}
+                        <div
+                          className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-800 ${
+                            !table.isActive && !table.ativo ? 'bg-gray-500' : statusColors[table.status]
+                          }`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Tables List/Grid */}
-            {tablesLoading ? (
+            {viewMode !== 'map' && tablesLoading ? (
               <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6`}>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
-            ) : tablesData?.tables?.length > 0 ? (
+            ) : viewMode !== 'map' && tablesData?.tables?.length > 0 ? (
               <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-6`}>
                 {tablesData.tables.map((table) => (
                   <motion.div
-                    key={table._id}
+                    key={table._id || table.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`bg-gray-900 rounded-xl border border-gray-700 overflow-hidden transition-colors ${

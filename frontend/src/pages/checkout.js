@@ -24,7 +24,8 @@ import {
   Loader2,
   Gift,
   Coins,
-  User
+  User,
+  Heart
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useCartStore } from '../stores/cartStore';
@@ -36,6 +37,9 @@ import { toast } from 'react-hot-toast';
 
 // Mesas disponiveis
 const MESAS_DISPONIVEIS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+// Sprint 58: Categorias que exigem consumo em mesa (não permitem pickup/delivery)
+const TABLE_ONLY_CATEGORIES = ['narguilé', 'narguile', 'hookah', 'shisha'];
 
 export default function Checkout() {
   const router = useRouter();
@@ -51,6 +55,10 @@ export default function Checkout() {
   // Estado para troco (pagamento em dinheiro)
   const [needsChange, setNeedsChange] = useState(false);
   const [changeFor, setChangeFor] = useState('');
+
+  // Estado para gorjeta
+  const [selectedTip, setSelectedTip] = useState(null); // 'none', 5, 10, 15, 'custom'
+  const [customTip, setCustomTip] = useState('');
 
   const { user, isAuthenticated } = useAuthStore();
   const { getPalette } = useThemeStore();
@@ -94,12 +102,39 @@ export default function Checkout() {
     }
   }, [isAuthenticated, user, items.length, orderComplete, router]);
 
+  // Sprint 58: Verificar se há produtos que exigem consumo em mesa (narguilé)
+  const hasTableOnlyProducts = items.some(item => {
+    const category = (item.product.category || item.product.categoria || '').toLowerCase();
+    return TABLE_ONLY_CATEGORIES.some(cat => category.includes(cat));
+  });
+
+  // Sprint 58: Filtrar tipos de consumo se houver narguilé
+  const availableConsumptionTypes = hasTableOnlyProducts
+    ? CONSUMPTION_TYPES.filter(type => type.id === 'table')
+    : CONSUMPTION_TYPES;
+
+  // Sprint 58: Auto-selecionar mesa se for o único tipo disponível
+  useEffect(() => {
+    if (hasTableOnlyProducts && checkoutData.consumptionType !== 'table') {
+      setConsumptionType('table');
+    }
+  }, [hasTableOnlyProducts, checkoutData.consumptionType, setConsumptionType]);
+
   // Calculos
   const subtotal = getSubtotal();
   // Sprint 42: Usa taxa do cartStore (usuário pode desativar)
   const taxaServico = checkoutData.consumptionType === 'table' ? getServiceFee() : 0;
   const taxaEntrega = checkoutData.consumptionType === 'delivery' ? 8.00 : 0;
-  const totalBeforeDiscount = subtotal + taxaServico + taxaEntrega;
+
+  // Calcular gorjeta
+  const calculateTipAmount = () => {
+    if (selectedTip === 'none' || selectedTip === null) return 0;
+    if (selectedTip === 'custom') return parseFloat(customTip) || 0;
+    return (subtotal * selectedTip) / 100;
+  };
+  const tipAmount = calculateTipAmount();
+
+  const totalBeforeDiscount = subtotal + taxaServico + taxaEntrega + tipAmount;
 
   // Cashback disponível do usuário
   const userCashbackBalance = parseFloat(user?.cashbackBalance) || 0;
@@ -157,7 +192,8 @@ export default function Checkout() {
       subtotal,
       user?.id,
       user?.name,
-      cashbackDiscount // Passa o cashback a usar
+      cashbackDiscount, // Passa o cashback a usar
+      tipAmount // Passa a gorjeta
     );
 
     if (result.success) {
@@ -169,6 +205,8 @@ export default function Checkout() {
       setCashbackAmount(0);
       setNeedsChange(false);
       setChangeFor('');
+      setSelectedTip(null);
+      setCustomTip('');
     }
 
     setIsProcessing(false);
@@ -425,8 +463,18 @@ export default function Checkout() {
                 >
                   <h2 className="text-xl font-semibold text-white mb-6">Como deseja consumir?</h2>
 
+                  {/* Sprint 58: Aviso para produtos que exigem mesa */}
+                  {hasTableOnlyProducts && (
+                    <div className="flex items-center gap-3 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl mb-4">
+                      <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                      <p className="text-orange-400 text-sm">
+                        Seu pedido contém narguilé. Este produto só pode ser consumido no local (mesa).
+                      </p>
+                    </div>
+                  )}
+
                   <div className="grid gap-4">
-                    {CONSUMPTION_TYPES.map((type) => (
+                    {availableConsumptionTypes.map((type) => (
                       <button
                         key={type.id}
                         onClick={() => setConsumptionType(type.id)}
@@ -719,6 +767,72 @@ export default function Checkout() {
                           <span>{formatCurrency(taxaEntrega)}</span>
                         </div>
                       )}
+
+                      {/* Sprint 56: Seção de Gorjeta */}
+                      <div className="border-t border-gray-700 pt-3 mt-3">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Heart className="w-5 h-5 text-pink-400" />
+                          <span className="text-gray-300 font-medium">Adicionar gorjeta (opcional)</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 mb-3">
+                          {[
+                            { value: 'none', label: 'Nenhuma' },
+                            { value: 5, label: '5%' },
+                            { value: 10, label: '10%' },
+                            { value: 15, label: '15%' }
+                          ].map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                setSelectedTip(option.value);
+                                setCustomTip('');
+                              }}
+                              className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                                selectedTip === option.value
+                                  ? 'bg-pink-500 text-white'
+                                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setSelectedTip('custom')}
+                            className={`py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                              selectedTip === 'custom'
+                                ? 'bg-pink-500 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                          >
+                            Outro valor
+                          </button>
+                          {selectedTip === 'custom' && (
+                            <div className="flex-1 flex items-center gap-2">
+                              <span className="text-gray-400">R$</span>
+                              <input
+                                type="number"
+                                value={customTip}
+                                onChange={(e) => setCustomTip(e.target.value)}
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                className="flex-1 bg-gray-700 border border-gray-600 rounded-lg p-2 text-white placeholder-gray-500 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        {tipAmount > 0 && (
+                          <div className="flex justify-between text-pink-400 mt-3">
+                            <span className="flex items-center gap-1">
+                              <Heart className="w-4 h-4" />
+                              Gorjeta
+                            </span>
+                            <span>+{formatCurrency(tipAmount)}</span>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Seção de Cashback */}
                       {userCashbackBalance > 0 && (

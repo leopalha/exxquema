@@ -9,6 +9,7 @@ import LoadingSpinner from './LoadingSpinner';
 import PWAInstallBanner from './PWAInstallBanner';
 import PWANotifications from './PWANotifications';
 import MockDataToggle from './MockDataToggle';
+import OrderTracker from './OrderTracker';
 import { useAuthStore } from '../stores/authStore';
 // import { usePWA } from '../hooks/usePWA'; // DESABILITADO TEMPORARIAMENTE
 import { Toaster } from 'react-hot-toast';
@@ -156,6 +157,9 @@ const Layout = ({ children, showHeader = true, showFooter = true, showBottomNav 
         {/* PWA Components */}
         {/* <PWAInstallBanner /> */}
         <PWANotifications />
+
+        {/* Sprint 57: Order Tracker - Janela flutuante para cliente acompanhar pedido */}
+        {!isStaffPage && <OrderTracker />}
 
         {/* Update Prompt */}
         <AnimatePresence>

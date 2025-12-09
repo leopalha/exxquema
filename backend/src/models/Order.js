@@ -237,6 +237,13 @@ Order.init({
     allowNull: false,
     defaultValue: 0,
     comment: 'Desconto total aplicado'
+  },
+  // Gorjeta opcional do cliente
+  tip: {
+    type: DataTypes.DECIMAL(8, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Gorjeta opcional do cliente'
   }
 }, {
   sequelize,
@@ -269,17 +276,18 @@ Order.init({
       const serviceFeePercentage = parseFloat(process.env.SERVICE_FEE_PERCENTAGE) || 10;
       order.serviceFee = (parseFloat(order.subtotal) * serviceFeePercentage / 100).toFixed(2);
 
-      // Garantir que cashbackUsed e discount não sejam null
+      // Garantir que cashbackUsed, discount e tip não sejam null
       const cashbackUsed = parseFloat(order.cashbackUsed) || 0;
       const discount = parseFloat(order.discount) || 0;
+      const tip = parseFloat(order.tip) || 0;
 
-      // Calcular total (subtotal + taxa - descontos)
+      // Calcular total (subtotal + taxa + gorjeta - descontos)
       const subtotal = parseFloat(order.subtotal);
       const serviceFee = parseFloat(order.serviceFee);
       const taxes = parseFloat(order.taxes || 0);
       const totalDiscount = cashbackUsed + discount;
 
-      order.total = Math.max(0, subtotal + serviceFee + taxes - totalDiscount).toFixed(2);
+      order.total = Math.max(0, subtotal + serviceFee + taxes + tip - totalDiscount).toFixed(2);
     },
     beforeUpdate: async (order) => {
       // Atualizar timestamps baseado no status

@@ -27,7 +27,9 @@
       "Bash(python3:*)",
       "Bash(npx vercel logs:*)",
       "Bash(grep:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(dir:*)",
+      "Bash(npx vercel --prod --yes)"
     ],
     "deny": [],
     "ask": []

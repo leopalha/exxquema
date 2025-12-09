@@ -122,11 +122,19 @@ router.delete('/:id/reservation',
   tableController.cancelReservation
 );
 
-router.post('/:id/qrcode', 
+router.post('/:id/qrcode',
   authenticate,
   param('id').isUUID().withMessage('ID inválido'),
   handleValidationErrors,
   tableController.generateQRCode
+);
+
+// Sprint 56: Atualizar posições em batch (mapa drag & drop)
+router.patch('/positions',
+  authenticate,
+  body('positions').isArray().withMessage('Lista de posições é obrigatória'),
+  handleValidationErrors,
+  tableController.updatePositions
 );
 
 module.exports = router;

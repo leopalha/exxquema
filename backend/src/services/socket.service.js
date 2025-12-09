@@ -72,6 +72,7 @@ class SocketService {
       this.setupAttendantEvents(socket);
       this.setupHookahEvents(socket);
       this.setupReservationEvents(socket);
+      this.setupChatEvents(socket); // Sprint 56: Chat staff-cliente
 
       // Cleanup na desconexão
       socket.on('disconnect', () => {
@@ -791,6 +792,154 @@ class SocketService {
       confirmationCode: reservationData.confirmationCode,
       customerName: reservationData.name,
       tableNumber: reservationData.table?.number,
+      timestamp: new Date()
+    });
+  }
+
+  // =============================
+  // SPRINT 56: EVENTOS DE CHAT
+  // =============================
+
+  setupChatEvents(socket) {
+    // Entrar na sala do chat do pedido
+    socket.on('chat:join', (orderId) => {
+      socket.join(`chat_${orderId}`);
+      console.log(`[CHAT] ${socket.user.nome} entrou no chat do pedido ${orderId}`);
+    });
+
+    socket.on('chat:leave', (orderId) => {
+      socket.leave(`chat_${orderId}`);
+    });
+
+    // Enviar mensagem
+    socket.on('chat:send', async (data) => {
+      try {
+        const { orderId, content, messageType = 'text' } = data;
+
+        if (!orderId || !content) {
+          socket.emit('chat:error', { message: 'Dados invalidos' });
+          return;
+        }
+
+        // Determinar tipo do remetente
+        const senderType = ['admin', 'atendente', 'cozinha', 'bar', 'barman', 'caixa'].includes(socket.user.role)
+          ? 'staff'
+          : 'cliente';
+
+        // Criar mensagem no banco
+        const { Message, Order, User } = require('../models');
+
+        const message = await Message.create({
+          orderId,
+          senderId: socket.userId,
+          senderType,
+          content,
+          messageType
+        });
+
+        // Buscar dados do remetente
+        const messageData = {
+          id: message.id,
+          orderId,
+          senderId: socket.userId,
+          senderName: socket.user.nome,
+          senderType,
+          content,
+          messageType,
+          createdAt: message.createdAt
+        };
+
+        // Enviar para todos na sala do chat
+        this.io.to(`chat_${orderId}`).emit('chat:message', messageData);
+
+        // Se for cliente enviando, notificar staff
+        if (senderType === 'cliente') {
+          const order = await Order.findByPk(orderId, {
+            include: [{ model: User, as: 'customer', attributes: ['nome'] }]
+          });
+
+          this.emitToRoom('attendants', 'chat:new_message', {
+            orderId,
+            orderNumber: order?.orderNumber,
+            customerName: order?.customer?.nome || socket.user.nome,
+            preview: content.substring(0, 50),
+            timestamp: new Date()
+          });
+        }
+
+        // Se for staff enviando, notificar cliente
+        if (senderType === 'staff') {
+          const order = await Order.findByPk(orderId);
+          if (order?.userId) {
+            this.notifyUser(order.userId, 'chat:new_message', {
+              orderId,
+              orderNumber: order.orderNumber,
+              staffName: socket.user.nome,
+              preview: content.substring(0, 50),
+              timestamp: new Date()
+            });
+          }
+        }
+
+        console.log(`[CHAT] Mensagem enviada: ${socket.user.nome} -> pedido ${orderId}`);
+      } catch (error) {
+        console.error('[CHAT] Erro ao enviar mensagem:', error);
+        socket.emit('chat:error', { message: 'Erro ao enviar mensagem' });
+      }
+    });
+
+    // Marcar mensagens como lidas
+    socket.on('chat:read', async (data) => {
+      try {
+        const { orderId } = data;
+        const { Message } = require('../models');
+
+        // Marcar mensagens nao lidas como lidas
+        await Message.update(
+          { isRead: true, readAt: new Date() },
+          {
+            where: {
+              orderId,
+              senderId: { [require('sequelize').Op.ne]: socket.userId },
+              isRead: false
+            }
+          }
+        );
+
+        // Notificar que mensagens foram lidas
+        this.io.to(`chat_${orderId}`).emit('chat:read', {
+          orderId,
+          readBy: socket.userId,
+          readByName: socket.user.nome,
+          readAt: new Date()
+        });
+      } catch (error) {
+        console.error('[CHAT] Erro ao marcar como lido:', error);
+      }
+    });
+
+    // Usuario digitando
+    socket.on('chat:typing', (data) => {
+      const { orderId, isTyping } = data;
+      socket.to(`chat_${orderId}`).emit('chat:typing', {
+        userId: socket.userId,
+        userName: socket.user.nome,
+        isTyping
+      });
+    });
+  }
+
+  // Notificar cliente sobre nova mensagem do staff
+  notifyChatMessage(orderId, messageData) {
+    this.io.to(`chat_${orderId}`).emit('chat:message', messageData);
+  }
+
+  // Notificar staff sobre mensagem nao lida
+  notifyUnreadChat(orderId, customerName, messagePreview) {
+    this.emitToRoom('attendants', 'chat:unread', {
+      orderId,
+      customerName,
+      preview: messagePreview,
       timestamp: new Date()
     });
   }
