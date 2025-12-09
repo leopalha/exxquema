@@ -87,6 +87,7 @@ export default function AdminDashboard() {
       // Conectar socket
       socketService.connect(token);
       socketService.joinWaiterRoom();
+      socketService.joinAdminRoom(); // Admin recebe todas as notificações
 
       // Buscar dados iniciais
       fetchRealtimeStats();
@@ -138,6 +139,7 @@ export default function AdminDashboard() {
         socketService.off('order_status_changed', handleOrderStatusChanged);
         socketService.off('payment_request', handlePaymentRequest);
         socketService.leaveWaiterRoom();
+        socketService.leaveAdminRoom();
         listenersSetup.current = false;
       };
     }
