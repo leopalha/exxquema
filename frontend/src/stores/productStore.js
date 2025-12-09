@@ -233,7 +233,8 @@ const useProductStore = create((set, get) => ({
         const response = await api.get('/products/featured');
 
         if (response.data.success) {
-          set({ featuredProducts: response.data.data.products });
+          const products = response.data.data?.products;
+          set({ featuredProducts: Array.isArray(products) ? products : [] });
         } else {
           set({ error: response.data.message });
           toast.error(response.data.message || 'Erro ao carregar produtos em destaque');

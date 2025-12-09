@@ -389,7 +389,7 @@ export default function Home() {
           </motion.section>
 
           {/* Featured Products */}
-          {featuredProducts.length > 0 && (
+          {Array.isArray(featuredProducts) && featuredProducts.length > 0 && (
             <motion.section
               variants={itemVariants}
               className="py-24 relative overflow-hidden"
