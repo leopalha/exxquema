@@ -2,9 +2,9 @@
 
 ## STATUS ATUAL DO PROJETO
 
-**Data Atualização**: 09/12/2024 (Sprint 59 - TESTES)
-**Versão**: 4.5.0
-**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-59 (VALIDACAO)
+**Data Atualização**: 09/12/2024 (Sprint 60 - DIVISAO DE CONTA)
+**Versão**: 4.6.0
+**Status**: ✅ SISTEMA COMPLETO + SPRINTS 41-60 IMPLEMENTADAS
 **Sincronizado com**: PRD v3.6.0 e User Flows v3.6.0
 
 > **SPRINTS 21-30 COMPLETAS**:
@@ -42,6 +42,7 @@
 > - ✅ Sprint 57: Layout Painel Atendente (botões de ação sempre visíveis)
 > - ✅ Sprint 58: Sons, Chat e Pagamentos (soundService, chat fix, validation fix, narguile table-only)
 > - ✅ Sprint 59: Testes e Validacao Completa (API testing, fluxos validados)
+> - ✅ Sprint 60: Divisao de Conta (SplitPayment model, modal, status page, equal/custom split)
 >
 > **TODAS AS SPRINTS PLANEJADAS IMPLEMENTADAS E TESTADAS!**
 
@@ -1985,20 +1986,44 @@ images: {
 
 ---
 
+## ✅ SPRINT 60 - DIVISAO DE CONTA (09/12/2024)
+
+### Objetivo
+Permitir que múltiplos clientes dividam a conta de forma flexível (igual ou personalizada).
+
+### Backend (100%)
+- ✅ Model SplitPayment (status, amount, percentage)
+- ✅ Migration com indexes
+- ✅ Controller com 5 endpoints
+- ✅ Rotas integradas em /orders/:id/split
+- ✅ Associations completas
+- ✅ Validações express-validator
+
+### Frontend (100%)
+- ✅ SplitPaymentModal (igual/personalizado)
+- ✅ Página /split/[orderId] com status
+- ✅ Progress bar e lista de participantes
+- ✅ Validação em tempo real
+- ✅ Auto-refresh a cada 5s
+- ✅ Mobile responsive
+
+### Commits
+```
+8017964 - Backend
+c080944 - Frontend + Integração
+```
+
+---
+
 ## 🎯 PROXIMAS SPRINTS PRIORITARIAS
 
-### ✅ COMPLETAS (Sprints 54-59)
+### ✅ COMPLETAS (Sprints 54-60)
 
-As sprints 54-59 foram implementadas e testadas com sucesso.
+As sprints 54-60 foram implementadas e testadas com sucesso.
 
 ### 📋 BACKLOG FUTURO
 
-1. **Sprint 60** - Divisao de Conta
-   - Modal para dividir conta igualmente
-   - Dividir por valores diferentes
-   - Registrar pagamento parcial
-
-2. **Sprint 61** - Melhorias UX
+1. **Sprint 61** - Melhorias UX
    - Animacoes mais suaves
    - Loading states melhorados
    - Acessibilidade (ARIA labels)
