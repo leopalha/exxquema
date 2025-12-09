@@ -165,10 +165,13 @@ export const getCountriesForDropdown = () => {
 
 export const formatPhoneDisplay = (phone, countryCode) => {
   const country = getCountryByCode(countryCode);
-  if (!country || !phone) return phone;
+  if (!country || !phone) return phone || '';
 
-  // Remove caracteres nao numericos
-  const digits = phone.replace(/\D/g, '');
+  // Remove caracteres nao numericos - garante que é string
+  const phoneStr = typeof phone === 'string' ? phone : String(phone || '');
+  const digits = phoneStr.replace(/\D/g, '');
+
+  if (!digits) return '';
 
   // Formato brasileiro: (XX) 9XXXX-XXXX
   if (countryCode === 'BR') {

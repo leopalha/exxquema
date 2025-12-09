@@ -233,7 +233,10 @@ export const toE164Format = (phone, countryCode) => {
  * @returns {{ countryCode: string, phone: string } | null}
  */
 export const parseE164 = (e164Phone) => {
-  if (!e164Phone || !e164Phone.startsWith('+')) return null;
+  // Validação robusta do parâmetro
+  if (!e164Phone || typeof e164Phone !== 'string' || !e164Phone.startsWith('+')) {
+    return null;
+  }
 
   // Ordena países por tamanho do código de discagem (maior primeiro)
   // para evitar match errado (ex: +1 vs +1876)
@@ -242,10 +245,10 @@ export const parseE164 = (e164Phone) => {
   );
 
   for (const country of sortedCountries) {
-    if (e164Phone.startsWith(country.dial)) {
+    if (country.dial && e164Phone.startsWith(country.dial)) {
       return {
         countryCode: country.code,
-        phone: e164Phone.slice(country.dial.length)
+        phone: e164Phone.slice(country.dial.length) || ''
       };
     }
   }

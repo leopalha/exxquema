@@ -171,19 +171,19 @@ export const truncateText = (text, maxLength = 100, suffix = '...') => {
 
 // Capitalize first letter
 export const capitalize = (text) => {
-  if (!text) return '';
-  
+  if (!text || typeof text !== 'string') return '';
+
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 };
 
 // Title case
 export const titleCase = (text) => {
-  if (!text) return '';
-  
+  if (!text || typeof text !== 'string') return '';
+
   return text
     .toLowerCase()
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
     .join(' ');
 };
 
