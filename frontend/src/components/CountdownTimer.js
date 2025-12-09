@@ -37,7 +37,7 @@ const CountdownTimer = ({ orderId, startedAt, thresholdMinutes = 15, onThreshold
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   // Cores baseadas no estado
-  let statusColor = palette.primary;
+  let statusColor = palette?.primary || '#FF6B35'; // Fallback para cor padrão FLAME
   let statusIcon = <Clock className="w-4 h-4" />;
   let statusLabel = 'Em preparo';
 
