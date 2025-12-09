@@ -11,9 +11,32 @@ class SocketService {
 
   // Inicializar Socket.IO server
   init(server) {
+    // CORS para Socket.IO - mesmas origens que o Express
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://flameloungebar.vercel.app',
+      'https://flame-lounge-bar.vercel.app',
+      'https://flame-lounge.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+
     this.io = new Server(server, {
       cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: function(origin, callback) {
+          // Permite requests sem origin (mobile apps, etc)
+          if (!origin) return callback(null, true);
+
+          // Permite qualquer subdominio do Vercel para o projeto flame
+          if (origin.includes('leopalhas-projects.vercel.app') ||
+              origin.includes('flameloungebar.vercel.app') ||
+              origin.includes('flame-lounge.vercel.app') ||
+              allowedOrigins.includes(origin)) {
+            return callback(null, true);
+          }
+
+          console.log('[SOCKET] Origem bloqueada por CORS:', origin);
+          callback(new Error('Not allowed by CORS'));
+        },
         methods: ["GET", "POST"],
         credentials: true
       }
@@ -88,6 +111,8 @@ class SocketService {
     // Todos os usuários autenticados
     socket.join('authenticated');
 
+    const joinedRooms = ['authenticated'];
+
     // Rooms específicas por role
     if (socket.user.role === 'admin') {
       socket.join('admins');
@@ -95,16 +120,23 @@ class SocketService {
       socket.join('attendants');
       socket.join('bar');
       socket.join('reservations');
+      joinedRooms.push('admins', 'kitchen', 'attendants', 'bar', 'reservations');
     } else if (socket.user.role === 'cozinha') {
       socket.join('kitchen');
+      joinedRooms.push('kitchen');
     } else if (socket.user.role === 'atendente') {
       socket.join('attendants');
+      joinedRooms.push('attendants');
     } else if (socket.user.role === 'bar' || socket.user.role === 'barman') {
       socket.join('bar');
+      joinedRooms.push('bar');
     }
 
     // Room do próprio usuário
     socket.join(`user_${socket.userId}`);
+    joinedRooms.push(`user_${socket.userId}`);
+
+    console.log(`🔗 [SOCKET] ${socket.user.nome} (role: ${socket.user.role}) entrou nas salas: ${joinedRooms.join(', ')}`);
   }
 
   // Eventos gerais do usuário
