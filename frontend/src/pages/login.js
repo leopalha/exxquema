@@ -24,6 +24,13 @@ export default function Login() {
   const [sentTo, setSentTo] = useState('');
   const [celular, setCelular] = useState('');
   const [celularError, setCelularError] = useState('');
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(true);
+
+  // Wait for store hydration to prevent flash
+  useEffect(() => {
+    setIsHydrating(false);
+  }, []);
 
   // Helper function to set table from session/query
   const setTableFromSession = () => {
@@ -45,6 +52,7 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
+      setIsRedirecting(true);
       setTableFromSession();
       redirectToRoleHome(router, user);
     }
@@ -155,10 +163,11 @@ export default function Login() {
     }
   };
 
-  if (isAuthenticated) {
+  // Show loading during hydration or redirect to prevent flash
+  if (isHydrating || isAuthenticated || isRedirecting) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <LoadingSpinner size="large" text="Redirecionando..." />
+        <LoadingSpinner size="large" text={isHydrating ? "Carregando..." : "Redirecionando..."} />
       </div>
     );
   }
