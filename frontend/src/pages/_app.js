@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '../stores/themeStore';
 import Script from 'next/script';
+import ServiceWorkerUpdater from '../components/ServiceWorkerUpdater';
 
 import { Inter, Montserrat, Bebas_Neue } from 'next/font/google';
 
@@ -40,6 +41,9 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <div className={`${inter.variable} ${montserrat.variable} ${bebasNeue.variable} font-sans`}>
+      {/* Service Worker Updater */}
+      <ServiceWorkerUpdater />
+
       {/* Google Identity Services SDK */}
       <Script
         src="https://accounts.google.com/gsi/client"
