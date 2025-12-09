@@ -126,6 +126,10 @@ const Layout = ({ children, showHeader = true, showFooter = true, showBottomNav 
         {/* Toast Notifications */}
         <Toaster
           position="top-right"
+          containerStyle={{
+            top: 80, // Abaixo do header fixo (h-16 = 64px + margem)
+            zIndex: 9999,
+          }}
           toastOptions={{
             duration: 4000,
             style: {
@@ -168,7 +172,7 @@ const Layout = ({ children, showHeader = true, showFooter = true, showBottomNav 
               initial={{ y: -100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -100, opacity: 0 }}
-              className="fixed top-4 left-4 right-4 z-50 max-w-md mx-auto"
+              className="fixed top-20 left-4 right-4 z-40 max-w-md mx-auto"
             >
               <div className="bg-gradient-to-r from-magenta-600 to-cyan-600 rounded-xl p-4 shadow-2xl border border-magenta-500/30">
                 <div className="flex items-start gap-3">
@@ -223,7 +227,7 @@ const Layout = ({ children, showHeader = true, showFooter = true, showBottomNav 
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              className="fixed top-0 left-0 right-0 bg-gradient-to-r from-magenta-600 to-cyan-600 text-white px-4 py-2 text-center text-sm font-medium z-50"
+              className="fixed top-16 left-0 right-0 bg-gradient-to-r from-magenta-600 to-cyan-600 text-white px-4 py-2 text-center text-sm font-medium z-40"
             >
               <div className="flex items-center justify-center gap-2">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" />

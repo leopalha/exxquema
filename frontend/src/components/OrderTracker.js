@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Clock,
   CheckCircle,
@@ -14,7 +15,8 @@ import {
   X,
   ChevronUp,
   ChevronDown,
-  MessageCircle
+  MessageCircle,
+  Star
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import useOrderStore from '../stores/orderStore';
@@ -33,11 +35,13 @@ const STATUS_STEPS = [
 ];
 
 export default function OrderTracker() {
+  const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const { orders, getActiveOrders, updateOrderStatus, fetchOrders } = useOrderStore();
   const [isMinimized, setIsMinimized] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [showDeliveredState, setShowDeliveredState] = useState(false);
 
   // Polling para buscar pedidos da API periodicamente
   useEffect(() => {
@@ -72,23 +76,40 @@ export default function OrderTracker() {
 
     const updateCurrentOrder = () => {
       const activeOrders = getActiveOrders();
-      // Pegar o pedido mais recente que nao esta entregue/cancelado
-      const mostRecent = activeOrders
+
+      // Primeiro, verificar se há pedido em andamento (não entregue/cancelado)
+      const inProgressOrder = activeOrders
         .filter(o => !['delivered', 'cancelled'].includes(o.status))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
 
-      if (mostRecent) {
+      if (inProgressOrder) {
         setCurrentOrder(prev => {
-          // Só atualiza se o status mudou para evitar re-renders desnecessários
-          if (!prev || prev.status !== mostRecent.status || prev.id !== mostRecent.id) {
-            return mostRecent;
+          if (!prev || prev.status !== inProgressOrder.status || prev.id !== inProgressOrder.id) {
+            return inProgressOrder;
           }
           return prev;
         });
+        setShowDeliveredState(false);
         setIsDismissed(false);
+        return;
+      }
+
+      // Se não há pedido em andamento, verificar se há pedido entregue recente (últimos 10 minutos)
+      const recentDelivered = activeOrders
+        .filter(o => o.status === 'delivered')
+        .filter(o => {
+          const deliveredAt = new Date(o.updatedAt || o.createdAt);
+          const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+          return deliveredAt > tenMinutesAgo;
+        })
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+
+      if (recentDelivered && !isDismissed) {
+        setCurrentOrder(recentDelivered);
+        setShowDeliveredState(true);
       } else {
-        // Se não há pedidos ativos, limpar o currentOrder
         setCurrentOrder(null);
+        setShowDeliveredState(false);
       }
     };
 
@@ -98,7 +119,7 @@ export default function OrderTracker() {
     const pollingInterval = setInterval(updateCurrentOrder, 10000);
 
     return () => clearInterval(pollingInterval);
-  }, [orders, isAuthenticated, getActiveOrders]);
+  }, [orders, isAuthenticated, getActiveOrders, isDismissed]);
 
   // Conectar ao Socket.IO e escutar atualizacoes
   useEffect(() => {
@@ -131,9 +152,9 @@ export default function OrderTracker() {
           });
         }
 
-        // Se entregue, minimizar apos 5 segundos
+        // Se entregue, mostrar estado de delivered para avaliação
         if (data.status === 'delivered') {
-          setTimeout(() => setIsDismissed(true), 5000);
+          setShowDeliveredState(true);
         }
       }
     };
@@ -298,22 +319,52 @@ export default function OrderTracker() {
                   </div>
                 </div>
 
-                {/* Acoes */}
-                <div className="px-4 pb-4 flex gap-2">
-                  <Link
-                    href={`/pedido/${currentOrder.orderId || currentOrder.id}`}
-                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2 px-3 rounded-lg text-sm font-medium text-center transition-colors"
-                  >
-                    Ver detalhes
-                  </Link>
-                  <Link
-                    href="/pedidos"
-                    className="flex-1 text-white py-2 px-3 rounded-lg text-sm font-medium text-center transition-colors"
-                    style={{ background: 'var(--theme-primary)' }}
-                  >
-                    Meus pedidos
-                  </Link>
-                </div>
+                {/* Acoes - Diferente se entregue */}
+                {showDeliveredState && currentOrder.status === 'delivered' ? (
+                  <div className="px-4 pb-4 space-y-3">
+                    {/* Mensagem de sucesso */}
+                    <div className="text-center py-2">
+                      <p className="text-green-400 font-semibold text-sm">Pedido entregue com sucesso!</p>
+                      <p className="text-gray-400 text-xs mt-1">Que tal avaliar sua experiência?</p>
+                    </div>
+
+                    {/* Botão de avaliar */}
+                    <button
+                      onClick={() => {
+                        router.push(`/avaliacao/${currentOrder.orderId || currentOrder.id}`);
+                        setIsDismissed(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white py-3 px-4 rounded-lg text-sm font-semibold transition-all shadow-lg"
+                    >
+                      <Star className="w-5 h-5" />
+                      Avaliar Pedido
+                    </button>
+
+                    {/* Botão de fechar */}
+                    <button
+                      onClick={() => setIsDismissed(true)}
+                      className="w-full text-gray-400 hover:text-white py-2 text-xs transition-colors"
+                    >
+                      Avaliar depois
+                    </button>
+                  </div>
+                ) : (
+                  <div className="px-4 pb-4 flex gap-2">
+                    <Link
+                      href={`/pedido/${currentOrder.orderId || currentOrder.id}`}
+                      className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2 px-3 rounded-lg text-sm font-medium text-center transition-colors"
+                    >
+                      Ver detalhes
+                    </Link>
+                    <Link
+                      href="/pedidos"
+                      className="flex-1 text-white py-2 px-3 rounded-lg text-sm font-medium text-center transition-colors"
+                      style={{ background: 'var(--theme-primary)' }}
+                    >
+                      Meus pedidos
+                    </Link>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

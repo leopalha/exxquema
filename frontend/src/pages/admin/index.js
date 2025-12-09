@@ -551,7 +551,7 @@ export default function AdminDashboard() {
                     </button>
 
                     <button
-                      onClick={() => router.push('/reservas')}
+                      onClick={() => router.push('/admin/reservas')}
                       className="bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-blue-500 rounded-xl p-6 text-left transition-colors group"
                     >
                       <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-500/30">
