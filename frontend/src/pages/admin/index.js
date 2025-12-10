@@ -86,8 +86,8 @@ export default function AdminDashboard() {
 
       // Conectar socket
       socketService.connect(token);
-      socketService.joinWaiterRoom();
-      socketService.joinAdminRoom(); // Admin recebe todas as notificações
+      // Admin recebe todas as notificações via sala 'admins' - não precisa entrar na sala 'waiter'
+      socketService.joinAdminRoom();
 
       // Buscar dados iniciais
       fetchRealtimeStats();

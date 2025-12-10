@@ -167,17 +167,6 @@ export default function PainelAtendente() {
         fetchDashboard();
       };
 
-      // Handler para pedidos prontos
-      const handleOrderReady = (order) => {
-        console.log('✅ Pedido pronto para retirar:', order);
-        toast.success(`⚠️ Pedido #${order.orderNumber || order.id} PRONTO para retirar!`, {
-          duration: 10000,
-          icon: '🔔'
-        });
-        soundService.playAlert();
-        fetchDashboard();
-      };
-
       // Handler para atualizações
       const handleOrderUpdated = (updatedOrder) => {
         console.log('🔄 Pedido atualizado:', updatedOrder);
@@ -201,7 +190,7 @@ export default function PainelAtendente() {
       socketService.onOrderCreated(handleOrderCreated);
       socketService.onOrderStatusChanged(handleOrderStatusChanged);
       socketService.on('order_ready_alert', handleOrderReadyAlert);
-      socketService.onOrderReady(handleOrderReady);
+      // Removido listener duplicado 'order_ready' - usando apenas 'order_ready_alert'
       socketService.onOrderUpdated(handleOrderUpdated);
       socketService.on('payment_request', handlePaymentRequest);
     }
@@ -213,7 +202,7 @@ export default function PainelAtendente() {
       socketService.removeAllListeners('order_created');
       socketService.removeAllListeners('order_status_changed');
       socketService.removeAllListeners('order_ready_alert');
-      socketService.removeAllListeners('order_ready');
+      // 'order_ready' listener removido - não mais usado
       socketService.removeAllListeners('order_updated');
       socketService.removeAllListeners('payment_request');
       listenersSetup.current = false;
