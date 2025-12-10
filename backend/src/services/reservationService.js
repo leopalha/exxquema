@@ -2,7 +2,6 @@ const crypto = require('crypto');
 const { Reservation, User, Table } = require('../models');
 const { Op } = require('sequelize');
 const smsService = require('./sms.service');
-const whatsappService = require('./whatsapp.service');
 
 class ReservationService {
   /**
@@ -83,16 +82,17 @@ class ReservationService {
         })
         .catch(err => console.error('Erro SMS reserva:', err));
 
-      // Enviar WhatsApp para FLAME (async, não bloqueia)
-      whatsappService.notifyNewReservation(notificationData)
+      // Enviar SMS para FLAME (admin) notificando nova reserva
+      const flamePhone = process.env.FLAME_ADMIN_PHONE || '(21) 99535-4010';
+      smsService.sendAdminReservationNotification(flamePhone, notificationData)
         .then(result => {
           if (result.success) {
-            console.log(`✅ WhatsApp de reserva enviado para FLAME`);
+            console.log(`✅ SMS de nova reserva enviado para admin FLAME`);
           } else {
-            console.error(`❌ Falha ao enviar WhatsApp: ${result.error}`);
+            console.error(`❌ Falha ao enviar SMS para admin: ${result.error}`);
           }
         })
-        .catch(err => console.error('Erro WhatsApp reserva:', err));
+        .catch(err => console.error('Erro SMS admin:', err));
 
       return this.enrichReservation(reservation);
     } catch (error) {
@@ -269,14 +269,15 @@ class ReservationService {
 
       await reservation.cancel(reason);
 
-      // Notificar FLAME via WhatsApp sobre cancelamento (async)
-      whatsappService.notifyCancellation(cancellationData, reason)
+      // Notificar FLAME via SMS sobre cancelamento (async)
+      const flamePhone = process.env.FLAME_ADMIN_PHONE || '(21) 99535-4010';
+      smsService.sendCancellationNotification(flamePhone, cancellationData, reason)
         .then(result => {
           if (result.success) {
-            console.log(`✅ WhatsApp de cancelamento enviado para FLAME`);
+            console.log(`✅ SMS de cancelamento enviado para FLAME`);
           }
         })
-        .catch(err => console.error('Erro WhatsApp cancelamento:', err));
+        .catch(err => console.error('Erro SMS cancelamento:', err));
 
       return this.enrichReservation(reservation);
     } catch (error) {
@@ -446,8 +447,8 @@ class ReservationService {
         partySize: reservation.partySize,
       };
 
-      // Enviar lembrete via WhatsApp
-      const whatsappResult = await whatsappService.sendReminder(reminderData);
+      // Enviar lembrete via SMS
+      const smsResult = await smsService.sendReservationReminder(reservation.guestPhone, reminderData);
 
       // Marca como enviado
       await reservation.markReminderSent();
@@ -457,7 +458,7 @@ class ReservationService {
       return {
         success: true,
         message: 'Lembrete enviado',
-        whatsapp: whatsappResult,
+        sms: smsResult,
         reservation: this.enrichReservation(reservation),
       };
     } catch (error) {

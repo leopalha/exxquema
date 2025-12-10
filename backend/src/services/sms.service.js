@@ -353,6 +353,190 @@ class SMSService {
     }
   }
 
+  // Enviar lembrete de reserva para o cliente
+  async sendReservationReminder(phoneNumber, reservationData) {
+    try {
+      const { guestName, confirmationCode, reservationDate, partySize } = reservationData;
+
+      // Formatar data
+      const dateObj = new Date(reservationDate);
+      const formattedTime = dateObj.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Em modo desenvolvimento sem Twilio, apenas logar
+      if (!this.enabled) {
+        console.log(`📱 [DEV MODE] SMS Lembrete para ${phoneNumber}:`);
+        console.log(`   Reserva às ${formattedTime} hoje!`);
+        return {
+          success: true,
+          sid: 'dev-mode-' + Date.now(),
+          message: 'SMS simulado em modo desenvolvimento'
+        };
+      }
+
+      const formattedPhone = this.formatPhoneNumber(phoneNumber);
+
+      let message = `🔥 FLAME - Lembrete!\n\n`;
+      message += `Olá ${guestName}!\n`;
+      message += `Sua reserva é HOJE às ${formattedTime}.\n`;
+      message += `👥 ${partySize} pessoa${partySize > 1 ? 's' : ''}\n`;
+      message += `📋 Código: ${confirmationCode}\n\n`;
+      message += `📍 R. Voluntários da Pátria, 446 - Botafogo\n`;
+      message += `Estamos te esperando!`;
+
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: formattedPhone
+      });
+
+      console.log(`✅ SMS lembrete enviado: ${result.sid}`);
+
+      return {
+        success: true,
+        messageSid: result.sid,
+        status: result.status
+      };
+    } catch (error) {
+      console.error('Erro ao enviar SMS lembrete:', error);
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'SMS_ERROR'
+      };
+    }
+  }
+
+  // Enviar notificação de cancelamento para o admin
+  async sendCancellationNotification(phoneNumber, reservationData, reason = '') {
+    try {
+      const { guestName, confirmationCode, reservationDate } = reservationData;
+
+      // Formatar data
+      const dateObj = new Date(reservationDate);
+      const formattedDate = dateObj.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit'
+      });
+      const formattedTime = dateObj.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Em modo desenvolvimento sem Twilio, apenas logar
+      if (!this.enabled) {
+        console.log(`📱 [DEV MODE] SMS Cancelamento para admin:`);
+        console.log(`   Reserva ${confirmationCode} cancelada`);
+        console.log(`   Cliente: ${guestName}`);
+        return {
+          success: true,
+          sid: 'dev-mode-' + Date.now(),
+          message: 'SMS simulado em modo desenvolvimento'
+        };
+      }
+
+      const formattedPhone = this.formatPhoneNumber(phoneNumber);
+
+      let message = `❌ RESERVA CANCELADA\n\n`;
+      message += `👤 ${guestName}\n`;
+      message += `📋 Código: ${confirmationCode}\n`;
+      message += `📅 ${formattedDate} às ${formattedTime}`;
+      if (reason) {
+        message += `\n📝 Motivo: ${reason}`;
+      }
+
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: formattedPhone
+      });
+
+      console.log(`✅ SMS cancelamento enviado: ${result.sid}`);
+
+      return {
+        success: true,
+        messageSid: result.sid,
+        status: result.status
+      };
+    } catch (error) {
+      console.error('Erro ao enviar SMS cancelamento:', error);
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'SMS_ERROR'
+      };
+    }
+  }
+
+  // Enviar notificação de nova reserva para o admin
+  async sendAdminReservationNotification(phoneNumber, reservationData) {
+    try {
+      const { guestName, guestPhone, confirmationCode, reservationDate, partySize, specialRequests } = reservationData;
+
+      // Formatar data
+      const dateObj = new Date(reservationDate);
+      const formattedDate = dateObj.toLocaleDateString('pt-BR', {
+        weekday: 'short',
+        day: '2-digit',
+        month: '2-digit'
+      });
+      const formattedTime = dateObj.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Em modo desenvolvimento sem Twilio, apenas logar
+      if (!this.enabled) {
+        console.log(`📱 [DEV MODE] SMS ADMIN - Nova reserva:`);
+        console.log(`   Cliente: ${guestName}`);
+        console.log(`   Tel: ${guestPhone}`);
+        console.log(`   Código: ${confirmationCode}`);
+        console.log(`   Data: ${formattedDate} às ${formattedTime}`);
+        console.log(`   Pessoas: ${partySize}`);
+        return {
+          success: true,
+          sid: 'dev-mode-' + Date.now(),
+          message: 'SMS simulado em modo desenvolvimento'
+        };
+      }
+
+      const formattedPhone = this.formatPhoneNumber(phoneNumber);
+
+      let message = `🔥 NOVA RESERVA FLAME\n\n`;
+      message += `👤 ${guestName}\n`;
+      message += `📞 ${guestPhone}\n`;
+      message += `📋 Código: ${confirmationCode}\n`;
+      message += `📅 ${formattedDate} às ${formattedTime}\n`;
+      message += `👥 ${partySize} pessoa${partySize > 1 ? 's' : ''}`;
+      if (specialRequests) {
+        message += `\n📝 ${specialRequests}`;
+      }
+
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: formattedPhone
+      });
+
+      console.log(`✅ SMS admin reserva enviado: ${result.sid}`);
+
+      return {
+        success: true,
+        messageSid: result.sid,
+        status: result.status
+      };
+    } catch (error) {
+      console.error('Erro ao enviar SMS admin reserva:', error);
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'SMS_ERROR'
+      };
+    }
+  }
+
   // Listar últimas mensagens enviadas
   async getRecentMessages(limit = 20) {
     try {

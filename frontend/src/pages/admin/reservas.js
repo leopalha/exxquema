@@ -99,11 +99,19 @@ export default function AdminReservas() {
   };
 
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr + 'T00:00:00');
+    const date = new Date(dateStr);
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -197,7 +205,7 @@ export default function AdminReservas() {
                     <p className="text-gray-400 text-sm">Total</p>
                     <TrendingUp size={20} className="text-blue-500" />
                   </div>
-                  <p className="text-3xl font-bold text-white">{stats.totalReservations || 0}</p>
+                  <p className="text-3xl font-bold text-white">{stats.total || 0}</p>
                   <p className="text-xs text-gray-500 mt-1">Últimos 30 dias</p>
                 </div>
 
@@ -206,7 +214,7 @@ export default function AdminReservas() {
                     <p className="text-gray-400 text-sm">Pendentes</p>
                     <Clock size={20} className="text-yellow-500" />
                   </div>
-                  <p className="text-3xl font-bold text-yellow-400">{stats.pendingReservations || 0}</p>
+                  <p className="text-3xl font-bold text-yellow-400">{stats.total - stats.confirmed - stats.cancelled - stats.completed - stats.noShow || 0}</p>
                 </div>
 
                 <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
@@ -214,7 +222,7 @@ export default function AdminReservas() {
                     <p className="text-gray-400 text-sm">Confirmadas</p>
                     <CheckCircle size={20} className="text-green-500" />
                   </div>
-                  <p className="text-3xl font-bold text-green-400">{stats.confirmedReservations || 0}</p>
+                  <p className="text-3xl font-bold text-green-400">{stats.confirmed || 0}</p>
                 </div>
 
                 <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
@@ -223,7 +231,7 @@ export default function AdminReservas() {
                     <TrendingDown size={20} style={{ color: 'var(--theme-primary)' }} />
                   </div>
                   <p className="text-3xl font-bold" style={{ color: 'var(--theme-primary)' }}>
-                    {stats.completionRate ? `${stats.completionRate.toFixed(0)}%` : '0%'}
+                    {stats.confirmationRate || '0'}%
                   </p>
                 </div>
               </div>
@@ -340,7 +348,7 @@ export default function AdminReservas() {
                                   <p className="text-white font-medium">
                                     {formatDate(reservation.reservationDate)}
                                   </p>
-                                  <p className="text-gray-500 text-sm">{reservation.reservationTime}</p>
+                                  <p className="text-gray-500 text-sm">{formatTime(reservation.reservationDate)}</p>
                                 </div>
                               </div>
                             </td>
