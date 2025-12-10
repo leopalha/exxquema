@@ -349,6 +349,22 @@ User.init({
     type: DataTypes.STRING(30),
     allowNull: true,
     comment: 'Documento de identidade para estrangeiros (passaporte, RNE, etc.)'
+  },
+  // Sprint 59 - Sistema Instagram Cashback
+  cashbackEnabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Se o sistema de cashback está habilitado (após 1ª validação Instagram)'
+  },
+  lastInstagramCashbackAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Data da última validação Instagram (limite 1x por semana)'
+  },
+  instagramValidationsCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    comment: 'Total de validações Instagram realizadas'
   }
 }, {
   sequelize,

@@ -1403,6 +1403,101 @@ router.post('/add-order-tip-field', async (req, res) => {
   }
 });
 
+// Sprint 59: Add Instagram Cashback fields to orders table
+router.post('/add-instagram-cashback-fields', async (req, res) => {
+  try {
+    const columns = [
+      { name: 'wantsInstagramCashback', type: 'BOOLEAN', default: 'false' },
+      { name: 'instagramCashbackStatus', type: 'TEXT', default: null },
+      { name: 'instagramValidatedBy', type: 'UUID', default: null },
+      { name: 'instagramValidatedAt', type: 'TIMESTAMPTZ', default: null }
+    ];
+
+    const results = [];
+
+    for (const col of columns) {
+      // Check if column exists
+      const [existing] = await sequelize.query(`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'orders'
+        AND column_name = '${col.name}'
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already exists' });
+      } else {
+        let query = `ALTER TABLE "orders" ADD COLUMN "${col.name}" ${col.type}`;
+        if (col.default !== null) {
+          query += ` DEFAULT ${col.default}`;
+        }
+        await sequelize.query(query);
+        results.push({ column: col.name, status: 'added' });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Campos Instagram Cashback verificados/adicionados',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração Instagram Cashback fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
+// Sprint 59: Add Instagram Cashback control fields to users table
+router.post('/add-instagram-cashback-user-fields', async (req, res) => {
+  try {
+    const columns = [
+      { name: 'cashbackEnabled', type: 'BOOLEAN', default: 'false', comment: 'Se o sistema de cashback está habilitado (após 1ª validação Instagram)' },
+      { name: 'lastInstagramCashbackAt', type: 'TIMESTAMPTZ', default: null, comment: 'Data da última validação Instagram (limite 1x por semana)' },
+      { name: 'instagramValidationsCount', type: 'INTEGER', default: '0', comment: 'Total de validações Instagram realizadas' }
+    ];
+
+    const results = [];
+
+    for (const col of columns) {
+      // Check if column exists
+      const [existing] = await sequelize.query(`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = '${col.name}'
+      `);
+
+      if (existing.length > 0) {
+        results.push({ column: col.name, status: 'already exists' });
+      } else {
+        let query = `ALTER TABLE "users" ADD COLUMN "${col.name}" ${col.type}`;
+        if (col.default !== null) {
+          query += ` DEFAULT ${col.default}`;
+        }
+        await sequelize.query(query);
+        results.push({ column: col.name, status: 'added' });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Campos Instagram Cashback (users) verificados/adicionados',
+      results
+    });
+  } catch (error) {
+    console.error('Erro na migração Instagram Cashback user fields:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao executar migração',
+      error: error.message
+    });
+  }
+});
+
 // Migration: Create messages table (Sprint 56 - Chat staff-cliente)
 router.post('/create-messages-table', async (req, res) => {
   try {

@@ -53,15 +53,26 @@ export default function AdminDashboard() {
     setIsHydrated(true);
   }, []);
 
-  // Buscar estatísticas reais da API
+  // Buscar estatísticas reais da API (usando endpoint admin para dados completos)
   const fetchRealtimeStats = useCallback(async () => {
     try {
-      const response = await api.get('/staff/dashboard');
+      const response = await api.get('/admin/dashboard');
       if (response.data.success) {
         setRealtimeStats(response.data.data);
+        // Também atualizar dashboardData com os dados completos
+        setDashboardData(response.data.data);
       }
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
+      // Fallback para staff/dashboard se admin falhar
+      try {
+        const fallback = await api.get('/staff/dashboard');
+        if (fallback.data.success) {
+          setRealtimeStats(fallback.data.data);
+        }
+      } catch (e) {
+        console.error('Erro no fallback:', e);
+      }
     }
   }, []);
 

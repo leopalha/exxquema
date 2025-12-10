@@ -131,6 +131,32 @@ router.patch('/:id/status',
   orderController.updateOrderStatus
 );
 
+// Sprint 59: Validar Instagram Cashback (pelo atendente)
+const validateInstagramCashbackValidation = [
+  param('id').isUUID().withMessage('ID do pedido inválido'),
+  body('validated').isBoolean().withMessage('Campo validated é obrigatório')
+];
+
+router.patch('/:id/instagram-cashback',
+  authenticate,
+  validateInstagramCashbackValidation,
+  handleValidationErrors,
+  orderController.validateInstagramCashback
+);
+
+// Sprint 59: Cliente submete link do post do Instagram
+const submitInstagramPostValidation = [
+  param('id').isUUID().withMessage('ID do pedido inválido'),
+  body('postUrl').isString().notEmpty().withMessage('URL do post é obrigatória')
+];
+
+router.post('/:id/instagram-submit',
+  authenticate,
+  submitInstagramPostValidation,
+  handleValidationErrors,
+  orderController.submitInstagramPost
+);
+
 // ============================================
 // SPRINT 60: Split Payment Routes (Divisão de Conta)
 // ============================================

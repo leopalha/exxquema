@@ -114,7 +114,7 @@ const requireStaff = (req, res, next) => {
 };
 
 /**
- * Middleware para verificar se é cashier ou admin (futuro)
+ * Middleware para verificar se é caixa, gerente ou admin
  */
 const requireCashier = (req, res, next) => {
   if (!req.user) {
@@ -124,10 +124,11 @@ const requireCashier = (req, res, next) => {
     });
   }
 
-  if (!['cashier', 'admin'].includes(req.user.role)) {
+  // Usar 'caixa' (português) conforme definido no modelo User
+  if (!['caixa', 'gerente', 'admin'].includes(req.user.role)) {
     return res.status(403).json({
       success: false,
-      message: 'Acesso negado - apenas caixas e admins'
+      message: 'Acesso negado - apenas caixas, gerentes e admins'
     });
   }
 

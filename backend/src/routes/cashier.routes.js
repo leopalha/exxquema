@@ -4,9 +4,9 @@ const cashierController = require('../controllers/cashier.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { requireRole } = require('../middlewares/role.middleware');
 
-// Todas as rotas requerem autenticação e role de staff ou admin
+// Todas as rotas requerem autenticação e role de staff, admin, caixa ou gerente
 router.use(authenticate);
-router.use(requireRole(['staff', 'admin']));
+router.use(requireRole(['staff', 'admin', 'caixa', 'gerente']));
 
 /**
  * @route   POST /api/cashier/open

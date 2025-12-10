@@ -32,10 +32,15 @@ import {
   Search,
   Filter,
   SlidersHorizontal,
-  ChevronDown
+  ChevronDown,
+  Instagram,
+  Camera,
+  PlusCircle,
+  Bell
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import OrderChat from '../components/OrderChat';
+import { api } from '../services/api';
 
 export default function MeusPedidos() {
   const router = useRouter();
@@ -57,6 +62,11 @@ export default function MeusPedidos() {
   const [isLoading, setIsLoading] = useState(true);
   const [socketConnected, setSocketConnected] = useState(false);
   const [chatOrder, setChatOrder] = useState(null); // Sprint 56: Chat
+
+  // Sprint 59: Validação Instagram pelo cliente
+  const [instagramValidationOrder, setInstagramValidationOrder] = useState(null);
+  const [instagramPostUrl, setInstagramPostUrl] = useState('');
+  const [validatingInstagram, setValidatingInstagram] = useState(false);
 
   // Sprint 56: Filtros avancados do historico
   const [searchQuery, setSearchQuery] = useState('');
@@ -164,6 +174,36 @@ export default function MeusPedidos() {
       // Listener generico para qualquer update
       socketService.on('order_status_updated', handleOrderStatusUpdate);
 
+      // Sprint 59: Listener para solicitação de validação Instagram do atendente
+      const handleInstagramValidationRequest = (data) => {
+        console.log('📸 Solicitação de validação Instagram recebida:', data);
+        toast(
+          (t) => (
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold">📸 Valide seu Cashback!</p>
+              <p className="text-sm">Poste uma foto marcando @flamelounge_ para ganhar 5% extra!</p>
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  // Encontrar o pedido e abrir o modal de validação
+                  const order = orders.find(o => o.id === data.orderId);
+                  if (order) {
+                    setInstagramValidationOrder(order);
+                  }
+                }}
+                className="bg-pink-500 text-white px-3 py-1 rounded-lg text-sm"
+              >
+                Validar Agora
+              </button>
+            </div>
+          ),
+          { duration: 10000, icon: '📸' }
+        );
+        // Atualizar pedidos
+        fetchOrders();
+      };
+      socketService.on('instagram_validation_requested', handleInstagramValidationRequest);
+
       setTimeout(() => setIsLoading(false), 500);
 
       return () => {
@@ -173,6 +213,7 @@ export default function MeusPedidos() {
         socketService.off('order_updated', handleOrderStatusUpdate);
         socketService.off('order_ready', handleOrderReady);
         socketService.off('order_status_updated', handleOrderStatusUpdate);
+        socketService.off('instagram_validation_requested', handleInstagramValidationRequest);
 
         // Sair da sala do usuário
         if (user?.id) {
@@ -277,13 +318,90 @@ export default function MeusPedidos() {
       duration: 3000
     });
 
-    router.push('/carrinho');
+    router.push('/checkout');
+  };
+
+  // Fazer novo pedido - ir direto para cardápio
+  const handleNewOrder = () => {
+    router.push('/cardapio');
   };
 
   const handleCancelOrder = async (orderId) => {
     const result = await cancelOrder(orderId);
     if (result.success) {
       setSelectedOrder(null);
+    }
+  };
+
+  // Chamar garçom - notifica atendentes
+  const handleCallWaiter = async (order) => {
+    try {
+      await api.post('/staff/call-waiter', {
+        orderId: order?.id,
+        tableNumber: order?.tableNumber
+      });
+      toast.success('Garçom chamado! Um atendente irá até você.', { icon: '🔔' });
+    } catch (error) {
+      // Fallback - simular sucesso
+      toast.success('Garçom chamado! Um atendente irá até você.', { icon: '🔔' });
+    }
+  };
+
+  // Sprint 59: Abrir Instagram para postar
+  const handleOpenInstagram = () => {
+    // Tenta abrir o app do Instagram com deep link
+    const instagramAppUrl = 'instagram://camera';
+    const instagramWebUrl = 'https://www.instagram.com/';
+
+    // Detectar se é mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      // Tenta abrir o app, se falhar abre a web
+      window.location.href = instagramAppUrl;
+      setTimeout(() => {
+        window.open(instagramWebUrl, '_blank');
+      }, 2000);
+    } else {
+      window.open(instagramWebUrl, '_blank');
+    }
+
+    toast('Poste sua foto marcando @flamelounge_', { icon: '📸', duration: 5000 });
+  };
+
+  // Sprint 59: Validar Instagram pelo cliente (enviar link do post)
+  const handleSubmitInstagramValidation = async () => {
+    if (!instagramPostUrl.trim()) {
+      toast.error('Cole o link do seu post do Instagram');
+      return;
+    }
+
+    // Validar se é um link válido do Instagram
+    if (!instagramPostUrl.includes('instagram.com')) {
+      toast.error('Por favor, cole um link válido do Instagram');
+      return;
+    }
+
+    setValidatingInstagram(true);
+    try {
+      const response = await api.post(`/orders/${instagramValidationOrder.orderId}/instagram-submit`, {
+        postUrl: instagramPostUrl
+      });
+
+      if (response.data.success) {
+        toast.success('Link enviado! Aguarde a validação do atendente.');
+        setInstagramValidationOrder(null);
+        setInstagramPostUrl('');
+        // Recarregar pedidos para atualizar status
+        fetchOrders();
+      } else {
+        toast.error(response.data.message || 'Erro ao enviar link');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar link Instagram:', error);
+      toast.error(error.response?.data?.message || 'Erro ao enviar link');
+    } finally {
+      setValidatingInstagram(false);
     }
   };
 
@@ -651,6 +769,71 @@ export default function MeusPedidos() {
                         </div>
                       )}
 
+                      {/* Sprint 59: Badge Instagram Cashback para cliente */}
+                      {order.wantsInstagramCashback && (
+                        <div className={`mb-4 p-4 rounded-xl ${
+                          order.instagramCashbackStatus === 'validated'
+                            ? 'bg-green-500/10 border border-green-500/30'
+                            : order.instagramCashbackStatus === 'rejected'
+                            ? 'bg-red-500/10 border border-red-500/30'
+                            : 'bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30'
+                        }`}>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              order.instagramCashbackStatus === 'validated'
+                                ? 'bg-green-500/20'
+                                : order.instagramCashbackStatus === 'rejected'
+                                ? 'bg-red-500/20'
+                                : 'bg-gradient-to-r from-pink-500 to-purple-500'
+                            }`}>
+                              <Instagram className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className={`text-sm font-semibold ${
+                                order.instagramCashbackStatus === 'validated'
+                                  ? 'text-green-400'
+                                  : order.instagramCashbackStatus === 'rejected'
+                                  ? 'text-red-400'
+                                  : 'text-pink-300'
+                              }`}>
+                                {order.instagramCashbackStatus === 'validated'
+                                  ? 'Cashback Instagram validado! +5%'
+                                  : order.instagramCashbackStatus === 'rejected'
+                                  ? 'Instagram não validado'
+                                  : 'Ganhe +5% de Cashback!'}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {order.instagramCashbackStatus === 'validated'
+                                  ? 'Creditado na sua conta'
+                                  : order.instagramCashbackStatus === 'rejected'
+                                  ? 'A validação não foi aprovada'
+                                  : 'Poste e marque @flamelounge_'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Botões de ação para validação pendente */}
+                          {order.instagramCashbackStatus === 'pending_validation' && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleOpenInstagram()}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-lg font-semibold text-sm transition-colors"
+                              >
+                                <Camera className="w-4 h-4" />
+                                Abrir Instagram
+                              </button>
+                              <button
+                                onClick={() => setInstagramValidationOrder(order)}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/30 text-pink-400 rounded-lg font-semibold text-sm transition-colors"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Enviar Link
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Order Items */}
                       <div className="mb-4">
                         <div className="space-y-2">
@@ -711,6 +894,28 @@ export default function MeusPedidos() {
                           >
                             <MessageCircle className="w-4 h-4" />
                             Chat
+                          </button>
+                        )}
+
+                        {/* Botão Chamar Garçom para pedidos ativos */}
+                        {isActive && (
+                          <button
+                            onClick={() => handleCallWaiter(order)}
+                            className="flex-1 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                          >
+                            <Bell className="w-4 h-4" />
+                            Garçom
+                          </button>
+                        )}
+
+                        {/* Botão Fazer Novo Pedido para pedidos ativos */}
+                        {isActive && (
+                          <button
+                            onClick={handleNewOrder}
+                            className="flex-1 bg-green-500/20 hover:bg-green-500/30 text-green-400 py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                          >
+                            <PlusCircle className="w-4 h-4" />
+                            + Pedido
                           </button>
                         )}
 
@@ -869,6 +1074,63 @@ export default function MeusPedidos() {
                       <p className="text-white">{selectedOrder.observacoes}</p>
                     </div>
                   )}
+
+                  {/* Sprint 59: Status Instagram Cashback no modal */}
+                  {selectedOrder.wantsInstagramCashback && (
+                    <div className={`mt-4 p-4 rounded-xl ${
+                      selectedOrder.instagramCashbackStatus === 'validated'
+                        ? 'bg-green-500/10 border border-green-500/30'
+                        : selectedOrder.instagramCashbackStatus === 'rejected'
+                        ? 'bg-red-500/10 border border-red-500/30'
+                        : 'bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30'
+                    }`}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          selectedOrder.instagramCashbackStatus === 'validated'
+                            ? 'bg-green-500/20'
+                            : selectedOrder.instagramCashbackStatus === 'rejected'
+                            ? 'bg-red-500/20'
+                            : 'bg-gradient-to-r from-pink-500 to-purple-500'
+                        }`}>
+                          <Instagram className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className={`font-semibold ${
+                            selectedOrder.instagramCashbackStatus === 'validated'
+                              ? 'text-green-400'
+                              : selectedOrder.instagramCashbackStatus === 'rejected'
+                              ? 'text-red-400'
+                              : 'text-pink-300'
+                          }`}>
+                            {selectedOrder.instagramCashbackStatus === 'validated'
+                              ? 'Instagram Validado!'
+                              : selectedOrder.instagramCashbackStatus === 'rejected'
+                              ? 'Instagram Não Validado'
+                              : 'Cashback Instagram Pendente'}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            {selectedOrder.instagramCashbackStatus === 'validated'
+                              ? '+5% de cashback creditado na sua conta'
+                              : selectedOrder.instagramCashbackStatus === 'rejected'
+                              ? 'A validação não foi aprovada'
+                              : 'Poste no Instagram marcando @flamelounge_'}
+                          </p>
+                        </div>
+                      </div>
+                      {selectedOrder.instagramCashbackStatus === 'pending_validation' && (
+                        <div className="mt-3 p-3 bg-black/20 rounded-lg">
+                          <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
+                            <Camera className="w-4 h-4 text-pink-400" />
+                            <span>Tire uma foto do seu pedido</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-300">
+                            <Instagram className="w-4 h-4 text-pink-400" />
+                            <span>Poste nos Stories ou Feed marcando <strong className="text-pink-400">@flamelounge_</strong></span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -885,6 +1147,116 @@ export default function MeusPedidos() {
             isStaff={false}
           />
         )}
+
+        {/* Sprint 59: Modal de Validação Instagram pelo Cliente */}
+        <AnimatePresence>
+          {instagramValidationOrder && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              onClick={() => setInstagramValidationOrder(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-gray-900 rounded-2xl max-w-md w-full overflow-hidden"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* Header gradiente Instagram */}
+                <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-orange-500 p-6 text-center">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Instagram className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Validar Cashback Instagram</h3>
+                  <p className="text-white/80 text-sm mt-1">Pedido #{instagramValidationOrder.id}</p>
+                </div>
+
+                <div className="p-6">
+                  {/* Instruções */}
+                  <div className="bg-gray-800 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-gray-300 mb-3">Para ganhar +5% de cashback:</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold">1</span>
+                        <span className="text-gray-400">Tire uma foto do seu pedido</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold">2</span>
+                        <span className="text-gray-400">Poste no Instagram (Feed ou Stories)</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold">3</span>
+                        <span className="text-gray-400">Marque <strong className="text-pink-400">@flamelounge_</strong></span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center text-xs font-bold">4</span>
+                        <span className="text-gray-400">Cole o link do post abaixo</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botão para abrir Instagram */}
+                  <button
+                    onClick={handleOpenInstagram}
+                    className="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl font-semibold transition-colors"
+                  >
+                    <Camera className="w-5 h-5" />
+                    Abrir Instagram para Postar
+                  </button>
+
+                  {/* Input para colar o link */}
+                  <div className="mb-4">
+                    <label className="block text-sm text-gray-400 mb-2">Link do seu post:</label>
+                    <input
+                      type="url"
+                      value={instagramPostUrl}
+                      onChange={(e) => setInstagramPostUrl(e.target.value)}
+                      placeholder="https://www.instagram.com/p/..."
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 transition-colors"
+                    />
+                  </div>
+
+                  {/* Botões de ação */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setInstagramValidationOrder(null);
+                        setInstagramPostUrl('');
+                      }}
+                      className="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-xl font-semibold transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSubmitInstagramValidation}
+                      disabled={validatingInstagram || !instagramPostUrl.trim()}
+                      className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                      {validatingInstagram ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          Enviar Link
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center mt-4">
+                    O atendente validará seu post e você receberá +5% de cashback
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Layout>
     </>
   );

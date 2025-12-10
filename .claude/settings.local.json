@@ -54,7 +54,11 @@
       "Bash(echo \"=== Teste API Reservas Admin ===\" curl -s -H \"Authorization: Bearer $ADMIN_TOKEN\" \"$BASE/reservations/admin/all\")",
       "Bash(__NEW_LINE__ echo \"=== Teste API Reservas Admin ===\")",
       "Bash(__NEW_LINE__ echo \"=== Stats de Reservas ===\")",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(echo \"=== Testando API Health ===\" curl -s \"$BASE/../health\")",
+      "Bash(echo \"\" echo \"=== Verificando se rota Instagram existe ===\" curl -s -X PATCH \"$BASE/orders/test-uuid/instagram-cashback\" -H \"Content-Type: application/json\" -H \"Authorization: Bearer $ADMIN_TOKEN\" -d '{\"\"\"\"validated\"\"\"\": true}')",
+      "Bash(__NEW_LINE__ echo \"=== Testando rota de submissão Instagram ===\")",
+      "Bash(__NEW_LINE__ echo \"=== Testando endpoint call-waiter ===\")"
     ],
     "deny": [],
     "ask": []

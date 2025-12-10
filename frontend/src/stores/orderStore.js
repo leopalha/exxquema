@@ -111,7 +111,10 @@ export const useOrderStore = create(
               paymentStatus: order.paymentStatus || 'pendente',
               observacoes: order.notes,
               createdAt: order.createdAt,
-              estimatedTime: order.estimatedTime || 25
+              estimatedTime: order.estimatedTime || 25,
+              // Sprint 59: Campos Instagram Cashback
+              wantsInstagramCashback: order.wantsInstagramCashback || false,
+              instagramCashbackStatus: order.instagramCashbackStatus || null
             }));
 
             set({ orders: formattedOrders });
@@ -170,7 +173,8 @@ export const useOrderStore = create(
       },
 
       // Criar pedido - Envia para API real
-      createOrder: async (cartItems, cartTotal, userId, userName, useCashback = 0, tipAmount = 0) => {
+      // Sprint 59: Adicionado wantsInstagramCashback
+      createOrder: async (cartItems, cartTotal, userId, userName, useCashback = 0, tipAmount = 0, wantsInstagramCashback = false) => {
         set({ loading: true });
 
         try {
@@ -243,7 +247,8 @@ export const useOrderStore = create(
             notes: checkoutData.observacoes || null,
             paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
             useCashback: useCashback || 0, // Cashback a ser usado como desconto
-            tip: tipAmount || 0 // Gorjeta opcional
+            tip: tipAmount || 0, // Gorjeta opcional
+            wantsInstagramCashback // Sprint 59: Cashback Instagram 5% extra
           });
 
           console.log('📥 Resposta do servidor:', response.data);

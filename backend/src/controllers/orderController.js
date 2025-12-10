@@ -15,7 +15,7 @@ class OrderController {
       console.log('📦 [CREATE ORDER] Iniciando criação de pedido');
       console.log('📦 [CREATE ORDER] Body:', JSON.stringify(req.body, null, 2));
 
-      const { tableId, items, notes, paymentMethod, useCashback, tip } = req.body;
+      const { tableId, items, notes, paymentMethod, useCashback, tip, wantsInstagramCashback } = req.body;
       const userId = req.user.id;
       console.log('📦 [CREATE ORDER] userId:', userId);
       console.log('📦 [CREATE ORDER] tableId:', tableId);
@@ -137,17 +137,49 @@ class OrderController {
       const user = await User.findByPk(userId);
       const userCashbackBalance = parseFloat(user?.cashbackBalance) || 0;
 
+      // Sprint 59: Verificar se usuário pode usar cashback acumulado
+      // REGRA: Só pode usar cashback se o sistema estiver habilitado (após 1ª validação Instagram)
+      const canUseCashback = user?.cashbackEnabled === true;
+
       if (useCashback && useCashback > 0 && userCashbackBalance > 0) {
-        // Limitar ao saldo disponível e ao total do pedido
-        const requestedCashback = parseFloat(useCashback);
-        cashbackUsed = Math.min(requestedCashback, userCashbackBalance, totalBeforeDiscount);
-        console.log('📦 [CREATE ORDER] Cashback solicitado:', requestedCashback, 'Saldo:', userCashbackBalance, 'Usado:', cashbackUsed);
+        if (!canUseCashback) {
+          // Usuário ainda não habilitou o sistema de cashback
+          console.log('📦 [CREATE ORDER] Usuário ainda não habilitou cashback (precisa validar Instagram primeiro)');
+          // Não bloqueia o pedido, apenas ignora o uso de cashback
+        } else {
+          // Limitar ao saldo disponível e ao total do pedido
+          const requestedCashback = parseFloat(useCashback);
+          cashbackUsed = Math.min(requestedCashback, userCashbackBalance, totalBeforeDiscount);
+          console.log('📦 [CREATE ORDER] Cashback solicitado:', requestedCashback, 'Saldo:', userCashbackBalance, 'Usado:', cashbackUsed);
+        }
+      }
+
+      // Sprint 59: Verificar se usuário pode participar do Instagram esta semana
+      // REGRA: Limite de 1x por semana por usuário
+      let canDoInstagram = true;
+      let instagramBlockReason = null;
+
+      if (wantsInstagramCashback) {
+        const lastInstagramDate = user?.lastInstagramCashbackAt;
+        if (lastInstagramDate) {
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+          if (new Date(lastInstagramDate) > oneWeekAgo) {
+            canDoInstagram = false;
+            const nextAvailableDate = new Date(lastInstagramDate);
+            nextAvailableDate.setDate(nextAvailableDate.getDate() + 7);
+            instagramBlockReason = `Você já participou do Instagram Cashback esta semana. Próxima disponibilidade: ${nextAvailableDate.toLocaleDateString('pt-BR')}`;
+            console.log('📦 [CREATE ORDER] Instagram Cashback bloqueado:', instagramBlockReason);
+          }
+        }
       }
 
       // Calcular total final com desconto
       const total = Math.max(0, totalBeforeDiscount - cashbackUsed);
 
       console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'tip:', tipAmount, 'cashbackUsed:', cashbackUsed, 'total:', total);
+      console.log('📦 [CREATE ORDER] canUseCashback:', canUseCashback, 'canDoInstagram:', canDoInstagram);
 
       // Criar pedido (tableId é opcional para pedidos de balcão)
       const order = await Order.create({
@@ -162,7 +194,10 @@ class OrderController {
         total: total.toFixed(2),
         notes,
         paymentMethod,
-        estimatedTime
+        estimatedTime,
+        // Sprint 59: Cashback Instagram 5% extra (só permite se pode participar esta semana)
+        wantsInstagramCashback: wantsInstagramCashback && canDoInstagram ? true : false,
+        instagramCashbackStatus: wantsInstagramCashback && canDoInstagram ? 'pending_validation' : null
       });
 
       // Debitar cashback do usuário se foi usado
@@ -1174,6 +1209,214 @@ class OrderController {
       });
     } catch (error) {
       console.error('❌ Erro ao atualizar status:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+
+  // Sprint 59: Cliente envia link do post do Instagram
+  async submitInstagramPost(req, res) {
+    try {
+      const { id } = req.params;
+      const { postUrl } = req.body;
+      const userId = req.user.id;
+
+      console.log(`📸 [INSTAGRAM] Cliente enviando link do post para pedido ${id}`);
+
+      const order = await Order.findByPk(id);
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Pedido não encontrado'
+        });
+      }
+
+      // Verificar se o pedido pertence ao usuário
+      if (order.userId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Você não tem permissão para este pedido'
+        });
+      }
+
+      if (!order.wantsInstagramCashback) {
+        return res.status(400).json({
+          success: false,
+          message: 'Este pedido não participou do programa Instagram Cashback'
+        });
+      }
+
+      if (order.instagramCashbackStatus === 'validated') {
+        return res.status(400).json({
+          success: false,
+          message: 'Instagram já foi validado para este pedido'
+        });
+      }
+
+      // Validar URL do Instagram
+      if (!postUrl || !postUrl.includes('instagram.com')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Por favor, envie um link válido do Instagram'
+        });
+      }
+
+      // Atualizar pedido com o link do post e marcar como aguardando validação
+      await order.update({
+        instagramCashbackStatus: 'pending_validation',
+        notes: order.notes
+          ? `${order.notes}\n[Instagram] Link enviado pelo cliente: ${postUrl}`
+          : `[Instagram] Link enviado pelo cliente: ${postUrl}`
+      });
+
+      console.log(`✅ [INSTAGRAM] Link salvo para pedido ${id}: ${postUrl}`);
+
+      // Emitir evento via Socket para atendentes saberem que tem link para validar
+      const io = req.app.get('io');
+      if (io) {
+        io.to('staff').emit('instagram_link_submitted', {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          postUrl
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Link enviado! Aguarde a validação do atendente.',
+        data: {
+          orderId: order.id,
+          postUrl,
+          status: 'pending_validation'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao enviar link Instagram:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+  }
+
+  // Sprint 59: Validar Instagram Cashback
+  // REGRAS:
+  // 1. Na primeira validação Instagram, habilita o sistema de cashback do usuário
+  // 2. Limite de 1x por semana por usuário
+  // 3. Credita 5% de cashback extra do valor do pedido
+  async validateInstagramCashback(req, res) {
+    try {
+      const { id } = req.params;
+      const { validated } = req.body;
+      const staffId = req.user.id;
+      const staffName = req.user.nome;
+
+      console.log(`📸 [INSTAGRAM] Validando cashback para pedido ${id}. Validado: ${validated}`);
+
+      const order = await Order.findByPk(id, {
+        include: [
+          { model: User, as: 'customer' }
+        ]
+      });
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Pedido não encontrado'
+        });
+      }
+
+      if (!order.wantsInstagramCashback) {
+        return res.status(400).json({
+          success: false,
+          message: 'Este pedido não participou do programa Instagram Cashback'
+        });
+      }
+
+      if (order.instagramCashbackStatus !== 'pending_validation') {
+        return res.status(400).json({
+          success: false,
+          message: `Instagram já foi ${order.instagramCashbackStatus === 'validated' ? 'validado' : 'recusado'}`
+        });
+      }
+
+      // Atualizar status do Instagram cashback
+      await order.update({
+        instagramCashbackStatus: validated ? 'validated' : 'rejected',
+        instagramValidatedBy: staffId,
+        instagramValidatedAt: new Date()
+      });
+
+      // Se validado, creditar 5% de cashback extra e aplicar regras do sistema
+      if (validated && order.customer) {
+        const INSTAGRAM_CASHBACK_RATE = 5; // 5% extra
+        const orderTotal = parseFloat(order.total);
+        const instagramBonus = (orderTotal * INSTAGRAM_CASHBACK_RATE / 100);
+        const customer = order.customer;
+
+        // Verificar se é a primeira validação Instagram do usuário
+        const isFirstValidation = !customer.cashbackEnabled || customer.instagramValidationsCount === 0;
+
+        // Se for a primeira validação, HABILITAR o sistema de cashback do usuário
+        if (!customer.cashbackEnabled) {
+          await customer.update({ cashbackEnabled: true });
+          console.log(`🎉 [INSTAGRAM] Sistema de cashback HABILITADO para ${customer.nome} (primeira validação)`);
+        }
+
+        // Atualizar controles de Instagram do usuário
+        await customer.update({
+          lastInstagramCashbackAt: new Date(),
+          instagramValidationsCount: (customer.instagramValidationsCount || 0) + 1
+        });
+
+        // Creditar o bônus Instagram
+        await customer.addCashback(
+          instagramBonus,
+          order.id,
+          `Bônus Instagram (+${INSTAGRAM_CASHBACK_RATE}%) - Pedido #${order.orderNumber}`
+        );
+
+        console.log(`✅ [INSTAGRAM] Cashback de R$${instagramBonus.toFixed(2)} creditado para ${customer.nome}`);
+        console.log(`📊 [INSTAGRAM] Total de validações do usuário: ${(customer.instagramValidationsCount || 0) + 1}`);
+
+        // Mensagem especial para primeira validação
+        const message = isFirstValidation
+          ? `Primeira validação Instagram! Sistema de cashback ATIVADO. Bônus de R$${instagramBonus.toFixed(2)} creditado.`
+          : `Instagram validado! Cashback de R$${instagramBonus.toFixed(2)} creditado.`;
+
+        return res.status(200).json({
+          success: true,
+          message,
+          data: {
+            order,
+            validated,
+            validatedBy: staffName,
+            validatedAt: new Date(),
+            isFirstValidation,
+            bonusAmount: instagramBonus.toFixed(2),
+            cashbackEnabled: true,
+            totalValidations: (customer.instagramValidationsCount || 0) + 1
+          }
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Instagram não validado.',
+        data: {
+          order,
+          validated,
+          validatedBy: staffName,
+          validatedAt: new Date()
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao validar Instagram:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',

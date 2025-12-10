@@ -193,6 +193,36 @@ export default function PainelAtendente() {
       // Removido listener duplicado 'order_ready' - usando apenas 'order_ready_alert'
       socketService.onOrderUpdated(handleOrderUpdated);
       socketService.on('payment_request', handlePaymentRequest);
+
+      // Sprint 59: Listener para cliente chamando garçom
+      const handleWaiterCalled = (data) => {
+        console.log('🔔 Cliente chamou garçom:', data);
+        soundService.playNotification();
+        toast(
+          `🔔 Mesa ${data.tableNumber || '?'} chamou o garçom!`,
+          {
+            duration: 15000,
+            icon: '🔔',
+            style: {
+              background: '#facc15',
+              color: '#000',
+              fontWeight: 'bold'
+            }
+          }
+        );
+      };
+      socketService.on('waiter_called', handleWaiterCalled);
+
+      // Sprint 59: Listener para cliente enviando link Instagram
+      const handleInstagramLinkSubmitted = (data) => {
+        console.log('📸 Cliente enviou link Instagram:', data);
+        soundService.playNotification();
+        toast(
+          `📸 Pedido #${data.orderNumber} enviou link do Instagram para validação!`,
+          { duration: 10000, icon: '📸' }
+        );
+      };
+      socketService.on('instagram_link_submitted', handleInstagramLinkSubmitted);
     }
 
     // Cleanup
@@ -205,6 +235,8 @@ export default function PainelAtendente() {
       // 'order_ready' listener removido - não mais usado
       socketService.removeAllListeners('order_updated');
       socketService.removeAllListeners('payment_request');
+      socketService.removeAllListeners('waiter_called');
+      socketService.removeAllListeners('instagram_link_submitted');
       listenersSetup.current = false;
     };
   }, [isAuthenticated, isHydrated, router, fetchDashboard]);

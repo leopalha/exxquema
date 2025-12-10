@@ -543,6 +543,177 @@ class StaffController {
       });
     }
   }
+
+  /**
+   * POST /api/staff/call-waiter
+   * Cliente chama garçom - notifica atendentes via Socket.IO
+   */
+  static async callWaiter(req, res) {
+    try {
+      const { orderId, tableId, tableNumber, reason } = req.body;
+      const userId = req.user?.id;
+      const userName = req.user?.nome || 'Cliente';
+
+      console.log(`🔔 [CALL WAITER] Cliente ${userName} chamou garçom`);
+
+      // Buscar dados do pedido/mesa se fornecidos
+      let orderInfo = null;
+      let tableInfo = tableNumber;
+
+      if (orderId) {
+        const order = await Order.findByPk(orderId, {
+          include: [{ model: Table, as: 'table' }]
+        });
+        if (order) {
+          orderInfo = {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            status: order.status
+          };
+          tableInfo = order.table?.number || tableNumber;
+        }
+      }
+
+      if (tableId && !tableInfo) {
+        const table = await Table.findByPk(tableId);
+        if (table) {
+          tableInfo = table.number;
+        }
+      }
+
+      // Notificar atendentes via Socket.IO
+      const io = req.app.get('io');
+      if (io) {
+        io.to('attendants').emit('waiter_called', {
+          userId,
+          userName,
+          tableNumber: tableInfo || 'Não identificada',
+          orderId: orderInfo?.id,
+          orderNumber: orderInfo?.orderNumber,
+          reason: reason || 'Solicitação de atendimento',
+          timestamp: new Date().toISOString()
+        });
+
+        // Também notificar admin
+        io.to('admins').emit('waiter_called', {
+          userId,
+          userName,
+          tableNumber: tableInfo || 'Não identificada',
+          orderId: orderInfo?.id,
+          orderNumber: orderInfo?.orderNumber,
+          reason: reason || 'Solicitação de atendimento',
+          timestamp: new Date().toISOString()
+        });
+
+        console.log(`✅ [CALL WAITER] Notificação enviada - Mesa ${tableInfo}`);
+      }
+
+      res.json({
+        success: true,
+        message: 'Garçom chamado! Um atendente irá até você.',
+        data: {
+          tableNumber: tableInfo,
+          orderId: orderInfo?.id,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao chamar garçom:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/staff/request-instagram-validation
+   * Atendente solicita validação de Instagram ao cliente
+   */
+  static async requestInstagramValidation(req, res) {
+    try {
+      const { orderId } = req.body;
+      const staffId = req.user?.id;
+      const staffName = req.user?.nome || 'Atendente';
+
+      if (!orderId) {
+        return res.status(400).json({
+          success: false,
+          message: 'orderId é obrigatório'
+        });
+      }
+
+      // Buscar pedido
+      const order = await Order.findByPk(orderId, {
+        include: [{ model: User, as: 'user' }]
+      });
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: 'Pedido não encontrado'
+        });
+      }
+
+      if (!order.wantsInstagramCashback) {
+        return res.status(400).json({
+          success: false,
+          message: 'Este pedido não participou do programa Instagram Cashback'
+        });
+      }
+
+      console.log(`📸 [INSTAGRAM] Atendente ${staffName} solicitou validação para pedido ${order.orderNumber}`);
+
+      // Notificar cliente via Socket.IO
+      const io = req.app.get('io');
+      if (io && order.userId) {
+        io.to(`user_${order.userId}`).emit('instagram_validation_requested', {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          staffName,
+          message: 'O atendente está aguardando sua postagem no Instagram para validar o cashback de 5%!',
+          timestamp: new Date().toISOString()
+        });
+
+        console.log(`✅ [INSTAGRAM] Notificação enviada para cliente ${order.userId}`);
+      }
+
+      // Enviar push notification
+      if (order.user?.id) {
+        try {
+          await pushService.sendToUser(order.user.id, {
+            title: '📸 Valide seu Cashback Instagram!',
+            body: 'Poste uma foto marcando @flamelounge_ para ganhar 5% de cashback extra!',
+            icon: '/icons/icon-192x192.png',
+            tag: 'instagram-validation',
+            data: {
+              type: 'instagram_validation',
+              orderId: order.id,
+              orderNumber: order.orderNumber
+            }
+          });
+        } catch (pushError) {
+          console.error('Erro ao enviar push:', pushError);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: 'Solicitação de validação enviada ao cliente!',
+        data: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          clientNotified: true
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao solicitar validação Instagram:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = StaffController;

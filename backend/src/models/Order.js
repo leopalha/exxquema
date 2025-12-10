@@ -244,6 +244,35 @@ Order.init({
     allowNull: false,
     defaultValue: 0,
     comment: 'Gorjeta opcional do cliente'
+  },
+  // Sprint 59: Cashback Instagram
+  wantsInstagramCashback: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Se cliente quer participar do cashback Instagram (5% extra)'
+  },
+  instagramCashbackStatus: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    defaultValue: null,
+    validate: {
+      isIn: [['pending_validation', 'validated', 'rejected', null]]
+    },
+    comment: 'Status da validação do cashback Instagram'
+  },
+  instagramValidatedBy: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    },
+    comment: 'Atendente que validou o cashback Instagram'
+  },
+  instagramValidatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Quando foi validado'
   }
 }, {
   sequelize,

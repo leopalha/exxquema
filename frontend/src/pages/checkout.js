@@ -25,7 +25,9 @@ import {
   Gift,
   Coins,
   User,
-  Heart
+  Heart,
+  Instagram,
+  Camera
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useCartStore } from '../stores/cartStore';
@@ -59,6 +61,9 @@ export default function Checkout() {
   // Estado para gorjeta
   const [selectedTip, setSelectedTip] = useState(null); // 'none', 5, 10, 15, 'custom'
   const [customTip, setCustomTip] = useState('');
+
+  // Estado para cashback Instagram (5% extra)
+  const [wantsInstagramCashback, setWantsInstagramCashback] = useState(false);
 
   const { user, isAuthenticated } = useAuthStore();
   const { getPalette } = useThemeStore();
@@ -199,7 +204,8 @@ export default function Checkout() {
       user?.id,
       user?.name,
       cashbackDiscount, // Passa o cashback a usar
-      tipAmount // Passa a gorjeta
+      tipAmount, // Passa a gorjeta
+      wantsInstagramCashback // Sprint 59: Cashback Instagram
     );
 
     if (result.success) {
@@ -213,6 +219,7 @@ export default function Checkout() {
       setChangeFor('');
       setSelectedTip(null);
       setCustomTip('');
+      setWantsInstagramCashback(false);
     }
 
     setIsProcessing(false);
@@ -889,6 +896,47 @@ export default function Checkout() {
                           )}
                         </div>
                       )}
+
+                      {/* Sprint 59: Cashback Instagram - 5% extra */}
+                      <div className="border-t border-gray-700 pt-3 mt-3">
+                        <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-xl">
+                          <Instagram className="w-6 h-6 text-pink-400 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium">Cashback Instagram +5%</span>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={wantsInstagramCashback}
+                                  onChange={(e) => setWantsInstagramCashback(e.target.checked)}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                              </label>
+                            </div>
+                            <p className="text-gray-400 text-sm mb-2">
+                              Ganhe 5% extra de cashback postando uma foto do seu pedido no Instagram marcando <span className="text-pink-400 font-semibold">@flamelounge_</span>
+                            </p>
+                            {wantsInstagramCashback && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="mt-3 p-3 bg-gray-800/50 rounded-lg"
+                              >
+                                <p className="text-xs text-gray-400">
+                                  <strong className="text-pink-400">Como funciona:</strong>
+                                </p>
+                                <ol className="text-xs text-gray-400 mt-2 space-y-1 list-decimal list-inside">
+                                  <li>Receba seu pedido e tire uma foto</li>
+                                  <li>Poste no Instagram marcando @flamelounge_</li>
+                                  <li>O atendente irá validar na entrega</li>
+                                  <li>R$ {(total * 0.05).toFixed(2)} será creditado no seu cashback!</li>
+                                </ol>
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
 
                       {cashbackDiscount > 0 && (
                         <div className="flex justify-between text-green-400">

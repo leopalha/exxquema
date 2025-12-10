@@ -28,4 +28,10 @@ router.post('/start-timer', requireStaff, StaffController.startTimer);
 // POST /api/staff/call-customer - Chamar cliente via SMS/Push
 router.post('/call-customer', requireAttendant, StaffController.callCustomer);
 
+// POST /api/staff/call-waiter - Cliente chama garçom (notifica atendentes)
+router.post('/call-waiter', StaffController.callWaiter);
+
+// POST /api/staff/request-instagram-validation - Atendente solicita validação Instagram
+router.post('/request-instagram-validation', requireAttendant, StaffController.requestInstagramValidation);
+
 module.exports = router;

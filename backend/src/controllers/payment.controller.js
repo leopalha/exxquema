@@ -386,11 +386,13 @@ class PaymentController {
       });
 
       if (order) {
+        // Normalizar paymentStatus para valores válidos do enum ('completed' em vez de 'paid')
+        const normalizedStatus = paymentStatus === 'paid' ? 'completed' : paymentStatus;
         await order.update({
-          paymentStatus,
-          ...(paymentStatus === 'paid' && { status: 'confirmed' })
+          paymentStatus: normalizedStatus,
+          ...(normalizedStatus === 'completed' && { status: 'confirmed' })
         });
-        console.log(`Pedido ${orderNumber} atualizado: paymentStatus=${paymentStatus}`);
+        console.log(`Pedido ${orderNumber} atualizado: paymentStatus=${normalizedStatus}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar status do pedido:', error);

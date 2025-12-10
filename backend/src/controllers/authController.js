@@ -595,7 +595,7 @@ class AuthController {
   async getMe(req, res) {
     try {
       const user = await User.findByPk(req.user.id);
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
@@ -603,10 +603,36 @@ class AuthController {
         });
       }
 
+      // Sprint 59: Calcular status do Instagram Cashback
+      let instagramCashbackStatus = {
+        canParticipate: true,
+        isFirstTime: !user.cashbackEnabled || user.instagramValidationsCount === 0,
+        lastParticipation: user.lastInstagramCashbackAt,
+        nextAvailable: null,
+        daysUntilAvailable: 0,
+        totalValidations: user.instagramValidationsCount || 0,
+        cashbackEnabled: user.cashbackEnabled || false
+      };
+
+      // Verificar se pode participar esta semana
+      if (user.lastInstagramCashbackAt) {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        if (new Date(user.lastInstagramCashbackAt) > oneWeekAgo) {
+          instagramCashbackStatus.canParticipate = false;
+          const nextAvailable = new Date(user.lastInstagramCashbackAt);
+          nextAvailable.setDate(nextAvailable.getDate() + 7);
+          instagramCashbackStatus.nextAvailable = nextAvailable;
+          instagramCashbackStatus.daysUntilAvailable = Math.ceil((nextAvailable - new Date()) / (1000 * 60 * 60 * 24));
+        }
+      }
+
       res.status(200).json({
         success: true,
         data: {
-          user: user.toJSON()
+          user: user.toJSON(),
+          instagramCashbackStatus
         }
       });
     } catch (error) {

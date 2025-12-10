@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Users, MapPin, FileText, Zap, MessageCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users, MapPin, FileText, Zap, MessageCircle, Instagram, CheckCircle, XCircle, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CountdownTimer from './CountdownTimer';
 import useThemeStore from '../stores/themeStore';
 import useStaffStore from '../stores/staffStore';
 import OrderChat from './OrderChat';
 import soundService from '../services/soundService';
+import { api } from '../services/api';
 
 const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff' }) => {
   const { getPalette } = useThemeStore();
@@ -14,6 +15,8 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
   const [expanded, setExpanded] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showChat, setShowChat] = useState(false); // Sprint 56: Chat
+  const [showInstagramValidation, setShowInstagramValidation] = useState(false); // Sprint 59: Instagram Cashback
+  const [validatingInstagram, setValidatingInstagram] = useState(false);
   const palette = getPalette();
 
   // Obter cor baseada no status
@@ -104,6 +107,36 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
     return { enabled: false };
   };
 
+  // Sprint 59: Validar Instagram Cashback
+  const handleValidateInstagram = async (validated) => {
+    setValidatingInstagram(true);
+    try {
+      const response = await api.patch(`/orders/${order.id}/instagram-cashback`, {
+        validated,
+        validatedBy: 'staff'
+      });
+
+      if (response.data.success) {
+        soundService.playStatusChange();
+        if (validated) {
+          toast.success('Instagram validado! Cliente receberá 5% de cashback extra.');
+        } else {
+          toast('Instagram não validado. Pedido será entregue sem cashback extra.', { icon: '⚠️' });
+        }
+        setShowInstagramValidation(false);
+        // Continuar com a entrega
+        await updateOrderStatus(order.id, 'delivered');
+      } else {
+        toast.error(response.data.message || 'Erro ao validar Instagram');
+      }
+    } catch (error) {
+      console.error('Erro ao validar Instagram:', error);
+      toast.error('Erro ao validar Instagram: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setValidatingInstagram(false);
+    }
+  };
+
   // Passar para próximo status
   const handleNextStatus = async () => {
     const config = getRoleActionConfig();
@@ -111,6 +144,12 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
 
     if (!config.enabled || !config.nextStatus) {
       console.log('❌ Ação não permitida:', { enabled: config.enabled, nextStatus: config.nextStatus });
+      return;
+    }
+
+    // Sprint 59: Se próximo status é 'delivered' e pedido tem Instagram cashback pendente
+    if (config.nextStatus === 'delivered' && order.wantsInstagramCashback && order.instagramCashbackStatus === 'pending_validation') {
+      setShowInstagramValidation(true);
       return;
     }
 
@@ -199,6 +238,28 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
             </div>
           )}
         </div>
+
+        {/* Sprint 59: Badge Instagram Cashback */}
+        {order.wantsInstagramCashback && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              order.instagramCashbackStatus === 'validated'
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                : order.instagramCashbackStatus === 'rejected'
+                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
+            }`}>
+              <Instagram className="w-3 h-3" />
+              <span>
+                {order.instagramCashbackStatus === 'validated'
+                  ? 'Instagram Validado (+5%)'
+                  : order.instagramCashbackStatus === 'rejected'
+                  ? 'Instagram Recusado'
+                  : 'Instagram Pendente'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Sprint 57: Botão de Ação Principal - sempre visível no header */}
         {order.status !== 'delivered' && order.status !== 'cancelled' && (() => {
@@ -290,6 +351,75 @@ const StaffOrderCard = ({ order, onStatusUpdate, onTimerAlert, userRole = 'staff
           onClose={() => setShowChat(false)}
           isStaff={true}
         />
+      )}
+
+      {/* Sprint 59: Modal de Validação Instagram */}
+      {showInstagramValidation && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowInstagramValidation(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-pink-500/30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 flex items-center justify-center">
+                <Instagram className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Validar Instagram</h3>
+                <p className="text-sm text-gray-400">Pedido #{order.orderNumber}</p>
+              </div>
+            </div>
+
+            <div className="bg-pink-500/10 border border-pink-500/30 rounded-xl p-4 mb-6">
+              <p className="text-sm text-pink-200 mb-3">
+                Este cliente optou por participar do <strong>Cashback Instagram</strong>.
+              </p>
+              <div className="space-y-2 text-sm text-gray-300">
+                <div className="flex items-start gap-2">
+                  <Camera className="w-4 h-4 text-pink-400 mt-0.5" />
+                  <span>Verifique se o cliente postou uma foto do pedido</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Instagram className="w-4 h-4 text-pink-400 mt-0.5" />
+                  <span>A postagem deve marcar <strong>@flamelounge_</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleValidateInstagram(false)}
+                disabled={validatingInstagram}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 rounded-xl font-semibold transition-colors disabled:opacity-50"
+              >
+                <XCircle className="w-5 h-5" />
+                {validatingInstagram ? 'Aguarde...' : 'Não Validar'}
+              </button>
+              <button
+                onClick={() => handleValidateInstagram(true)}
+                disabled={validatingInstagram}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400 rounded-xl font-semibold transition-colors disabled:opacity-50"
+              >
+                <CheckCircle className="w-5 h-5" />
+                {validatingInstagram ? 'Validando...' : 'Validar'}
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowInstagramValidation(false)}
+              className="w-full mt-3 py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors"
+            >
+              Cancelar
+            </button>
+          </motion.div>
+        </motion.div>
       )}
     </motion.div>
   );
