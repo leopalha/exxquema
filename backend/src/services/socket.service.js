@@ -286,30 +286,19 @@ class SocketService {
       });
     }
 
-    // Enviar NARGUILÉS para ATENDENTES (não para bar)
-    if (hookahItems.length > 0) {
-      console.log(`📡 [SOCKET] Enviando order_created para attendants com ${hookahItems.length} narguilés`);
-      this.emitToRoom('attendants', 'order_created', {
-        orderId: orderData.id,
-        orderNumber: orderData.orderNumber,
-        tableNumber: orderData.table?.number,
-        items: hookahItems,
-        customerName: orderData.customer?.nome,
-        estimatedTime: orderData.estimatedTime,
-        timestamp: new Date(),
-        type: 'hookah'
-      });
-    }
-
-    // Notificar atendentes sobre QUALQUER pedido (resumo geral)
-    console.log(`📡 [SOCKET] Enviando order_created (resumo) para attendants`);
+    // Notificar atendentes sobre QUALQUER pedido (resumo geral - apenas UMA vez)
+    // Inclui informação de narguilé se houver
+    console.log(`📡 [SOCKET] Enviando order_created para attendants`);
     this.emitToRoom('attendants', 'order_created', {
       orderId: orderData.id,
       orderNumber: orderData.orderNumber,
       tableNumber: orderData.table?.number,
       customerName: orderData.customer?.nome,
       total: orderData.total,
-      timestamp: new Date()
+      timestamp: new Date(),
+      type: hookahItems.length > 0 ? 'hookah' : 'general',
+      hasHookah: hookahItems.length > 0,
+      hookahItems: hookahItems.length > 0 ? hookahItems : undefined
     });
 
     // Notificar ADMINS sobre QUALQUER pedido (para dashboard em tempo real)

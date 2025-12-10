@@ -334,23 +334,8 @@ class OrderController {
         }
       }
 
-      // ========================================
-      // NOTIFICAÇÕES PARA ADMINS (sempre)
-      // ========================================
-      try {
-        socketService.emitToRoom('admins', 'order_created', {
-          orderId: completeOrder.id,
-          orderNumber: completeOrder.orderNumber,
-          tableNumber: completeOrder.table?.number,
-          customerName: completeOrder.customer?.nome,
-          total: completeOrder.total,
-          paymentMethod: completeOrder.paymentMethod,
-          status: completeOrder.status,
-          timestamp: new Date()
-        });
-      } catch (adminError) {
-        console.error('⚠️ Erro ao notificar admins:', adminError);
-      }
+      // NOTA: A notificação para admins já é enviada pelo notifyNewOrder()
+      // Não duplicar aqui para evitar notificações repetidas
 
       console.log('📦 [CREATE ORDER] Pedido criado com sucesso! ID:', order.id);
       res.status(201).json({

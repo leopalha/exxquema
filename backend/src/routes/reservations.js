@@ -9,10 +9,11 @@ const { requireCompleteProfile } = require('../middlewares/profileComplete.middl
  * Rotas Públicas (Cliente)
  */
 
-// POST /api/reservations - Criar nova reserva (requer perfil completo se autenticado)
+// POST /api/reservations - Criar nova reserva
+// NOTA: Removido requireCompleteProfile para permitir reservas sem perfil completo
+// O controller aceita userId opcional (funciona com ou sem login)
 router.post('/',
   authenticate,
-  requireCompleteProfile,
   reservationController.createReservation
 );
 

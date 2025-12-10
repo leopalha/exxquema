@@ -140,6 +140,10 @@ app.use('/api/migrate', require('./routes/migrate')); // Temporário - para migr
 app.use('/api/crm', require('./routes/crm'));
 app.use('/api/upload', require('./routes/upload.routes')); // Sprint 30 - Upload de imagens
 app.use('/api/chat', require('./routes/chat')); // Sprint 56 - Chat staff-cliente
+app.use('/api/ingredients', require('./routes/ingredients')); // Insumos e ficha técnica
+app.use('/api/campaigns', require('./routes/campaign.routes')); // Campanhas de marketing
+app.use('/api/split-payment', require('./routes/splitPayment')); // Split Payment (divisão de conta)
+app.use('/api/instagram-cashback', require('./routes/instagramCashback')); // Instagram Cashback
 app.use('/api', require('./routes/seed-route'));
 
 // Serve uploaded files
