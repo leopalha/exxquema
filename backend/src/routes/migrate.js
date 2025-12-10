@@ -1602,6 +1602,7 @@ router.post('/create-ingredients-tables', async (req, res) => {
           "expirationDays" INTEGER,
           "storageLocation" VARCHAR(100),
           "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "notes" TEXT,
           "createdAt" TIMESTAMPTZ DEFAULT NOW(),
           "updatedAt" TIMESTAMPTZ DEFAULT NOW()
         );
@@ -1611,7 +1612,17 @@ router.post('/create-ingredients-tables', async (req, res) => {
       await sequelize.query(`CREATE INDEX IF NOT EXISTS "ingredients_isActive" ON "ingredients" ("isActive");`);
       results.push({ table: 'ingredients', status: 'created' });
     } else {
-      results.push({ table: 'ingredients', status: 'already exists' });
+      // Verificar se a coluna notes existe e adicionar se não existir
+      const [notesCol] = await sequelize.query(`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'ingredients' AND column_name = 'notes';
+      `);
+      if (!notesCol || notesCol.length === 0) {
+        await sequelize.query(`ALTER TABLE "ingredients" ADD COLUMN IF NOT EXISTS "notes" TEXT;`);
+        results.push({ table: 'ingredients', status: 'updated - notes column added' });
+      } else {
+        results.push({ table: 'ingredients', status: 'already exists' });
+      }
     }
 
     // Check if ingredient_movements table exists
