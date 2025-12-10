@@ -2,19 +2,20 @@ const { User, Order, OrderItem, Product, Table } = require('../models');
 const { Op, fn, col, literal } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const moment = require('moment-timezone');
+
+// Timezone do negócio (Brasil)
+const BUSINESS_TZ = process.env.BUSINESS_TIMEZONE || 'America/Sao_Paulo';
 
 class AdminController {
   // Dashboard principal com métricas gerais
   async getDashboard(req, res) {
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      // Usar timezone do Brasil para cálculos de "hoje", "ontem", etc.
+      const today = moment.tz(BUSINESS_TZ).startOf('day').toDate();
+      const yesterday = moment.tz(BUSINESS_TZ).subtract(1, 'day').startOf('day').toDate();
+      const thisMonth = moment.tz(BUSINESS_TZ).startOf('month').toDate();
+      const lastMonth = moment.tz(BUSINESS_TZ).subtract(1, 'month').startOf('month').toDate();
       
       // Métricas de hoje
       const [
@@ -109,8 +110,11 @@ class AdminController {
         ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1)
         : 0;
 
-      // Ticket médio
-      const todayAverageTicket = todayOrders.length > 0 ? todayRevenue / todayOrders.length : 0;
+      // Ticket médio corrigido - dividir receita apenas por pedidos com pagamento completo
+      const todayCompletedOrders = todayOrders.filter(order => order.paymentStatus === 'completed');
+      const todayAverageTicket = todayCompletedOrders.length > 0
+        ? todayRevenue / todayCompletedOrders.length
+        : 0;
 
       // Status dos pedidos de hoje
       const orderStatusToday = await Order.findAll({
@@ -126,13 +130,24 @@ class AdminController {
         raw: true
       });
 
+      // Breakdown de status de pagamento de hoje
+      const todayCompletedCount = todayOrders.filter(o => o.paymentStatus === 'completed').length;
+      const todayProcessingCount = todayOrders.filter(o => o.paymentStatus === 'processing').length;
+      const todayPendingCount = todayOrders.filter(o => o.paymentStatus === 'pending').length;
+      const todayFailedCount = todayOrders.filter(o => o.paymentStatus === 'failed').length;
+
       // Taxa de ocupação das mesas
-      const occupancyRate = totalTables > 0 
+      const occupancyRate = totalTables > 0
         ? ((totalTables - availableTables) / totalTables * 100).toFixed(1)
         : 0;
 
       res.status(200).json({
         success: true,
+        meta: {
+          timezone: BUSINESS_TZ,
+          serverTime: new Date().toISOString(),
+          businessTime: moment.tz(BUSINESS_TZ).format()
+        },
         data: {
           revenue: {
             today: todayRevenue.toFixed(2),
@@ -144,6 +159,10 @@ class AdminController {
           },
           orders: {
             today: todayOrders.length,
+            todayCompleted: todayCompletedCount,
+            todayProcessing: todayProcessingCount,
+            todayPending: todayPendingCount,
+            todayFailed: todayFailedCount,
             yesterday: yesterdayOrders.length,
             thisMonth: thisMonthOrders.length,
             lastMonth: lastMonthOrders.length,
@@ -184,11 +203,14 @@ class AdminController {
     try {
       const { startDate, endDate, groupBy = 'day' } = req.query;
 
-      let start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      let end = endDate ? new Date(endDate) : new Date();
+      // Usar timezone do Brasil para datas de relatório
+      let start = startDate
+        ? moment.tz(startDate, BUSINESS_TZ).startOf('day').toDate()
+        : moment.tz(BUSINESS_TZ).subtract(30, 'days').startOf('day').toDate();
 
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
+      let end = endDate
+        ? moment.tz(endDate, BUSINESS_TZ).endOf('day').toDate()
+        : moment.tz(BUSINESS_TZ).endOf('day').toDate();
 
       let dateFormat;
       switch (groupBy) {
