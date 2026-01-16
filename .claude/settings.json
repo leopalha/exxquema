@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "manus": {
+    "version": "7.1",
+    "enabled": true,
+    "mode": "production",
+    "agent_loop_enabled": true,
+    "scoring_7d_enabled": true,
+    "ralph_loop_enabled": true,
+    "activation_prompt": ".manus/ACTIVATION_PROMPT.md"
+  },
+  "behavior": {
+    "max_iterations": 100,
+    "timeout_per_task_ms": 3600000,
+    "continue_without_user_input": false,
+    "work_in_batches": true,
+    "parallel_execution": true,
+    "auto_commit": false,
+    "auto_deploy": false
+  },
+  "agents": {
+    "config_file": ".manus/agents/agent-config.json",
+    "enabled": true,
+    "orchestrator": "LIA",
+    "delegation_enabled": true,
+    "parallel_consultation": true,
+    "max_parallel_agents": 4
+  },
+  "scoring": {
+    "system_file": ".manus/scoring/SCORING_SYSTEM_v7.md",
+    "current_score_file": ".manus/scoring/CURRENT_SCORE.md",
+    "auto_calculate": false,
+    "calculate_after_sprint": true,
+    "calculate_after_feature": false,
+    "audit_reports_dir": ".manus/scoring/AUDIT_REPORTS"
+  },
+  "tasks": {
+    "file": "docs/tasks.md",
+    "is_ssot": true,
+    "auto_update": true,
+    "create_if_missing": true,
+    "priority_system": ["P0", "P1", "P2"],
+    "status_values": ["TODO", "IN_PROGRESS", "DONE", "BLOCKED", "CANCELLED"]
+  },
+  "protocols": {
+    "never_worsen": true,
+    "zero_duplication": true,
+    "tasks_is_truth": true,
+    "honest_execution": true,
+    "typescript_strict": true,
+    "async_await_only": true,
+    "security_first": true
+  },
+  "validation": {
+    "type_check_before_commit": true,
+    "lint_before_commit": false,
+    "test_before_commit": false,
+    "build_before_deploy": true
+  },
+  "ralph_loop": {
+    "enabled": true,
+    "script_path": ".claude/ralph_loop.sh",
+    "state_file": ".claude/ralph_state.json",
+    "max_iterations": 50,
+    "stop_on_error": true,
+    "continue_on_p1": true,
+    "continue_on_p2": true,
+    "save_state_interval": 5
+  },
+  "hooks": {
+    "stop_hook": ".claude/hooks/stop.sh",
+    "post_tool_hook": ".claude/hooks/post_tool.sh",
+    "pre_commit_hook": null,
+    "post_commit_hook": null
+  },
+  "commands": {
+    "ralph": ".claude/commands/ralph.md",
+    "autopilot": ".claude/commands/autopilot.md",
+    "score": ".claude/commands/score.md",
+    "audit": ".claude/commands/audit.md"
+  },
+  "templates": {
+    "component_checklist": ".manus/templates/COMPONENT_CHECKLIST.md",
+    "api_checklist": ".manus/templates/API_CHECKLIST.md",
+    "page_checklist": ".manus/templates/PAGE_CHECKLIST.md",
+    "service_template": ".manus/templates/service-template.ts"
+  },
+  "patterns": {
+    "agent_loop_patterns": ".manus/patterns/AGENT_LOOP_PATTERNS.md"
+  },
+  "memory": {
+    "enabled": true,
+    "directory": ".manus/memory",
+    "save_successful_patterns": true,
+    "save_failed_patterns": false
+  },
+  "logging": {
+    "level": "info",
+    "file": ".manus/logs/manus.log",
+    "max_size_mb": 10,
+    "rotate": true
+  },
+  "project": {
+    "name": "Flame Lounge Bar & Restaurant",
+    "type": "fullstack",
+    "framework": "Next.js",
+    "language": "TypeScript",
+    "database": "PostgreSQL",
+    "orm": "Prisma"
+  }
+}
