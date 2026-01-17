@@ -1,3 +1,16 @@
+// Catch ALL unhandled errors at the very top
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Uncaught Exception:', error.message);
+  console.error('[FATAL] Stack:', error.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise);
+  console.error('[FATAL] Reason:', reason);
+  process.exit(1);
+});
+
 require('dotenv').config();
 
 // DEBUG: Log startup
