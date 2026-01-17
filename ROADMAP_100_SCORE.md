@@ -1,22 +1,44 @@
 # 🎯 ROADMAP PARA 100/100 NO SCORE 7D
 
-**Data**: 2026-01-17
-**Score Atual**: 79.7% (BOM)
+**Data**: 2026-01-17 (atualizado 23:45)
+**Score Inicial**: 79.7% (BOM)
+**Score Atualizado**: 83% (ÓTIMO) - Após descoberta de testes
 **Meta**: 100% (EXCELENTE)
-**Gap**: +20.3%
+**Gap**: +17%
 
 ---
 
-## 📊 Score Atual por Dimensão
+## 🎉 ATUALIZAÇÃO IMPORTANTE - DESCOBERTA DE TESTES
+
+**Situação**: Sistema tem 4-6x MAIS TESTES do que estimado!
+
+**Descobertas**:
+- ✅ Backend: 124 testes passando (88% coverage) - NÃO SABÍAMOS!
+- ✅ Playwright: 8 testes E2E - NÃO SABÍAMOS!
+- ⚠️ Cypress: 8 arquivos (~170-220 testes) - NÃO VALIDADOS (bug Windows 11)
+
+**Impacto**:
+- Score D3: 20% → 55% (+35%)
+- Score Total: 79.7% → 83% (+3.3%)
+- Tempo para 100%: 10 semanas → 8 semanas (-20%)
+
+**Documentos**:
+- Ver: `DESCOBERTA_TESTES.md`
+- Ver: `TESTES_CONSOLIDADOS_COMPLETO.md`
+
+---
+
+## 📊 Score REVISADO por Dimensão
 
 ```
 ╔════════════════════════════════════════════════════════════╗
-║  SCORE TOTAL: 79.7%  →  META: 100%  (+20.3%)             ║
+║  SCORE TOTAL: 83%  →  META: 100%  (+17%)                 ║
+║  Ganho descoberto: +3.3% 🎉                               ║
 ╚════════════════════════════════════════════════════════════╝
 
 D1 - Documentação:       74% → 100% (+26%) ⚠️ MAIOR GAP
 D2 - Código:             96% → 100% (+4%)  ✅ QUASE LÁ
-D3 - Testes:             20% → 100% (+80%) 🔴 CRÍTICO
+D3 - Testes:             55% → 100% (+45%) 🔴 CRÍTICO (era 20%, descobrimos +35%)
 D4 - UX/UI:              93% → 100% (+7%)  ✅ BOM
 D5 - Segurança:          77% → 100% (+23%) ⚠️ IMPORTANTE
 D6 - Performance:        70% → 100% (+30%) ⚠️ IMPORTANTE
@@ -25,98 +47,127 @@ D7 - Validação Real:     95% → 100% (+5%)  ✅ QUASE LÁ
 
 ---
 
-## 🔴 D3 - TESTES (20% → 100%, +80%)
+## 🔴 D3 - TESTES (55% → 100%, +45%)
 
-### Status Atual
-- ❌ **Cobertura**: 20% (meta: 80%+)
-- ❌ **E2E**: Não implementado
-- ❌ **Unitários**: Apenas validators.js
-- ❌ **Integração**: Não implementado
+### Status Atual (REVISADO após descoberta)
+- ✅ **Backend Unitários**: 124 testes, 88% coverage (auth, services, validators)
+- ⚠️ **Frontend E2E (Playwright)**: 8 testes (homepage, order-flow)
+- ⚠️ **Frontend E2E (Cypress)**: 8 arquivos, ~170-220 testes (não validados - bug Windows 11)
+- ❌ **Integração**: Não implementado (0%)
+- ❌ **Gaps Críticos**: orderController (0%), cashbackCalculator (0%)
 
-### Ações Necessárias
+### O Que JÁ EXISTE ✅
+```
+Backend (Vitest) - 124 testes passando:
+✅ auth.test.js              - 24 testes (registro, login, SMS, Google OAuth)
+✅ report.service.test.js    - 30 testes (relatórios financeiros, métricas)
+✅ cashier.service.test.js   - 31 testes (abertura, movimentações, fechamento)
+✅ auth.validator.test.ts    - 14 testes (Zod schemas de autenticação)
+✅ order.validator.test.ts   - 12 testes (Zod schemas de pedidos)
+✅ product.validator.test.ts - 13 testes (Zod schemas de produtos)
 
-#### 1. Testes E2E (Cypress/Playwright) - 3 semanas
-**Impacto Score: +30%**
+Coverage: 88% statements, 100% branches, 66.66% functions
 
-```bash
-# Setup
-npm install --save-dev cypress @testing-library/cypress
+Frontend E2E (Playwright) - 8 testes:
+✅ homepage.spec.ts          - 4 testes (homepage, navigation, responsive)
+✅ order-flow.spec.ts        - 4 testes (menu, cart, add product)
 
-# Testes críticos
-cypress/e2e/
-├── 01-auth-flow.cy.js          # Login SMS + Google OAuth
-├── 02-order-complete.cy.js     # QR → Checkout → Pagamento → Tracking
-├── 03-cashback-flow.cy.js      # Acumular e usar cashback
-├── 04-admin-product.cy.js      # CRUD de produtos
-├── 05-attendant-payment.cy.js  # Confirmar pagamento no painel
-└── 06-split-payment.cy.js      # Divisão de conta
+Frontend E2E (Cypress) - ~170-220 testes (não validados):
+⚠️ admin.cy.js              - ~50-60 testes (estimativa)
+⚠️ auth.cy.js               - ~10-15 testes (estimativa)
+⚠️ cart.cy.js               - ~10-15 testes (estimativa)
+⚠️ cashback.cy.js           - ~40-50 testes (estimativa)
+⚠️ checkout.cy.js           - ~10-15 testes (estimativa)
+⚠️ menu.cy.js               - ~8-10 testes (estimativa)
+⚠️ navigation.cy.js         - ~6-8 testes (estimativa)
+⚠️ orders.cy.js             - ~40-50 testes (estimativa)
 ```
 
-**Checklist:**
-- [ ] Setup Cypress (1 dia)
-- [ ] Teste: Login SMS completo (2 dias)
-- [ ] Teste: Google OAuth (1 dia)
-- [ ] Teste: Fluxo de pedido completo (3 dias)
-- [ ] Teste: Cashback (acumular + usar) (2 dias)
-- [ ] Teste: Painel atendente (2 dias)
-- [ ] Teste: Split payment (2 dias)
-- [ ] Teste: Admin CRUD produtos (2 dias)
-- [ ] CI/CD integration (1 dia)
+### Ações Necessárias (REVISADAS)
 
-**Arquivos:**
-- `cypress.config.js`
-- `cypress/e2e/*.cy.js`
-- `.github/workflows/e2e.yml`
+#### 1. Validar/Migrar Testes E2E - 2 semanas (antes: 3 semanas)
+**Impacto Score: +15%** (reduzido de +30% pois já existe muito)
+
+**Status**:
+- ✅ Playwright já configurado (2 arquivos, 8 testes)
+- ✅ Cypress já tem 8 arquivos (~170-220 testes)
+- ❌ Cypress não roda (bug Windows 11 build 26220)
+
+**Opção A: Validar Playwright (1 semana) - RECOMENDADO**
+```bash
+# Rodar com servidor Next.js
+cd frontend
+npm run dev &            # Iniciar servidor em background
+npm run test:e2e         # Rodar 8 testes Playwright
+
+# Expandir cobertura Playwright
+e2e/
+├── homepage.spec.ts          # ✅ JÁ EXISTE (4 testes)
+├── order-flow.spec.ts        # ✅ JÁ EXISTE (4 testes)
+├── checkout.spec.ts          # Criar (novo fluxo 3 steps)
+├── cashback.spec.ts          # Criar
+├── split-payment.spec.ts     # Criar
+└── attendant-panel.spec.ts   # Criar
+```
+
+**Opção B: Migrar Cypress → Playwright (2 semanas)**
+- Converter 8 arquivos Cypress para Playwright
+- Aproveitar ~170-220 testes já escritos
+- Garantir multi-browser (Chrome, Firefox, Safari, Mobile)
+
+**Checklist:**
+- [x] ✅ Playwright já instalado e configurado
+- [ ] Rodar 8 testes Playwright com servidor (1h)
+- [ ] Atualizar checkout.spec.ts para novo fluxo 3 steps (2h)
+- [ ] Decidir: manter Cypress ou migrar para Playwright (discussão)
+- [ ] Se migrar: converter 8 arquivos Cypress (2 semanas)
+- [ ] Se manter: resolver bug Windows 11 Cypress (investigar alternativas)
 
 ---
 
-#### 2. Testes Unitários (Jest) - 2 semanas
-**Impacto Score: +35%**
+#### 2. Completar Testes Unitários - 1 semana (antes: 2 semanas)
+**Impacto Score: +20%** (reduzido de +35% pois já existe 124 testes)
 
+**Status**:
+- ✅ Vitest já configurado (não precisa Jest)
+- ✅ 124 testes já passando (88% coverage)
+- ✅ auth, services, validators já testados
+- ❌ **GAPS CRÍTICOS**: orderController (0%), cashbackCalculator (0%)
+
+**O Que FALTA (Prioridade P0)**:
 ```bash
-# Setup
-npm install --save-dev jest @types/jest ts-jest supertest
+backend/src/controllers/
+└── orderController.test.js      # 🔴 CRÍTICO - 0% testado
+    ├── createOrder() tests      # ~15 testes
+    ├── confirmPayment() tests   # ~8 testes
+    ├── updateStatus() tests     # ~5 testes
+    └── cancelOrder() tests      # ~5 testes
+    Total: ~30-35 testes
 
-# Testes prioritários
-backend/src/__tests__/
-├── auth/
-│   ├── sms.test.js              # SMS OTP
-│   ├── google-oauth.test.js     # Google OAuth
-│   └── jwt.test.js              # Token generation/validation
-├── cashback/
-│   ├── calculator.test.js       # Cálculos de cashback
-│   ├── tiers.test.js            # Sistema de tiers
-│   └── expiration.test.js       # Expiração de cashback
-├── orders/
-│   ├── create.test.js           # Criação de pedidos
-│   ├── validation.test.js       # Validações (estoque, mínimo, etc)
-│   ├── status-machine.test.js   # Status transitions
-│   └── transaction.test.js      # Rollback scenarios
-├── payment/
-│   ├── stripe.test.js           # Payment intents
-│   ├── webhooks.test.js         # Stripe webhooks
-│   └── split.test.js            # Split payment
-└── shared/
-    ├── validators.test.js       # ✅ JÁ EXISTE
-    ├── constants.test.js        # Validar constantes
-    └── utils.test.js            # Funções utilitárias
+backend/src/shared/
+└── cashbackCalculator.test.js   # 🔴 CRÍTICO - 0% testado
+    ├── calculateTierFromSpent() # ~8 testes
+    ├── getCashbackRate()        # ~5 testes
+    ├── calculateCashbackAmount()# ~8 testes
+    └── applyInstagramBonus()    # ~5 testes
+    Total: ~20-25 testes
 ```
 
-**Checklist:**
-- [ ] Setup Jest + Supertest (1 dia)
-- [ ] Testes: shared/validators.js (✅ FEITO)
-- [ ] Testes: shared/cashbackCalculator.js (2 dias)
-- [ ] Testes: shared/constants.js (1 dia)
-- [ ] Testes: authController.js (3 dias)
-- [ ] Testes: orderController.js (4 dias)
-- [ ] Testes: paymentService.js (2 dias)
-- [ ] Testes: splitPaymentController.js (2 dias)
-- [ ] Coverage report (1 dia)
+**Checklist REVISADO:**
+- [x] ✅ Setup Vitest (JÁ FEITO)
+- [x] ✅ Testes: validators (39 testes - JÁ FEITO)
+- [x] ✅ Testes: auth API (24 testes - JÁ FEITO)
+- [x] ✅ Testes: services (61 testes - JÁ FEITO)
+- [ ] 🔴 Testes: orderController.js (3 dias) - P0 CRÍTICO
+- [ ] 🔴 Testes: cashbackCalculator.js (2 dias) - P0 CRÍTICO
+- [ ] Aumentar cobertura de funções: 66.66% → 75% (1 dia)
+- [ ] Testes: paymentService.js (2 dias) - P1
+- [ ] Coverage report atualizado (já existe, só rodar)
 
-**Meta de Cobertura:**
-- **Crítico (100%)**: cashbackCalculator, validators, orderController
-- **Alto (80%)**: authController, paymentService
-- **Médio (60%)**: demais controllers
+**Meta de Cobertura REVISADA:**
+- **Crítico (100%)**: orderController, cashbackCalculator
+- **Manter (88%)**: auth, validators, services (já ótimo)
+- **Melhorar funções**: 66.66% → 75% (+8.34%)
 
 ---
 
