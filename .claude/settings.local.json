@@ -114,7 +114,9 @@
       "Bash(vercel:*)",
       "Bash(npx depcheck:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git reset:*)",
+      "Bash(pkill -f \"npm run dev\")"
     ],
     "deny": [],
     "ask": []

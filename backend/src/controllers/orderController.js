@@ -22,9 +22,20 @@ class OrderController {
       let subtotal = 0;
       const orderItems = [];
 
+      // OTIMIZAÇÃO: Buscar todos os produtos de uma vez (evita N+1 queries)
+      const productIds = items.map(item => item.productId);
+      const products = await Product.findAll({
+        where: {
+          id: { [Op.in]: productIds }
+        }
+      });
+
+      // Criar mapa de produtos para lookup O(1)
+      const productMap = new Map(products.map(p => [p.id, p]));
+
       for (const item of items) {
-        const product = await Product.findByPk(item.productId);
-        
+        const product = productMap.get(item.productId);
+
         if (!product || !product.isActive) {
           return res.status(404).json({
             success: false,
@@ -103,10 +114,10 @@ class OrderController {
         }
       }
 
-      // Calcular tempo estimado baseado nos produtos
+      // Calcular tempo estimado baseado nos produtos (já carregados no productMap)
       const preparationTimes = [];
       for (const item of orderItems) {
-        const product = await Product.findByPk(item.productId);
+        const product = productMap.get(item.productId);
         if (product) {
           preparationTimes.push(product.preparationTime || 15);
         }

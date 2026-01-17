@@ -307,6 +307,27 @@ Product.init({
     },
     {
       fields: ['position']
+    },
+    {
+      fields: ['isPromotional']
+    },
+    {
+      fields: ['isSignature']
+    },
+    {
+      fields: ['hasStock']
+    },
+    {
+      // Composite index para queries comuns (categoria + ativo)
+      fields: ['category', 'isActive']
+    },
+    {
+      // Index para produtos em destaque
+      fields: ['isSignature', 'isActive', 'position']
+    },
+    {
+      // Index para produtos com estoque baixo
+      fields: ['hasStock', 'stock']
     }
   ]
 });

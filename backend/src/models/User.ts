@@ -483,7 +483,45 @@ User.init({
         user.password = await bcrypt.hash(user.password, salt);
       }
     }
-  }
+  },
+  indexes: [
+    {
+      fields: ['celular'],
+      unique: true
+    },
+    {
+      fields: ['email'],
+      unique: true,
+      where: { email: { $ne: null } }
+    },
+    {
+      fields: ['cpf'],
+      unique: true,
+      where: { cpf: { $ne: null } }
+    },
+    {
+      fields: ['googleId'],
+      unique: true,
+      where: { googleId: { $ne: null } }
+    },
+    {
+      fields: ['role']
+    },
+    {
+      fields: ['loyaltyTier']
+    },
+    {
+      fields: ['referralCode'],
+      unique: true,
+      where: { referralCode: { $ne: null } }
+    },
+    {
+      fields: ['totalSpent']
+    },
+    {
+      fields: ['createdAt']
+    }
+  ]
 });
 
 export default User;
