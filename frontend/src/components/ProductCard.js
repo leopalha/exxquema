@@ -106,6 +106,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
                 <button
                   onClick={handleAddToCart}
                   disabled={isAddingToCart}
+                  aria-label={`Adicionar ${product.name} ao carrinho`}
                   className="bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white p-1.5 rounded-lg transition-colors"
                 >
                   {isAddingToCart ? (
@@ -281,15 +282,17 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
               <div className="flex items-center border border-neutral-700 rounded-lg overflow-hidden">
                 <button
                   onClick={decrementQuantity}
+                  aria-label="Diminuir quantidade"
                   className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-4 py-2 text-white font-medium bg-neutral-800">
+                <span className="px-4 py-2 text-white font-medium bg-neutral-800" aria-label={`Quantidade: ${quantity}`}>
                   {quantity}
                 </span>
                 <button
                   onClick={incrementQuantity}
+                  aria-label="Aumentar quantidade"
                   className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
@@ -301,6 +304,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart || (product.hasStock && product.stock < quantity)}
+              aria-label={isNarguile ? `Personalizar ${product.name}` : `Adicionar ${product.name} ao carrinho`}
               className="flex-1 bg-gradient-to-r from-[var(--theme-primary)] via-[var(--theme-accent)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {isAddingToCart ? (

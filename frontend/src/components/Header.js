@@ -73,7 +73,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" prefetch={true} className="flex items-center">
             <FlameLogo size={40} compact={true} />
           </Link>
 
@@ -83,6 +83,7 @@ const Header = () => {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 className={`text-sm font-medium transition-all ${
                   item.active
                     ? 'font-semibold'
@@ -166,7 +167,7 @@ const Header = () => {
 
             {/* Cart Icon */}
             {!isAdminRoute && (
-              <Link href="/checkout" className="relative p-2 text-gray-300 hover:text-white transition-colors">
+              <Link href="/checkout" prefetch={true} className="relative p-2 text-gray-300 hover:text-white transition-colors">
                 <ShoppingBag className="w-6 h-6" />
                 {totalItems > 0 && (
                   <motion.span
@@ -351,6 +352,7 @@ const Header = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   onClick={closeMenu}
                   className={`block text-base font-medium transition-colors ${
                     item.active
