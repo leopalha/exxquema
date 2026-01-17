@@ -173,8 +173,32 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    removeConsole: process.env.NODE_ENV === 'production',
+    // Remove React properties in production
+    reactRemoveProperties: process.env.NODE_ENV === 'production',
+    // Remove data-testid in production
+    removeTestIds: process.env.NODE_ENV === 'production',
   },
+  // Production optimizations
+  productionBrowserSourceMaps: false, // Disable source maps in production
+  // Optimize CSS
+  experimental: {
+    optimizeCss: true, // Experimental: optimize CSS output
+    modularizeImports: {
+      // Auto-optimize lucide-react imports
+      'lucide-react': {
+        transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+        skipDefaultConversion: true,
+      },
+      // Auto-optimize framer-motion imports (if possible)
+      'framer-motion': {
+        transform: 'framer-motion/dist/{{member}}',
+        preventFullImport: true,
+      },
+    },
+  },
+  // Enable gzip compression
+  compress: true,
   images: {
     remotePatterns: [
       {
