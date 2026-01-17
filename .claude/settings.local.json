@@ -83,7 +83,20 @@
       "Bash(echo \"=== Criando Narguilé Standard ===\" curl -s -X POST \"$BASE/products\" -H \"Authorization: Bearer $ADMIN_TOKEN\" -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"name\"\"\"\": \"\"\"\"Narguilé Standard\"\"\"\",\n    \"\"\"\"description\"\"\"\": \"\"\"\"Narguilé clássico com essências nacionais de qualidade.\"\"\"\",\n    \"\"\"\"price\"\"\"\": \"\"\"\"45.00\"\"\"\",\n    \"\"\"\"category\"\"\"\": \"\"\"\"hookah\"\"\"\",\n    \"\"\"\"subcategory\"\"\"\": \"\"\"\"Standard\"\"\"\",\n    \"\"\"\"image\"\"\"\": \"\"\"\"/images/cardapio/narguile-standard.png\"\"\"\",\n    \"\"\"\"preparationTime\"\"\"\": 10,\n    \"\"\"\"isActive\"\"\"\": true,\n    \"\"\"\"hasStock\"\"\"\": true,\n    \"\"\"\"stock\"\"\"\": 20,\n    \"\"\"\"minStock\"\"\"\": 5,\n    \"\"\"\"position\"\"\"\": 3,\n    \"\"\"\"isSignature\"\"\"\": false,\n    \"\"\"\"tags\"\"\"\": [\"\"\"\"clássico\"\"\"\", \"\"\"\"econômico\"\"\"\"]\n  }')",
       "Bash(echo \"=== Listando produtos com categoria hookah ===\" curl -s -H \"Authorization: Bearer $ADMIN_TOKEN\" \"$BASE/products?limit=200\")",
       "Bash(echo \"=== Produtos de Narguilé criados ===\" curl -s -H \"Authorization: Bearer $ADMIN_TOKEN\" \"$BASE/products?limit=200\")",
-      "Bash(echo \"=== Testando API de produtos ===\" curl -s -w \"\\nStatus: %{http_code}\\n\" -H \"Authorization: Bearer $ADMIN_TOKEN\" \"$BASE/products\")"
+      "Bash(echo \"=== Testando API de produtos ===\" curl -s -w \"\\nStatus: %{http_code}\\n\" -H \"Authorization: Bearer $ADMIN_TOKEN\" \"$BASE/products\")",
+      "Bash(timeout 20 railway logs:*)",
+      "Bash(echo \"=== Testando criação de pedido de balcão ===\" curl -s -X POST \"$BASE/orders\" -H \"Authorization: Bearer $ADMIN_TOKEN\" -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"tableId\"\"\"\": null,\n    \"\"\"\"items\"\"\"\": [{\"\"\"\"productId\"\"\"\": \"\"\"\"90c4a3ab-e908-47a3-b26e-fedc9291becd\"\"\"\", \"\"\"\"quantity\"\"\"\": 1}],\n    \"\"\"\"paymentMethod\"\"\"\": \"\"\"\"cash\"\"\"\",\n    \"\"\"\"useCashback\"\"\"\": 0,\n    \"\"\"\"tip\"\"\"\": 0\n  }')",
+      "Bash(pip install:*)",
+      "Bash(timeout 10 tail:*)",
+      "Bash(exit:*)",
+      "Bash(copy \"por.traineddata\" \"C:\\\\Program Files\\\\Tesseract-OCR\\\\tessdata\\\\por.traineddata\")",
+      "Bash(git -C \"d:\\\\@flamelounge_\" log --oneline -20)",
+      "Bash(git -C \"d:\\\\@flamelounge_\" status --short)",
+      "Bash(git rm:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(npm audit fix:*)"
     ],
     "deny": [],
     "ask": []

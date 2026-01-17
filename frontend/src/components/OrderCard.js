@@ -18,6 +18,59 @@ import Link from 'next/link';
  * Displays order information in a card format
  */
 
+// Skeleton Loading Component
+export const OrderCardSkeleton = ({ showItems = true, className = '' }) => {
+  return (
+    <div
+      className={`
+        p-4 rounded-xl
+        bg-gradient-to-br from-gray-800/50 to-gray-900/50
+        border border-gray-700/30
+        ${className}
+      `}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-20 bg-gray-700 animate-pulse rounded" />
+            <div className="h-4 w-16 bg-gray-700 animate-pulse rounded" />
+          </div>
+          <div className="h-4 w-32 bg-gray-700 animate-pulse rounded" />
+        </div>
+        <div className="h-8 w-24 bg-gray-700 animate-pulse rounded-full" />
+      </div>
+
+      {/* Items preview skeleton */}
+      {showItems && (
+        <div className="mb-3 py-3 border-y border-white/5 space-y-2">
+          <div className="flex justify-between">
+            <div className="h-4 w-32 bg-gray-700 animate-pulse rounded" />
+            <div className="h-4 w-16 bg-gray-700 animate-pulse rounded" />
+          </div>
+          <div className="flex justify-between">
+            <div className="h-4 w-28 bg-gray-700 animate-pulse rounded" />
+            <div className="h-4 w-16 bg-gray-700 animate-pulse rounded" />
+          </div>
+          <div className="flex justify-between">
+            <div className="h-4 w-36 bg-gray-700 animate-pulse rounded" />
+            <div className="h-4 w-16 bg-gray-700 animate-pulse rounded" />
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-16 bg-gray-700 animate-pulse rounded" />
+          <div className="h-6 w-12 bg-gray-700 animate-pulse rounded" />
+        </div>
+        <div className="h-6 w-24 bg-gray-700 animate-pulse rounded" />
+      </div>
+    </div>
+  );
+};
+
 // Status configuration
 const STATUS_CONFIG = {
   pending: {

@@ -12,6 +12,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const { getPalette } = useThemeStore();
@@ -20,7 +21,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
   // Check if product is narguile type
   const isNarguile = product.tipo === 'narguile' || product.category === 'Narguile' || (product.tags && product.tags.includes('narguile'));
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       toast.error('Faca login para adicionar produtos ao carrinho');
       return;
@@ -32,9 +33,17 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
       return;
     }
 
-    addItem(product, quantity);
-    toast.success(`${product.name} adicionado ao carrinho!`);
-    setQuantity(1);
+    setIsAddingToCart(true);
+
+    try {
+      await addItem(product, quantity);
+      toast.success(`${product.name} adicionado ao carrinho!`);
+      setQuantity(1);
+    } catch (error) {
+      toast.error(error.message || 'Erro ao adicionar produto ao carrinho');
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const incrementQuantity = () => {
@@ -95,9 +104,14 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
               {showActions && (
                 <button
                   onClick={handleAddToCart}
-                  className="bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 text-white p-1.5 rounded-lg transition-colors"
+                  disabled={isAddingToCart}
+                  className="bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white p-1.5 rounded-lg transition-colors"
                 >
-                  <Plus className="w-3 h-3" />
+                  {isAddingToCart ? (
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Plus className="w-3 h-3" />
+                  )}
                 </button>
               )}
             </div>
@@ -284,11 +298,20 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={product.hasStock && product.stock < quantity}
+              disabled={isAddingToCart || (product.hasStock && product.stock < quantity)}
               className="flex-1 bg-gradient-to-r from-[var(--theme-primary)] via-[var(--theme-accent)] to-[var(--theme-secondary)] hover:opacity-90 disabled:from-neutral-600 disabled:to-neutral-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2"
             >
-              {isNarguile && <Wind className="w-4 h-4" />}
-              {isNarguile ? 'Personalizar' : 'Adicionar'}
+              {isAddingToCart ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {isNarguile ? 'Abrindo...' : 'Adicionando...'}
+                </>
+              ) : (
+                <>
+                  {isNarguile && <Wind className="w-4 h-4" />}
+                  {isNarguile ? 'Personalizar' : 'Adicionar'}
+                </>
+              )}
             </button>
           </div>
         )}

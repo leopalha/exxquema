@@ -15,6 +15,7 @@ const useCartStore = create(
       tableNumber: null,
       notes: '',
       isLoading: false,
+      error: null,
       includeServiceFee: true, // Sprint 42: Taxa de serviço incluída por padrão
 
       // Computed values
@@ -52,30 +53,66 @@ const useCartStore = create(
         return subtotal + serviceFee;
       },
 
+      // Clear error
+      clearError: () => {
+        set({ error: null });
+      },
+
       // Actions
       addItem: (product, quantity = 1, notes = '') => {
-        const items = get().items;
-        const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+        try {
+          set({ error: null });
 
-        if (existingItemIndex >= 0) {
-          // Item já existe, atualizar quantidade
-          const updatedItems = [...items];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity: updatedItems[existingItemIndex].quantity + quantity,
-            notes: notes || updatedItems[existingItemIndex].notes,
-          };
-          set({ items: updatedItems });
-        } else {
-          // Novo item
-          const newItem = {
-            id: `${product.id}-${Date.now()}`, // ID único para o item no carrinho
-            product,
-            quantity,
-            notes,
-            addedAt: new Date(),
-          };
-          set({ items: [...items, newItem] });
+          // Validações
+          if (!product || !product.id) {
+            throw new Error('Produto inválido');
+          }
+
+          if (quantity <= 0) {
+            throw new Error('Quantidade deve ser maior que zero');
+          }
+
+          if (product.hasStock && quantity > product.stock) {
+            throw new Error(`Estoque insuficiente. Disponível: ${product.stock}`);
+          }
+
+          if (!product.isActive) {
+            throw new Error('Produto não está disponível');
+          }
+
+          const items = get().items;
+          const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+
+          if (existingItemIndex >= 0) {
+            // Item já existe, atualizar quantidade
+            const updatedItems = [...items];
+            const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
+
+            // Verificar estoque novamente para quantidade total
+            if (product.hasStock && newQuantity > product.stock) {
+              throw new Error(`Estoque insuficiente. Disponível: ${product.stock}`);
+            }
+
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity: newQuantity,
+              notes: notes || updatedItems[existingItemIndex].notes,
+            };
+            set({ items: updatedItems });
+          } else {
+            // Novo item
+            const newItem = {
+              id: `${product.id}-${Date.now()}`, // ID único para o item no carrinho
+              product,
+              quantity,
+              notes,
+              addedAt: new Date(),
+            };
+            set({ items: [...items, newItem] });
+          }
+        } catch (error) {
+          set({ error: error.message });
+          throw error;
         }
       },
 

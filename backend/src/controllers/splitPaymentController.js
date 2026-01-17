@@ -90,7 +90,7 @@ class SplitPaymentController {
         }
 
       } else if (splitType === 'custom') {
-        // Divisao personalizada
+        // Divisao personalizada por valor
         if (!splits || !Array.isArray(splits) || splits.length < 2) {
           await transaction.rollback();
           return res.status(400).json({
@@ -114,13 +114,114 @@ class SplitPaymentController {
           userId: s.userId || null,
           amount: parseFloat(s.amount),
           percentage: ((parseFloat(s.amount) / total) * 100).toFixed(2),
-          status: 'pending'
+          status: 'pending',
+          notes: s.notes || null
         }));
+
+      } else if (splitType === 'by_items') {
+        // Divisao por itens específicos
+        const OrderItem = require('../models/OrderItem');
+
+        if (!splits || !Array.isArray(splits) || splits.length < 2) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message: 'Splits inválidos (mínimo 2 participantes)'
+          });
+        }
+
+        // Buscar itens do pedido
+        const orderItems = await OrderItem.findAll({
+          where: { orderId },
+          transaction
+        });
+
+        if (orderItems.length === 0) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message: 'Pedido não possui itens'
+          });
+        }
+
+        // Validar que todos os itens foram atribuídos
+        const allOrderItemIds = orderItems.map(item => item.id);
+        const assignedItemIds = splits.flatMap(s => s.itemIds || []);
+
+        // Verificar se todos os itens foram atribuídos
+        const missingItems = allOrderItemIds.filter(id => !assignedItemIds.includes(id));
+        if (missingItems.length > 0) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message: `${missingItems.length} item(ns) não foram atribuídos a nenhum participante`
+          });
+        }
+
+        // Verificar se algum item foi atribuído mais de uma vez
+        const duplicateItems = assignedItemIds.filter((id, index) =>
+          assignedItemIds.indexOf(id) !== index
+        );
+        if (duplicateItems.length > 0) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message: 'Alguns itens foram atribuídos a mais de um participante'
+          });
+        }
+
+        // Calcular valor de cada participante baseado nos itens atribuídos
+        const subtotal = parseFloat(order.subtotal);
+        const serviceFee = parseFloat(order.serviceFee);
+        const taxes = parseFloat(order.taxes) || 0;
+        const tip = parseFloat(order.tip) || 0;
+
+        splitPayments = splits.map(participant => {
+          // Somar valor dos itens deste participante
+          const participantItems = orderItems.filter(item =>
+            participant.itemIds && participant.itemIds.includes(item.id)
+          );
+
+          const participantSubtotal = participantItems.reduce((sum, item) =>
+            sum + parseFloat(item.subtotal), 0
+          );
+
+          // Calcular proporção deste participante no subtotal
+          const proportion = participantSubtotal / subtotal;
+
+          // Aplicar proporção na taxa de serviço, impostos e gorjeta
+          const participantServiceFee = serviceFee * proportion;
+          const participantTaxes = taxes * proportion;
+          const participantTip = tip * proportion;
+
+          // Total deste participante
+          const participantTotal = participantSubtotal + participantServiceFee + participantTaxes + participantTip;
+
+          return {
+            orderId,
+            userId: participant.userId || null,
+            amount: parseFloat(participantTotal.toFixed(2)),
+            percentage: parseFloat((proportion * 100).toFixed(2)),
+            status: 'pending',
+            notes: `${participantItems.length} item(ns): ${participantItems.map(i => i.productName).join(', ')}`
+          };
+        });
+
+        // Validar que a soma bate com o total (com margem de erro de 2 centavos)
+        const totalSplitByItems = splitPayments.reduce((sum, s) => sum + s.amount, 0);
+        if (Math.abs(totalSplitByItems - total) > 0.02) {
+          await transaction.rollback();
+          return res.status(400).json({
+            success: false,
+            message: `Soma das partes (R$ ${totalSplitByItems.toFixed(2)}) não corresponde ao total (R$ ${total.toFixed(2)})`
+          });
+        }
+
       } else {
         await transaction.rollback();
         return res.status(400).json({
           success: false,
-          message: 'Tipo de divisão inválido'
+          message: 'Tipo de divisão inválido. Use: equal, custom ou by_items'
         });
       }
 

@@ -53,6 +53,7 @@ export const useOrderStore = create(
       orders: [],
       currentOrder: null,
       loading: false,
+      error: null,
 
       // Checkout state
       checkoutData: {
@@ -80,9 +81,14 @@ export const useOrderStore = create(
         return get().orders.find(o => o.id === id || o.orderId === id);
       },
 
+      // Clear error
+      clearError: () => {
+        set({ error: null });
+      },
+
       // Buscar pedidos da API
       fetchOrders: async () => {
-        set({ loading: true });
+        set({ loading: true, error: null });
         try {
           const response = await api.get('/orders/my-orders');
           if (response.data.success) {
@@ -117,13 +123,20 @@ export const useOrderStore = create(
               instagramCashbackStatus: order.instagramCashbackStatus || null
             }));
 
-            set({ orders: formattedOrders });
+            set({ orders: formattedOrders, error: null });
             return { success: true, orders: formattedOrders };
           }
-          return { success: false };
+
+          const errorMsg = response.data?.message || 'Erro ao buscar pedidos';
+          set({ error: errorMsg });
+          toast.error(errorMsg);
+          return { success: false, error: errorMsg };
         } catch (error) {
           console.error('Erro ao buscar pedidos:', error);
-          return { success: false, error: error.message };
+          const errorMsg = error.response?.data?.message || error.message || 'Erro ao buscar pedidos';
+          set({ error: errorMsg });
+          toast.error(errorMsg);
+          return { success: false, error: errorMsg };
         } finally {
           set({ loading: false });
         }

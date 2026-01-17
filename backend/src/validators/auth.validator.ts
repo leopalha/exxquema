@@ -19,9 +19,9 @@ export const registerSchema = z.object({
 
   email: z
     .string({ required_error: 'Email é obrigatório' })
-    .email('Email inválido')
+    .trim()
     .toLowerCase()
-    .trim(),
+    .email('Email inválido'),
 
   password: z
     .string({ required_error: 'Senha é obrigatória' })
@@ -47,9 +47,9 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export const loginSchema = z.object({
   email: z
     .string({ required_error: 'Email é obrigatório' })
-    .email('Email inválido')
+    .trim()
     .toLowerCase()
-    .trim(),
+    .email('Email inválido'),
 
   password: z
     .string({ required_error: 'Senha é obrigatória' })

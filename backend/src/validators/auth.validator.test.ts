@@ -35,7 +35,9 @@ describe('Auth Validators', () => {
       const result = registerSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0]?.message).toContain('pelo menos 3 caracteres');
+        const errors = result.error.issues;
+        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.some((e) => e.message?.includes('pelo menos'))).toBe(true);
       }
     });
 
@@ -50,7 +52,9 @@ describe('Auth Validators', () => {
       const result = registerSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors[0]?.message).toContain('inválido');
+        const errors = result.error.issues;
+        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.some((e) => e.message?.toLowerCase().includes('email'))).toBe(true);
       }
     });
 

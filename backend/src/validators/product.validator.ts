@@ -96,17 +96,17 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export const productQuerySchema = z.object({
   page: z
     .string()
-    .transform((val) => parseInt(val, 10))
-    .pipe(z.number().int().min(1))
     .optional()
-    .default('1'),
+    .default('1')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1)),
 
   limit: z
     .string()
-    .transform((val) => parseInt(val, 10))
-    .pipe(z.number().int().min(1).max(100))
     .optional()
-    .default('20'),
+    .default('20')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1).max(100)),
 
   category: z
     .enum(['food', 'drink', 'hookah', 'dessert', 'combo'])

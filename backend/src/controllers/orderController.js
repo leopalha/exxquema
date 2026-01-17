@@ -1,4 +1,4 @@
-const { Order, OrderItem, User, Product, Table } = require('../models');
+const { Order, OrderItem, User, Product, Table, sequelize } = require('../models');
 const paymentService = require('../services/payment.service');
 const smsService = require('../services/sms.service');
 const socketService = require('../services/socket.service');
@@ -179,62 +179,89 @@ class OrderController {
       console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'tip:', tipAmount, 'cashbackUsed:', cashbackUsed, 'total:', total);
       console.log('📦 [CREATE ORDER] cashbackEnabled:', user.cashbackEnabled, 'canDoInstagram:', canDoInstagram);
 
-      // Criar pedido (tableId é opcional para pedidos de balcão)
-      const order = await Order.create({
-        userId,
-        tableId: tableId || null,
-        subtotal: subtotal.toFixed(2),
-        serviceFee: serviceFee.toFixed(2),
-        taxes: taxes.toFixed(2),
-        cashbackUsed: cashbackUsed.toFixed(2),
-        discount: cashbackUsed.toFixed(2), // Por enquanto discount = cashbackUsed
-        tip: tipAmount.toFixed(2), // Gorjeta opcional
-        total: total.toFixed(2),
-        notes,
-        paymentMethod,
-        estimatedTime,
-        // Sprint 59: Cashback Instagram 5% extra (só permite se pode participar esta semana)
-        wantsInstagramCashback: wantsInstagramCashback && canDoInstagram ? true : false,
-        instagramCashbackStatus: wantsInstagramCashback && canDoInstagram ? 'pending_validation' : null
-      });
+      // ========================================
+      // TRANSACTION: Criar pedido atomicamente
+      // ========================================
+      let order;
+      const t = await sequelize.transaction();
 
-      // Debitar cashback do usuário se foi usado
-      if (cashbackUsed > 0) {
-        await user.useCashback(cashbackUsed, `Usado no pedido #${order.orderNumber}`);
-        console.log('📦 [CREATE ORDER] Cashback debitado:', cashbackUsed);
-      }
+      try {
+        console.log('🔄 [TRANSACTION] Iniciando transaction para criar pedido');
 
-      // Criar itens do pedido
-      for (const item of orderItems) {
-        await OrderItem.create({
-          ...item,
-          orderId: order.id
-        });
+        // 1. Criar pedido (tableId é opcional para pedidos de balcão)
+        order = await Order.create({
+          userId,
+          tableId: tableId || null,
+          subtotal: subtotal.toFixed(2),
+          serviceFee: serviceFee.toFixed(2),
+          taxes: taxes.toFixed(2),
+          cashbackUsed: cashbackUsed.toFixed(2),
+          discount: cashbackUsed.toFixed(2), // Por enquanto discount = cashbackUsed
+          tip: tipAmount.toFixed(2), // Gorjeta opcional
+          total: total.toFixed(2),
+          notes,
+          paymentMethod,
+          estimatedTime,
+          // Sprint 59: Cashback Instagram 5% extra (só permite se pode participar esta semana)
+          wantsInstagramCashback: wantsInstagramCashback && canDoInstagram ? true : false,
+          instagramCashbackStatus: wantsInstagramCashback && canDoInstagram ? 'pending_validation' : null
+        }, { transaction: t });
 
-        // Atualizar estoque e registrar movimento
-        const product = await Product.findByPk(item.productId);
-        if (product && product.hasStock) {
-          await Product.decrement('stock', {
-            by: item.quantity,
-            where: { id: item.productId }
-          });
+        console.log('📦 [TRANSACTION] Pedido criado:', order.id);
 
-          // Registrar movimento de inventário
-          try {
-            await InventoryService.recordMovement(
-              item.productId,
-              'saida',
-              item.quantity,
-              'venda',
-              `Pedido #${order.orderNumber}`,
-              userId,
-              order.id
-            );
-          } catch (inventoryError) {
-            console.error('Erro ao registrar movimento de estoque:', inventoryError);
-            // Não falha o pedido se houver erro no registro
+        // 2. Debitar cashback do usuário se foi usado
+        if (cashbackUsed > 0) {
+          await user.useCashback(cashbackUsed, `Usado no pedido #${order.orderNumber}`);
+          console.log('📦 [TRANSACTION] Cashback debitado:', cashbackUsed);
+        }
+
+        // 3. Criar itens do pedido e atualizar estoque
+        for (const item of orderItems) {
+          // Criar OrderItem
+          await OrderItem.create({
+            ...item,
+            orderId: order.id
+          }, { transaction: t });
+
+          // Atualizar estoque
+          const product = await Product.findByPk(item.productId, { transaction: t });
+          if (product && product.hasStock) {
+            await Product.decrement('stock', {
+              by: item.quantity,
+              where: { id: item.productId },
+              transaction: t
+            });
+
+            // Registrar movimento de inventário
+            try {
+              await InventoryService.recordMovement(
+                item.productId,
+                'saida',
+                item.quantity,
+                'venda',
+                `Pedido #${order.orderNumber}`,
+                userId,
+                order.id
+              );
+            } catch (inventoryError) {
+              console.error('⚠️ Erro ao registrar movimento de estoque:', inventoryError);
+              // Não falha o pedido se houver erro no registro de inventário
+              // O estoque já foi atualizado, apenas o log falhou
+            }
           }
         }
+
+        // 4. Commit da transaction
+        await t.commit();
+        console.log('✅ [TRANSACTION] Pedido criado com sucesso! Commit realizado.');
+
+      } catch (transactionError) {
+        // Rollback em caso de erro
+        await t.rollback();
+        console.error('❌ [TRANSACTION] Erro ao criar pedido. Rollback realizado:', transactionError);
+
+        // Re-lançar erro para ser capturado pelo catch externo
+        throw new Error(`Erro ao criar pedido: ${transactionError.message}`);
       }
 
       // Buscar pedido completo com relacionamentos
