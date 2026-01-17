@@ -204,10 +204,8 @@ export const useOrderStore = create(
             return { success: false, error: 'Mesa nao selecionada' };
           }
 
-          if (!checkoutData.paymentMethod) {
-            toast.error('Selecione a forma de pagamento');
-            return { success: false, error: 'Forma de pagamento nao selecionada' };
-          }
+          // Sempre usar pay_later - atendente escolherá o método na mesa
+          const paymentMethod = 'pay_later';
 
           // Se for mesa, buscar o tableId (UUID) pelo numero da mesa
           let tableId = null;
@@ -234,22 +232,12 @@ export const useOrderStore = create(
             notes: item.notes || null
           }));
 
-          // Mapear metodo de pagamento para formato backend
-          // Sprint 43: Adicionado pay_later
-          const paymentMethodMap = {
-            'pix': 'pix',
-            'credit': 'credit_card',
-            'debit': 'debit_card',
-            'cash': 'cash',
-            'pay_later': 'pay_later' // Pagar com atendente
-          };
-
           // Criar pedido via API
           console.log('📦 Enviando pedido para API:', {
             tableId,
             items,
             notes: checkoutData.observacoes,
-            paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
+            paymentMethod: 'pay_later', // Sempre pay_later
             useCashback: useCashback || 0,
             tip: tipAmount || 0
           });
@@ -258,7 +246,7 @@ export const useOrderStore = create(
             tableId,
             items,
             notes: checkoutData.observacoes || null,
-            paymentMethod: paymentMethodMap[checkoutData.paymentMethod] || checkoutData.paymentMethod,
+            paymentMethod: 'pay_later', // Sempre pay_later - atendente confirma na mesa
             useCashback: useCashback || 0, // Cashback a ser usado como desconto
             tip: tipAmount || 0, // Gorjeta opcional
             wantsInstagramCashback // Sprint 59: Cashback Instagram 5% extra
@@ -289,7 +277,7 @@ export const useOrderStore = create(
               status: order.status || ORDER_STATUS.PENDING,
               consumptionType: checkoutData.consumptionType,
               tableNumber: checkoutData.tableNumber,
-              paymentMethod: checkoutData.paymentMethod,
+              paymentMethod: 'pay_later', // Sempre pay_later
               paymentStatus: order.paymentStatus || 'pendente',
               address: checkoutData.address,
               observacoes: checkoutData.observacoes,

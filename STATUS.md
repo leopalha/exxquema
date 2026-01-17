@@ -1,6 +1,6 @@
 # 🔥 FLAME Lounge - Status do Projeto
 
-**Última atualização**: 2026-01-17 16:30
+**Última atualização**: 2026-01-17 19:45
 **Sistema**: MANUS v7.1
 **Status Geral**: 🟢 SAUDÁVEL
 
@@ -10,14 +10,14 @@
 
 ```
 ╔══════════════════════════════════════╗
-║  SCORE TOTAL: 78.4%  (BOM)          ║
+║  SCORE TOTAL: 79.7%  (BOM)          ║
 ║  Meta próxima: 82% (ÓTIMO)          ║
 ╚══════════════════════════════════════╝
 
-D1 - Documentação:       72% ████████████░░░░░░░░
-D2 - Código:             95% ███████████████████░
+D1 - Documentação:       74% █████████████░░░░░░░
+D2 - Código:             96% ███████████████████░
 D3 - Testes:             20% ████░░░░░░░░░░░░░░░░
-D4 - UX/UI:              90% ██████████████████░░
+D4 - UX/UI:              93% ██████████████████░░
 D5 - Segurança:          77% ███████████████░░░░░
 D6 - Performance:        70% ██████████████░░░░░░
 D7 - Validação Real:     95% ███████████████████░
@@ -63,17 +63,26 @@ D7 - Validação Real:     95% ████████████████�
    - Taxas oficiais confirmadas e atualizadas
    - Sistema 100% consistente
 
-2. **Configurar Google OAuth** (30 min)
+2. ✅ **Simplificar Checkout - Apenas "Pagar com Atendente"** (COMPLETO)
+   - Removido Step 3 (seleção de pagamento)
+   - Reduzido de 4 para 3 steps
+   - Cliente não escolhe mais método de pagamento
+   - Atendente confirma na mesa (Crédito/Débito/PIX/Dinheiro)
+   - Checkout 33% mais rápido
+   - Ver: `CHECKOUT_SIMPLIFICADO.md`
+
+3. **Testes manuais do novo checkout** (1 hora)
+   - Testar fluxo completo (cliente → atendente)
+   - Validar todos métodos de pagamento no painel
+   - Verificar cálculo de troco
+
+4. **Configurar Google OAuth** (30 min)
    - Seguir guia: `docs/GOOGLE_OAUTH_SETUP.md`
    - Obter credenciais do Google Cloud
 
-3. **Code Review dos Shared Modules**
+5. **Code Review dos Shared Modules**
    - Validar implementação
    - Aprovar para migração
-
-4. **Testes manuais de cashback** (1 hora)
-   - Criar pedido de teste para cada tier
-   - Validar cálculos corretos
 
 ### Próximas 2 Semanas
 4. **P1-6: Implementar Testes E2E** (1 semana)
@@ -96,6 +105,8 @@ D7 - Validação Real:     95% ████████████████�
 
 ### Documentação Técnica
 - 📖 [MANUS_TASKS.md](docs/MANUS_TASKS.md) - SSOT de tasks
+- 📖 [CHECKOUT_SIMPLIFICADO.md](CHECKOUT_SIMPLIFICADO.md) - Simplificação checkout (NOVO)
+- 📖 [CASHBACK_ATUALIZADO.md](CASHBACK_ATUALIZADO.md) - Resolução cashback rates
 - 📖 [GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md) - Configuração OAuth
 - 📖 [REFACTORING_GUIDE.md](docs/REFACTORING_GUIDE.md) - Plano migração
 - 📖 [RESUMO_SESSAO_P1.md](RESUMO_SESSAO_P1.md) - Resumo executivo
@@ -107,10 +118,11 @@ D7 - Validação Real:     95% ████████████████�
 - 🔧 [cashbackCalculator.js](backend/src/shared/cashbackCalculator.js) - 6 funções
 
 ### Arquivos Modificados
+- ✏️ [checkout.js](frontend/src/pages/checkout.js) - Simplificado (4→3 steps) ⭐ NOVO
+- ✏️ [orderStore.js](frontend/src/stores/orderStore.js) - Sempre pay_later ⭐ ATUALIZADO
 - ✏️ [ProductCard.js](frontend/src/components/ProductCard.js) - Loading states
 - ✏️ [OrderCard.js](frontend/src/components/OrderCard.js) - Skeleton
 - ✏️ [cartStore.js](frontend/src/stores/cartStore.js) - Error state
-- ✏️ [orderStore.js](frontend/src/stores/orderStore.js) - Error state
 - ✏️ [orderController.js](backend/src/controllers/orderController.js) - Transaction
 - ✏️ [splitPaymentController.js](backend/src/controllers/splitPaymentController.js) - by_items
 

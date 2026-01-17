@@ -27,7 +27,8 @@ import {
   User,
   Heart,
   Instagram,
-  Camera
+  Camera,
+  Info
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useCartStore } from '../stores/cartStore';
@@ -53,10 +54,6 @@ export default function Checkout() {
   // Estado para cashback
   const [useCashback, setUseCashback] = useState(false);
   const [cashbackAmount, setCashbackAmount] = useState(0);
-
-  // Estado para troco (pagamento em dinheiro)
-  const [needsChange, setNeedsChange] = useState(false);
-  const [changeFor, setChangeFor] = useState('');
 
   // Estado para gorjeta
   const [selectedTip, setSelectedTip] = useState(null); // 'none', 5, 10, 15, 'custom'
@@ -158,7 +155,6 @@ export default function Checkout() {
   const canProceedStep1 = items.length > 0;
   const canProceedStep2 = checkoutData.consumptionType &&
     (checkoutData.consumptionType !== 'table' || checkoutData.tableNumber);
-  const canProceedStep3 = checkoutData.paymentMethod;
 
   const handleNextStep = () => {
     if (currentStep === 1 && !canProceedStep1) {
@@ -169,11 +165,7 @@ export default function Checkout() {
       toast.error('Selecione o tipo de consumo');
       return;
     }
-    if (currentStep === 3 && !canProceedStep3) {
-      toast.error('Selecione a forma de pagamento');
-      return;
-    }
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep(prev => Math.min(prev + 1, 3)); // Mudado de 4 para 3
   };
 
   const handlePrevStep = () => {
@@ -189,14 +181,8 @@ export default function Checkout() {
 
     setIsProcessing(true);
 
-    // Adicionar informação de troco às observações se aplicável
-    let observacoesFinais = checkoutData.observacoes || '';
-    if (checkoutData.paymentMethod === 'cash' && needsChange && changeFor) {
-      const trocoInfo = `\n[TROCO] Cliente precisa de troco para ${formatCurrency(parseFloat(changeFor))} (Troco: ${formatCurrency(parseFloat(changeFor) - total)})`;
-      observacoesFinais += trocoInfo;
-      // Atualizar as observações no store
-      setObservacoes(observacoesFinais);
-    }
+    // Sempre usar pay_later - atendente escolherá o método na mesa
+    setPaymentMethod('pay_later');
 
     const result = await createOrder(
       items,
@@ -215,11 +201,12 @@ export default function Checkout() {
       resetCheckout();
       setUseCashback(false);
       setCashbackAmount(0);
-      setNeedsChange(false);
-      setChangeFor('');
       setSelectedTip(null);
       setCustomTip('');
       setWantsInstagramCashback(false);
+
+      // Aviso ao cliente
+      toast.success('Pedido criado! Um atendente virá até sua mesa para receber o pagamento.');
     }
 
     setIsProcessing(false);
@@ -349,7 +336,7 @@ export default function Checkout() {
 
             {/* Progress Steps */}
             <div className="flex items-center justify-between mb-8 px-4">
-              {[1, 2, 3, 4].map((step) => (
+              {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
@@ -360,7 +347,7 @@ export default function Checkout() {
                   >
                     {currentStep > step ? <Check className="w-5 h-5" /> : step}
                   </div>
-                  {step < 4 && (
+                  {step < 3 && (
                     <div
                       className={`w-16 sm:w-24 h-1 mx-2 rounded transition-all ${
                         currentStep > step
@@ -377,8 +364,7 @@ export default function Checkout() {
             <div className="flex justify-between mb-8 px-2 text-xs sm:text-sm text-gray-500">
               <span className={currentStep >= 1 ? 'text-white' : ''}>Carrinho</span>
               <span className={currentStep >= 2 ? 'text-white' : ''}>Consumo</span>
-              <span className={currentStep >= 3 ? 'text-white' : ''}>Pagamento</span>
-              <span className={currentStep >= 4 ? 'text-white' : ''}>Confirmar</span>
+              <span className={currentStep >= 3 ? 'text-white' : ''}>Confirmação</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -559,132 +545,26 @@ export default function Checkout() {
                       </p>
                     </div>
                   )}
-                </motion.div>
-              )}
-
-              {/* Step 3: Pagamento */}
-              {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <h2 className="text-xl font-semibold text-white mb-6">Forma de pagamento</h2>
-
-                  <div className="grid gap-4">
-                    {PAYMENT_METHODS.map((method) => (
-                      <button
-                        key={method.id}
-                        onClick={() => setPaymentMethod(method.id)}
-                        className={`p-6 rounded-xl border-2 transition-all text-left flex items-center gap-4 ${
-                          checkoutData.paymentMethod === method.id
-                            ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] bg-opacity-10'
-                            : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                        }`}
-                      >
-                        <div className={`p-3 rounded-lg ${
-                          checkoutData.paymentMethod === method.id
-                            ? 'bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] text-white'
-                            : 'bg-gray-700 text-gray-400'
-                        }`}>
-                          {getPaymentIcon(method.icon)}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-white">{method.nome}</h3>
-                          <p className="text-gray-400 text-sm">{method.descricao}</p>
-                        </div>
-                        {checkoutData.paymentMethod === method.id && (
-                          <Check className="w-6 h-6 text-[var(--theme-primary)] ml-auto" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Troco para pagamento em dinheiro */}
-                  {checkoutData.paymentMethod === 'cash' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-6 bg-gray-800 rounded-xl p-6 border border-gray-700"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Coins className="w-5 h-5 text-[var(--theme-primary)]" />
-                          <span className="text-white font-medium">Precisa de troco?</span>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={needsChange}
-                            onChange={(e) => {
-                              setNeedsChange(e.target.checked);
-                              if (!e.target.checked) setChangeFor('');
-                            }}
-                            className="sr-only peer"
-                          />
-                          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--theme-primary)]"></div>
-                        </label>
-                      </div>
-
-                      {needsChange && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="space-y-3"
-                        >
-                          <label className="block text-gray-400 text-sm mb-2">
-                            Troco para quanto?
-                          </label>
-                          <input
-                            type="number"
-                            value={changeFor}
-                            onChange={(e) => setChangeFor(e.target.value)}
-                            placeholder="Ex: 50.00"
-                            min={total}
-                            step="0.01"
-                            className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] outline-none"
-                          />
-                          {changeFor && parseFloat(changeFor) > total && (
-                            <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                              <span className="text-green-400 text-sm">Troco:</span>
-                              <span className="text-green-400 font-semibold">
-                                {formatCurrency(parseFloat(changeFor) - total)}
-                              </span>
-                            </div>
-                          )}
-                          {changeFor && parseFloat(changeFor) < total && (
-                            <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                              <AlertCircle className="w-4 h-4 text-red-400" />
-                              <span className="text-red-400 text-sm">
-                                O valor deve ser maior ou igual ao total do pedido
-                              </span>
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  )}
 
                   {/* Observações */}
                   <div className="mt-6">
-                    <label className="block text-white font-medium mb-2">
-                      Observações (opcional)
+                    <label htmlFor="observacoes" className="block text-sm font-medium text-gray-300 mb-2">
+                      Observações do pedido (opcional)
                     </label>
                     <textarea
-                      value={checkoutData.observacoes}
+                      id="observacoes"
+                      value={checkoutData.observacoes || ''}
                       onChange={(e) => setObservacoes(e.target.value)}
-                      placeholder="Ex: Sem cebola, ponto da carne, alergias..."
-                      className="w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-white placeholder-neutral-500 focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] outline-none resize-none"
+                      placeholder="Ex: Tirar cebola, ponto da carne, etc..."
                       rows={3}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:border-[var(--theme-primary)] focus:ring-1 focus:ring-[var(--theme-primary)] outline-none resize-none"
                     />
                   </div>
                 </motion.div>
               )}
 
-              {/* Step 4: Confirmacao */}
-              {currentStep === 4 && (
+              {/* Step 3: Confirmação (antigo Step 4) */}
+              {currentStep === 3 && (
                 <motion.div
                   key="step4"
                   initial={{ opacity: 0, x: 20 }}
@@ -729,21 +609,19 @@ export default function Checkout() {
                       )}
                       <div className="flex justify-between">
                         <span className="text-gray-400">Pagamento</span>
-                        <span className="text-white">
-                          {PAYMENT_METHODS.find(m => m.id === checkoutData.paymentMethod)?.nome}
-                        </span>
+                        <span className="text-white">Pagar com Atendente</span>
                       </div>
-                      {checkoutData.paymentMethod === 'cash' && needsChange && changeFor && (
-                        <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <Coins className="w-4 h-4 text-green-400" />
-                            <span className="text-green-400 text-sm">Troco para {formatCurrency(parseFloat(changeFor))}</span>
-                          </div>
-                          <span className="text-green-400 font-semibold text-sm">
-                            Troco: {formatCurrency(parseFloat(changeFor) - total)}
-                          </span>
-                        </div>
-                      )}
+                    </div>
+
+                    {/* Aviso sobre pagamento */}
+                    <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-start gap-3">
+                      <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-blue-400 font-medium mb-1">Pagamento na mesa</p>
+                        <p className="text-gray-400 text-sm">
+                          Um atendente virá até sua mesa para receber o pagamento. Você poderá escolher entre Crédito, Débito, PIX ou Dinheiro.
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -979,7 +857,7 @@ export default function Checkout() {
                 </button>
               )}
 
-              {currentStep < 4 ? (
+              {currentStep < 3 ? (
                 <button
                   onClick={handleNextStep}
                   className="flex-1 bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:opacity-90 text-white font-semibold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
