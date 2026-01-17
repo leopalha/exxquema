@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import '../styles/components.css';
+import '../styles/landscape.css';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '../stores/themeStore';

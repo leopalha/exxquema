@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Layout from '../components/Layout';
 import { useReviewStore, REVIEW_CATEGORIES } from '../stores/reviewStore';
@@ -59,9 +60,15 @@ const ReviewCard = ({ review, onMarkHelpful }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))' }}>
+          <div className="w-12 h-12 rounded-full flex items-center justify-center relative overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))' }}>
             {review.userAvatar ? (
-              <img src={review.userAvatar} alt={review.userName} className="w-full h-full rounded-full object-cover" />
+              <Image
+                src={review.userAvatar}
+                alt={review.userName}
+                fill
+                sizes="48px"
+                className="rounded-full object-cover"
+              />
             ) : (
               <User className="w-6 h-6 text-white" />
             )}
