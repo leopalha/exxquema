@@ -42,15 +42,6 @@ class AuthController {
           conflictValue = celular;
         }
 
-        console.log('⚠️ REGISTRO DUPLICADO:', {
-          field,
-          conflictValue,
-          existingUserId: existingUser.id,
-          existingUserEmail: existingUser.email,
-          existingUserCelular: existingUser.celular,
-          existingUserVerificado: existingUser.verificado
-        });
-
         return res.status(409).json({
           success: false,
           message: `${field} já cadastrado no sistema`,
@@ -152,8 +143,6 @@ class AuthController {
     try {
       const { celular } = req.body;
 
-      console.log('📱 REGISTER PHONE:', { celular });
-
       // Verificar se já existe usuário com este celular
       const existingUser = await User.findOne({
         where: { celular }
@@ -254,7 +243,6 @@ class AuthController {
       });
 
       if (!user) {
-        console.log('❌ VERIFY SMS: Usuário não encontrado para celular:', celular);
         return res.status(404).json({
           success: false,
           message: 'Usuário não encontrado'
@@ -273,7 +261,6 @@ class AuthController {
 
       // Verificar se código expirou
       if (new Date() > user.smsCodeExpiry) {
-        console.log('⏰ VERIFY SMS: Código expirado');
         return res.status(400).json({
           success: false,
           message: 'Código SMS expirado. Solicite um novo código.'
@@ -282,7 +269,6 @@ class AuthController {
 
       // Verificar tentativas
       if (user.smsAttempts >= 3) {
-        console.log('🚫 VERIFY SMS: Muitas tentativas');
         return res.status(429).json({
           success: false,
           message: 'Muitas tentativas. Aguarde 15 minutos ou solicite novo código.'
