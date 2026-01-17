@@ -92,9 +92,42 @@ console.log('[DEBUG] Initializing Socket.IO...');
 const io = socketService.init(server);
 console.log('[DEBUG] Socket.IO initialized');
 
-// Security middleware
+// Security middleware - Helmet com configuração completa
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  // Content Security Policy
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // unsafe-eval para Swagger
+      connectSrc: ["'self'", "https://backend-production-4fdc.up.railway.app"],
+      frameSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  },
+  // Cross-Origin policies
+  crossOriginEmbedderPolicy: false, // Desabilitar para permitir CDNs
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+
+  // Security headers
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: "deny" }, // Previne clickjacking
+  hidePoweredBy: true, // Esconde X-Powered-By: Express
+  hsts: {
+    maxAge: 31536000, // 1 ano
+    includeSubDomains: true,
+    preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true, // Previne MIME sniffing
+  originAgentCluster: true,
+  permittedCrossDomainPolicies: { permittedPolicies: "none" },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true // XSS Protection header
 }));
 
 // CORS configuration - aceita multiplas origens
@@ -163,6 +196,10 @@ app.use(sentryTracingHandler);
 
 app.use('/api', limiter);
 
+// Cookie parser (para CSRF)
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 // Body parsing middleware
 // IMPORTANTE: Webhook do Stripe precisa receber body raw
 // Deve vir ANTES do express.json()
@@ -182,6 +219,15 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
+// Input Sanitization (XSS Protection)
+const { sanitizationMiddleware } = require('./middleware/sanitization.middleware');
+app.use(sanitizationMiddleware({
+  sanitizeBody: true,
+  sanitizeQuery: true,
+  sanitizeParams: true,
+  strict: false // Não rejeitar, apenas sanitizar
+}));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -195,6 +241,15 @@ app.get('/health', (req, res) => {
 // Swagger API Documentation
 const { setupSwagger } = require('./config/swagger');
 setupSwagger(app);
+
+// CSRF Protection
+const { getCsrfTokenHandler, csrfTokenMiddleware } = require('./middlewares/csrf.middleware');
+
+// Rota para obter token CSRF
+// Frontend deve chamar GET /api/csrf-token antes de fazer requests que modificam dados
+app.get('/api/csrf-token', csrfTokenMiddleware, getCsrfTokenHandler);
+
+logger.info('CSRF Protection enabled');
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));

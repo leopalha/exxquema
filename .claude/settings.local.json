@@ -117,7 +117,8 @@
       "Bash(npm uninstall:*)",
       "Bash(git reset:*)",
       "Bash(pkill -f \"npm run dev\")",
-      "Bash(npm run migrate:*)"
+      "Bash(npm run migrate:*)",
+      "Bash(timeout 5 npm start)"
     ],
     "deny": [],
     "ask": []
