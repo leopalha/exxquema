@@ -441,3 +441,13 @@ export default function Conceito() {
     </>
   );
 }
+
+// ISR - Incremental Static Regeneration
+export async function getStaticProps() {
+  return {
+    props: {
+      generatedAt: new Date().toISOString(),
+    },
+    revalidate: 600, // Revalidar a cada 10 minutos (600 segundos)
+  };
+}

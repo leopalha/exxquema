@@ -498,3 +498,13 @@ export default function Programacao() {
     </>
   );
 }
+
+// ISR - Incremental Static Regeneration
+export async function getStaticProps() {
+  return {
+    props: {
+      generatedAt: new Date().toISOString(),
+    },
+    revalidate: 300, // Revalidar a cada 5 minutos (eventos podem mudar)
+  };
+}
