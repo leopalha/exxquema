@@ -41,16 +41,16 @@ export default function Document() {
           media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
         />
         
-        {/* Google Fonts - Inter, Montserrat, Bebas Neue */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
+        {/* Performance: DNS Prefetch & Preconnect */}
+        <link rel="dns-prefetch" href="https://backend-production-28c3.up.railway.app" />
+        <link rel="preconnect" href="https://backend-production-28c3.up.railway.app" crossOrigin="anonymous" />
 
         {/* Google Identity Services - Preconnect */}
         <link rel="preconnect" href="https://accounts.google.com" />
+        <link rel="dns-prefetch" href="https://accounts.google.com" />
+
+        {/* Preload critical assets */}
+        <link rel="preload" href="/logo-flame.png" as="image" />
       </Head>
       <body className="antialiased">
         {/* Script de emergencia - limpa SW corrompido ANTES do React */}
