@@ -392,7 +392,6 @@ class PaymentController {
           paymentStatus: normalizedStatus,
           ...(normalizedStatus === 'completed' && { status: 'confirmed' })
         });
-        console.log(`Pedido ${orderNumber} atualizado: paymentStatus=${normalizedStatus}`);
       }
     } catch (error) {
       console.error('Erro ao atualizar status do pedido:', error);

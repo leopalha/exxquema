@@ -579,8 +579,6 @@ class AdminController {
       const backupName = `flame_backup_${timestamp}`;
 
       // Simulando criação de backup
-      console.log(`Criando backup: ${backupName}`);
-
       res.status(200).json({
         success: true,
         message: 'Backup criado com sucesso',

@@ -149,13 +149,6 @@ class AuthController {
       });
 
       if (existingUser) {
-        console.log('⚠️ REGISTER PHONE: Celular já cadastrado:', {
-          userId: existingUser.id,
-          celular: existingUser.celular,
-          phoneVerified: existingUser.phoneVerified,
-          profileComplete: existingUser.profileComplete
-        });
-
         return res.status(409).json({
           success: false,
           message: 'Celular já cadastrado no sistema',
@@ -182,13 +175,6 @@ class AuthController {
         // email e password ficam null
       });
 
-      console.log('✅ REGISTER PHONE: Usuário criado:', {
-        userId: user.id,
-        celular: user.celular,
-        nome: user.nome,
-        profileComplete: user.profileComplete
-      });
-
       // Enviar SMS
       const smsResult = await smsService.sendVerificationCode(celular, smsCode);
 
@@ -203,8 +189,6 @@ class AuthController {
           error: smsResult.error
         });
       }
-
-      console.log('✅ REGISTER PHONE: SMS enviado com sucesso');
 
       res.status(201).json({
         success: true,
@@ -232,12 +216,6 @@ class AuthController {
     try {
       const { celular, code } = req.body;
 
-      console.log('🔐 VERIFY SMS REQUEST:', {
-        celular,
-        codeReceived: code,
-        codeType: typeof code
-      });
-
       const user = await User.findOne({
         where: { celular }
       });
@@ -248,16 +226,6 @@ class AuthController {
           message: 'Usuário não encontrado'
         });
       }
-
-      console.log('📋 VERIFY SMS: Usuário encontrado:', {
-        userId: user.id,
-        email: user.email,
-        smsCodeStored: user.smsCode,
-        smsCodeExpiry: user.smsCodeExpiry,
-        smsAttempts: user.smsAttempts,
-        now: new Date(),
-        codeMatch: user.smsCode === code
-      });
 
       // Verificar se código expirou
       if (new Date() > user.smsCodeExpiry) {
@@ -277,10 +245,6 @@ class AuthController {
 
       // Verificar código
       if (user.smsCode !== code) {
-        console.log('❌ VERIFY SMS: Código incorreto', {
-          expected: user.smsCode,
-          received: code
-        });
         // Incrementar tentativas
         await user.update({
           smsAttempts: user.smsAttempts + 1
@@ -291,8 +255,6 @@ class AuthController {
           message: `Código incorreto. Tentativas restantes: ${2 - user.smsAttempts}`
         });
       }
-
-      console.log('✅ VERIFY SMS: Código correto! Verificando usuário...');
 
       // Código correto - marcar celular como verificado
       await user.update({
@@ -402,8 +364,6 @@ class AuthController {
     try {
       const { celular } = req.body;
 
-      console.log('📱 LOGIN SMS:', { celular });
-
       let user = await User.findOne({
         where: { celular, isActive: true }
       });
@@ -412,8 +372,6 @@ class AuthController {
 
       // SE USUÁRIO NÃO EXISTE: Criar automaticamente
       if (!user) {
-        console.log('📝 LOGIN SMS: Criando novo usuário para celular:', celular);
-
         // Gerar código SMS
         const smsCode = smsService.generateSMSCode();
         const smsCodeExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
@@ -446,8 +404,6 @@ class AuthController {
           });
         }
 
-        console.log('✅ LOGIN SMS: Novo usuário criado e SMS enviado');
-
         return res.status(200).json({
           success: true,
           message: 'Código SMS enviado! Após verificar, complete seu cadastro.',
@@ -461,12 +417,6 @@ class AuthController {
       }
 
       // USUÁRIO EXISTE: Enviar código de login
-      console.log('✅ LOGIN SMS: Usuário encontrado:', {
-        userId: user.id,
-        phoneVerified: user.phoneVerified,
-        profileComplete: user.profileComplete
-      });
-
       // Gerar código SMS para login
       const smsCode = smsService.generateSMSCode();
       const smsCodeExpiry = new Date(Date.now() + 5 * 60 * 1000);
@@ -925,14 +875,6 @@ class AuthController {
       const { nome, email, cpf, password } = req.body;
       const userId = req.user.id;
 
-      console.log('📝 COMPLETE PROFILE:', {
-        userId,
-        nome,
-        email,
-        cpf: cpf ? `***${cpf.slice(-4)}` : null,
-        hasPassword: !!password
-      });
-
       const user = await User.findByPk(userId);
 
       if (!user) {
@@ -1027,14 +969,6 @@ class AuthController {
 
       await user.update(updateData);
 
-      console.log('✅ COMPLETE PROFILE: Perfil completado:', {
-        userId: user.id,
-        nome: user.nome,
-        email: user.email,
-        cpf: user.cpf ? 'definido' : null,
-        profileComplete: user.profileComplete
-      });
-
       res.status(200).json({
         success: true,
         message: 'Perfil completado com sucesso! Agora você pode fazer pedidos.',
@@ -1064,13 +998,9 @@ class AuthController {
         });
       }
 
-      console.log('🔐 GOOGLE AUTH:', { credentialLength: credential.length });
-
       // 1. Validar token com Google
       const googleUser = await googleService.verifyToken(credential);
       const { sub: googleId, email, name, picture } = googleUser;
-
-      console.log('✅ GOOGLE USER:', { googleId, email, name });
 
       // 2. Buscar usuário por googleId OU email
       let user = await User.findOne({
@@ -1083,7 +1013,6 @@ class AuthController {
 
       // 3. SE NÃO EXISTIR: Criar novo
       if (!user) {
-        console.log('📝 Criando novo usuário via Google');
         user = await User.create({
           googleId,
           email,
@@ -1099,7 +1028,6 @@ class AuthController {
       }
       // 4. SE EXISTIR MAS SEM GOOGLE_ID: Vincular conta
       else if (!user.googleId) {
-        console.log('🔗 Vinculando conta Google a usuário existente');
         await user.update({
           googleId,
           googleProfilePicture: picture,
@@ -1112,8 +1040,6 @@ class AuthController {
 
       // 6. Atualizar último login
       await user.update({ lastLogin: new Date() });
-
-      console.log('✅ GOOGLE AUTH SUCCESS:', { userId: user.id, isNewUser });
 
       // 7. Retornar
       res.status(200).json({
@@ -1255,8 +1181,6 @@ class AuthController {
         cpf: null,
         nome: 'Usuário Excluído'
       });
-
-      console.log(`🗑️ Conta desativada: ${userId}`);
 
       res.json({
         success: true,

@@ -341,8 +341,6 @@ class StaffController {
         timestamp: new Date()
       });
 
-      console.log(`📡 [STAFF] Status do pedido #${order.orderNumber} alterado: ${previousStatus} → ${status}`);
-
       res.json({
         success: true,
         message: 'Status atualizado com sucesso',
@@ -554,8 +552,6 @@ class StaffController {
       const userId = req.user?.id;
       const userName = req.user?.nome || 'Cliente';
 
-      console.log(`🔔 [CALL WAITER] Cliente ${userName} chamou garçom`);
-
       // Buscar dados do pedido/mesa se fornecidos
       let orderInfo = null;
       let tableInfo = tableNumber;
@@ -604,8 +600,6 @@ class StaffController {
           reason: reason || 'Solicitação de atendimento',
           timestamp: new Date().toISOString()
         });
-
-        console.log(`✅ [CALL WAITER] Notificação enviada - Mesa ${tableInfo}`);
       }
 
       res.json({
@@ -662,8 +656,6 @@ class StaffController {
         });
       }
 
-      console.log(`📸 [INSTAGRAM] Atendente ${staffName} solicitou validação para pedido ${order.orderNumber}`);
-
       // Notificar cliente via Socket.IO
       const io = req.app.get('io');
       if (io && order.userId) {
@@ -674,8 +666,6 @@ class StaffController {
           message: 'O atendente está aguardando sua postagem no Instagram para validar o cashback de 5%!',
           timestamp: new Date().toISOString()
         });
-
-        console.log(`✅ [INSTAGRAM] Notificação enviada para cliente ${order.userId}`);
       }
 
       // Enviar push notification
