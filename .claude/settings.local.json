@@ -96,7 +96,21 @@
       "Bash(npm install:*)",
       "Bash(npm test:*)",
       "Bash(npm run test:coverage:*)",
-      "Bash(npm audit fix:*)"
+      "Bash(npm audit fix:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run cypress:run:*)",
+      "Bash(npm run cypress:open:*)",
+      "Bash(npm run cypress:headless:*)",
+      "Bash(npx cypress cache:*)",
+      "Bash(npx cypress install)",
+      "Bash(npx playwright:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(npx playwright install)",
+      "Bash(git tag:*)",
+      "Bash(npm run e2e:*)",
+      "Bash(railway:*)",
+      "Bash(vercel --version:*)",
+      "Bash(vercel whoami:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,16 +12,8 @@ class OrderController {
   async createOrder(req, res) {
     let paymentResult = null; // Declarar no escopo externo
     try {
-      console.log('📦 [CREATE ORDER] Iniciando criação de pedido');
-      console.log('📦 [CREATE ORDER] Body:', JSON.stringify(req.body, null, 2));
-
       const { tableId, items, notes, paymentMethod, useCashback, tip, wantsInstagramCashback } = req.body;
       const userId = req.user.id;
-      console.log('📦 [CREATE ORDER] userId:', userId);
-      console.log('📦 [CREATE ORDER] tableId:', tableId);
-      console.log('📦 [CREATE ORDER] items:', JSON.stringify(items));
-      console.log('📦 [CREATE ORDER] useCashback:', useCashback);
-      console.log('📦 [CREATE ORDER] tip:', tip);
 
       // Validar valor mínimo
       const minimumOrderValue = parseFloat(process.env.MINIMUM_ORDER_VALUE) || 15.00;
@@ -101,7 +93,6 @@ class OrderController {
           const otherUserOrders = activeOrdersOnTable.filter(o => o.userId !== userId);
 
           if (otherUserOrders.length > 0) {
-            console.log(`⚠️ [CREATE ORDER] Mesa ${table.number} ocupada por outro usuario`);
             return res.status(400).json({
               success: false,
               message: `Mesa ${table.number} ja esta ocupada por outro cliente. Escolha outra mesa ou solicite ao atendente.`,
@@ -109,9 +100,6 @@ class OrderController {
               tableNumber: table.number
             });
           }
-
-          // Se sao pedidos do mesmo usuario, permitir (adicionar mais itens)
-          console.log(`📦 [CREATE ORDER] Mesa ${table.number} tem ${activeOrdersOnTable.length} pedido(s) ativo(s) do mesmo usuario`);
         }
       }
 
@@ -133,7 +121,6 @@ class OrderController {
       const taxes = 0;
       const tipAmount = parseFloat(tip) || 0;
       let totalBeforeDiscount = subtotal + serviceFee + taxes + tipAmount;
-      console.log('📦 [CREATE ORDER] isCounterOrder:', isCounterOrder, 'serviceFeePercentage:', serviceFeePercentage, 'tipAmount:', tipAmount);
 
       // Processar uso de cashback
       let cashbackUsed = 0;
@@ -147,9 +134,6 @@ class OrderController {
         // Limitar ao saldo disponível e ao total do pedido
         const requestedCashback = parseFloat(useCashback);
         cashbackUsed = Math.min(requestedCashback, userCashbackBalance, totalBeforeDiscount);
-        console.log('📦 [CREATE ORDER] Cashback solicitado:', requestedCashback, 'Saldo:', userCashbackBalance, 'Usado:', cashbackUsed, 'cashbackEnabled:', user.cashbackEnabled);
-      } else if (useCashback && useCashback > 0 && !user.cashbackEnabled) {
-        console.log('📦 [CREATE ORDER] Cashback bloqueado - sistema não habilitado. Usuário precisa fazer primeira validação Instagram.');
       }
 
       // Sprint 59: Verificar se usuário pode participar do Instagram esta semana
@@ -168,16 +152,12 @@ class OrderController {
             const nextAvailableDate = new Date(lastInstagramDate);
             nextAvailableDate.setDate(nextAvailableDate.getDate() + 7);
             instagramBlockReason = `Você já participou do Instagram Cashback esta semana. Próxima disponibilidade: ${nextAvailableDate.toLocaleDateString('pt-BR')}`;
-            console.log('📦 [CREATE ORDER] Instagram Cashback bloqueado:', instagramBlockReason);
           }
         }
       }
 
       // Calcular total final com desconto
       const total = Math.max(0, totalBeforeDiscount - cashbackUsed);
-
-      console.log('📦 [CREATE ORDER] subtotal:', subtotal, 'serviceFee:', serviceFee, 'tip:', tipAmount, 'cashbackUsed:', cashbackUsed, 'total:', total);
-      console.log('📦 [CREATE ORDER] cashbackEnabled:', user.cashbackEnabled, 'canDoInstagram:', canDoInstagram);
 
       // ========================================
       // TRANSACTION: Criar pedido atomicamente
@@ -186,8 +166,6 @@ class OrderController {
       const t = await sequelize.transaction();
 
       try {
-        console.log('🔄 [TRANSACTION] Iniciando transaction para criar pedido');
-
         // 1. Criar pedido (tableId é opcional para pedidos de balcão)
         order = await Order.create({
           userId,
@@ -207,12 +185,9 @@ class OrderController {
           instagramCashbackStatus: wantsInstagramCashback && canDoInstagram ? 'pending_validation' : null
         }, { transaction: t });
 
-        console.log('📦 [TRANSACTION] Pedido criado:', order.id);
-
         // 2. Debitar cashback do usuário se foi usado
         if (cashbackUsed > 0) {
           await user.useCashback(cashbackUsed, `Usado no pedido #${order.orderNumber}`);
-          console.log('📦 [TRANSACTION] Cashback debitado:', cashbackUsed);
         }
 
         // 3. Criar itens do pedido e atualizar estoque
@@ -253,14 +228,10 @@ class OrderController {
 
         // 4. Commit da transaction
         await t.commit();
-        console.log('✅ [TRANSACTION] Pedido criado com sucesso! Commit realizado.');
 
       } catch (transactionError) {
         // Rollback em caso de erro
         await t.rollback();
-        console.error('❌ [TRANSACTION] Erro ao criar pedido. Rollback realizado:', transactionError);
-
-        // Re-lançar erro para ser capturado pelo catch externo
         throw new Error(`Erro ao criar pedido: ${transactionError.message}`);
       }
 
@@ -305,11 +276,8 @@ class OrderController {
           paymentStatus: 'pending'
         });
 
-        console.log(`💳 [PAGAMENTO] Pedido #${order.orderNumber} aguardando pagamento com atendente (${paymentMethod})`);
-
         // Notificar APENAS atendentes sobre solicitação de pagamento
         try {
-          console.log(`📡 [WEBSOCKET] Notificando atendentes sobre pagamento pendente...`);
           socketService.notifyPaymentRequest(completeOrder);
         } catch (socketError) {
           console.error('⚠️ Erro ao notificar atendentes:', socketError);
@@ -345,8 +313,7 @@ class OrderController {
         }
 
         // Notificar cozinha/bar (pagamento online = vai direto pra produção após confirmação)
-        console.log(`🔔 [NOTIFICAÇÃO] Enviando notificações para pedido #${order.orderNumber} (pagamento online)`);
-        try {
+        try{
           socketService.notifyNewOrder(completeOrder);
         } catch (socketError) {
           console.error('⚠️ Erro ao notificar via WebSocket:', socketError);
@@ -359,10 +326,6 @@ class OrderController {
         }
       }
 
-      // NOTA: A notificação para admins já é enviada pelo notifyNewOrder()
-      // Não duplicar aqui para evitar notificações repetidas
-
-      console.log('📦 [CREATE ORDER] Pedido criado com sucesso! ID:', order.id);
       res.status(201).json({
         success: true,
         message: 'Pedido criado com sucesso',
@@ -577,9 +540,6 @@ class OrderController {
       const attendantId = req.user.id;
       const attendantName = req.user.nome;
 
-      console.log(`💳 [CONFIRM PAYMENT] Atendente ${attendantName} confirmando pagamento do pedido ${id}`);
-      console.log(`💳 [CONFIRM PAYMENT] Método selecionado: ${paymentMethod}`);
-
       const order = await Order.findByPk(id, {
         include: [
           {
@@ -643,8 +603,6 @@ class OrderController {
 
       await order.update(updateData);
 
-      console.log(`✅ [CONFIRM PAYMENT] Pedido #${order.orderNumber} confirmado com ${paymentMethod || order.paymentMethod}! Indo para produção.`);
-
       // Notificar via WebSocket (cozinha/bar agora podem preparar)
       socketService.notifyPaymentConfirmed(order, attendantName);
 
@@ -666,9 +624,6 @@ class OrderController {
             orderNumber: order.orderNumber,
             createdBy: attendantId
           });
-          console.log(`💰 [CAIXA] Movimento registrado para pedido #${order.orderNumber} (${paymentLabels[finalPaymentMethod]})`);
-        } else {
-          console.log(`⚠️ [CAIXA] Nenhum caixa aberto - movimento não registrado para pedido #${order.orderNumber}`);
         }
       } catch (cashError) {
         console.error('⚠️ Erro ao registrar movimento no caixa:', cashError.message);
@@ -789,16 +744,13 @@ class OrderController {
       if (order.paymentId) {
         // Verificar status atual do pagamento no Stripe
         const paymentStatus = await paymentService.getPaymentStatus(order.paymentId);
-        console.log(`💳 Status do pagamento ${order.paymentId}: ${paymentStatus.status}`);
 
         if (paymentStatus.success) {
           if (paymentStatus.status === 'succeeded') {
             // Pagamento já foi capturado - fazer REFUND (estorno real)
-            console.log(`💰 Pagamento já capturado, criando refund...`);
             const refundResult = await paymentService.createRefund(order.paymentId);
 
             if (refundResult.success) {
-              console.log(`✅ Refund criado: ${refundResult.refundId} - R$${refundResult.amount}`);
               refundInfo = {
                 refundId: refundResult.refundId,
                 amount: refundResult.amount,
@@ -807,23 +759,11 @@ class OrderController {
               };
               // Atualizar status do pagamento para refunded
               await order.update({ paymentStatus: 'refunded' });
-            } else {
-              console.error('❌ Erro ao criar refund:', refundResult.error);
             }
           } else if (['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing'].includes(paymentStatus.status)) {
             // Pagamento ainda não foi capturado - apenas cancelar
-            console.log(`🚫 Pagamento não capturado, cancelando PaymentIntent...`);
-            const cancelResult = await paymentService.cancelPayment(order.paymentId);
-            if (!cancelResult.success) {
-              console.error('❌ Erro ao cancelar pagamento:', cancelResult.error);
-            } else {
-              console.log(`✅ PaymentIntent cancelado`);
-            }
-          } else {
-            console.log(`⚠️ Status do pagamento desconhecido: ${paymentStatus.status}`);
+            await paymentService.cancelPayment(order.paymentId);
           }
-        } else {
-          console.error('❌ Erro ao verificar status do pagamento:', paymentStatus.error);
         }
       }
 
@@ -869,7 +809,6 @@ class OrderController {
               order.id,
               `Devolução de cashback - Pedido #${order.orderNumber} cancelado`
             );
-            console.log(`💰 Devolvido R$${cashbackUsed.toFixed(2)} de cashback para usuário ${userId}`);
           }
         } catch (cashbackError) {
           console.error('Erro ao devolver cashback:', cashbackError);
@@ -902,7 +841,6 @@ class OrderController {
           reason: 'Cancelado pelo cliente',
           cashbackRefunded: cashbackUsed > 0 ? cashbackUsed : undefined
         });
-        console.log(`📡 Notificação de cancelamento enviada para staff - Pedido #${order.orderNumber}`);
       } catch (socketError) {
         console.error('Erro ao notificar via Socket:', socketError);
         // Não falha o cancelamento se houver erro na notificação
@@ -922,7 +860,6 @@ class OrderController {
               refundAmount: refundInfo.amount
             }
           });
-          console.log(`📱 Push de estorno enviado para usuário ${userId}`);
         } catch (pushError) {
           console.error('Erro ao enviar push de estorno:', pushError);
         }
@@ -1017,7 +954,6 @@ class OrderController {
         });
 
         bonusGiven = true;
-        console.log(`✅ Bônus de avaliação R$${REVIEW_BONUS} dado para usuário ${userId}`);
       }
 
       res.status(200).json({
@@ -1114,8 +1050,6 @@ class OrderController {
       const userId = req.user.id;
       const userRole = req.user.role;
 
-      console.log(`📝 [UPDATE STATUS] Pedido ${id}: ${newStatus} por ${userRole}`);
-
       const order = await Order.findByPk(id, {
         include: [
           {
@@ -1142,7 +1076,6 @@ class OrderController {
       const validation = orderStatusService.validateTransition(currentStatus, newStatus, userRole);
 
       if (!validation.valid) {
-        console.log(`❌ [UPDATE STATUS] Transição negada: ${validation.error}`);
         return res.status(400).json({
           success: false,
           message: validation.error,
@@ -1162,8 +1095,6 @@ class OrderController {
       };
 
       await order.update(updateData);
-
-      console.log(`✅ [UPDATE STATUS] Pedido ${order.orderNumber}: ${currentStatus} → ${newStatus}`);
 
       // Notificar mudança via WebSocket
       socketService.notifyOrderStatusChange(order.id, newStatus, {
@@ -1234,8 +1165,6 @@ class OrderController {
       const { postUrl } = req.body;
       const userId = req.user.id;
 
-      console.log(`📸 [INSTAGRAM] Cliente enviando link do post para pedido ${id}`);
-
       const order = await Order.findByPk(id);
 
       if (!order) {
@@ -1283,8 +1212,6 @@ class OrderController {
           : `[Instagram] Link enviado pelo cliente: ${postUrl}`
       });
 
-      console.log(`✅ [INSTAGRAM] Link salvo para pedido ${id}: ${postUrl}`);
-
       // Emitir evento via Socket para atendentes saberem que tem link para validar
       const io = req.app.get('io');
       if (io) {
@@ -1325,8 +1252,6 @@ class OrderController {
       const { validated } = req.body;
       const staffId = req.user.id;
       const staffName = req.user.nome;
-
-      console.log(`📸 [INSTAGRAM] Validando cashback para pedido ${id}. Validado: ${validated}`);
 
       const order = await Order.findByPk(id, {
         include: [
@@ -1375,7 +1300,6 @@ class OrderController {
         // Se for a primeira validação, HABILITAR o sistema de cashback do usuário
         if (!customer.cashbackEnabled) {
           await customer.update({ cashbackEnabled: true });
-          console.log(`🎉 [INSTAGRAM] Sistema de cashback HABILITADO para ${customer.nome} (primeira validação)`);
         }
 
         // Atualizar controles de Instagram do usuário
@@ -1390,9 +1314,6 @@ class OrderController {
           order.id,
           `Bônus Instagram (+${INSTAGRAM_CASHBACK_RATE}%) - Pedido #${order.orderNumber}`
         );
-
-        console.log(`✅ [INSTAGRAM] Cashback de R$${instagramBonus.toFixed(2)} creditado para ${customer.nome}`);
-        console.log(`📊 [INSTAGRAM] Total de validações do usuário: ${(customer.instagramValidationsCount || 0) + 1}`);
 
         // Mensagem especial para primeira validação
         const message = isFirstValidation
