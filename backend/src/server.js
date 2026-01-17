@@ -13,6 +13,9 @@ const { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandl
 const logger = require('./config/logger');
 const { requestLoggingMiddleware } = require('./middleware/logging');
 
+// Import Redis
+const { initRedis, cacheMiddleware } = require('./config/redis');
+
 // Initialize Sentry first
 initSentry();
 
@@ -139,9 +142,15 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
+
+// Cache for products (5 minutes)
+app.use('/api/products', cacheMiddleware(300), require('./routes/products'));
+
 app.use('/api/orders', require('./routes/orders'));
-app.use('/api/tables', require('./routes/tables'));
+
+// Cache for tables (2 minutes)
+app.use('/api/tables', cacheMiddleware(120), require('./routes/tables'));
+
 app.use('/api/admin', authenticate, require('./routes/admin'));
 app.use('/api/cashier', require('./routes/cashier.routes'));
 app.use('/api/reports', require('./routes/report.routes'));
@@ -256,6 +265,9 @@ const startServer = async () => {
       console.error('❌ Falha ao criar/atualizar tabelas');
       process.exit(1);
     }
+
+    // Initialize Redis (optional - won't crash if not configured)
+    await initRedis();
 
     // Initialize job scheduler
     const jobCount = jobScheduler.initializeJobs();

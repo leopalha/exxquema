@@ -37,6 +37,7 @@ import { useAuthStore } from '../stores/authStore';
 import useThemeStore from '../stores/themeStore';
 import { formatCurrency } from '../utils/format';
 import { toast } from 'react-hot-toast';
+import { trackBeginCheckout, trackPurchase } from '../lib/analytics';
 
 // Mesas disponiveis
 const MESAS_DISPONIVEIS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -165,6 +166,23 @@ export default function Checkout() {
       toast.error('Selecione o tipo de consumo');
       return;
     }
+
+    // Track begin_checkout when reaching final step (step 3)
+    if (currentStep === 2) {
+      trackBeginCheckout(
+        items.map(item => ({
+          id: item.product.id,
+          name: item.product.name,
+          category: item.product.category || 'Uncategorized',
+          price: item.product.discount > 0
+            ? item.product.price * (1 - item.product.discount / 100)
+            : item.product.price,
+          quantity: item.quantity,
+        })),
+        totalBeforeDiscount
+      );
+    }
+
     setCurrentStep(prev => Math.min(prev + 1, 3)); // Mudado de 4 para 3
   };
 
@@ -197,6 +215,24 @@ export default function Checkout() {
     if (result.success) {
       setCompletedOrder(result.order);
       setOrderComplete(true);
+
+      // Track purchase event in Google Analytics 4
+      trackPurchase({
+        id: result.order.orderId || result.order.id,
+        total: total,
+        tax: taxaServico,
+        shipping: taxaEntrega,
+        items: items.map(item => ({
+          id: item.product.id,
+          name: item.product.name,
+          category: item.product.category || 'Uncategorized',
+          price: item.product.discount > 0
+            ? item.product.price * (1 - item.product.discount / 100)
+            : item.product.price,
+          quantity: item.quantity,
+        })),
+      });
+
       clearCart();
       resetCheckout();
       setUseCashback(false);

@@ -4,8 +4,11 @@ import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useThemeStore } from '../stores/themeStore';
 import Script from 'next/script';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import ServiceWorkerUpdater from '../components/ServiceWorkerUpdater';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { useRouter } from 'next/router';
+import { trackPageView } from '../lib/analytics';
 
 import { Inter, Montserrat, Bebas_Neue } from 'next/font/google';
 
@@ -33,6 +36,7 @@ const bebasNeue = Bebas_Neue({
 function MyApp({ Component, pageProps }) {
   const [isClient, setIsClient] = useState(false);
   const applyTheme = useThemeStore((state) => state.applyTheme);
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -40,11 +44,28 @@ function MyApp({ Component, pageProps }) {
     applyTheme();
   }, [applyTheme]);
 
+  // Track page views
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      trackPageView(url);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
+
   return (
     <ErrorBoundary>
       <div className={`${inter.variable} ${montserrat.variable} ${bebasNeue.variable} font-sans`}>
         {/* Service Worker Updater */}
         <ServiceWorkerUpdater />
+
+        {/* Google Analytics 4 */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
 
         {/* Google Identity Services SDK */}
         <Script

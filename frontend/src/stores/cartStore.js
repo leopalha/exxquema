@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { toast } from 'react-hot-toast';
 import { safeLocalStorage } from '../utils/storage';
+import { trackAddToCart, trackRemoveFromCart } from '../lib/analytics';
 
 // Taxa de serviço padrão (10%)
 const SERVICE_FEE_RATE = 0.10;
@@ -110,6 +111,19 @@ const useCartStore = create(
             };
             set({ items: [...items, newItem] });
           }
+
+          // Track add to cart event in Google Analytics 4
+          trackAddToCart(
+            {
+              id: product.id,
+              name: product.name,
+              category: product.category || 'Uncategorized',
+              price: product.discount > 0
+                ? product.price * (1 - product.discount / 100)
+                : product.price,
+            },
+            quantity
+          );
         } catch (error) {
           set({ error: error.message });
           throw error;
@@ -139,6 +153,22 @@ const useCartStore = create(
 
       removeItem: (itemId) => {
         const items = get().items;
+        const item = items.find(item => item.id === itemId);
+
+        if (item) {
+          // Track remove from cart event in Google Analytics 4
+          trackRemoveFromCart(
+            {
+              id: item.product.id,
+              name: item.product.name,
+              price: item.product.discount > 0
+                ? item.product.price * (1 - item.product.discount / 100)
+                : item.product.price,
+            },
+            item.quantity
+          );
+        }
+
         const updatedItems = items.filter(item => item.id !== itemId);
         set({ items: updatedItems });
         toast.success('Item removido do carrinho');

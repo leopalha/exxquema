@@ -14,6 +14,7 @@ import { useCartStore } from '../stores/cartStore';
 import { useDebounce } from '../hooks';
 import { formatCurrency } from '../utils/format';
 import { toast } from 'react-hot-toast';
+import { trackViewItem, trackSearch } from '../lib/analytics';
 
 export default function Cardapio() {
   const router = useRouter();
@@ -65,8 +66,26 @@ export default function Cardapio() {
   useEffect(() => {
     if (debouncedSearchTerm !== filters.search) {
       searchProducts(debouncedSearchTerm);
+      // Track search event in Google Analytics 4
+      if (debouncedSearchTerm && debouncedSearchTerm.trim() !== '') {
+        trackSearch(debouncedSearchTerm);
+      }
     }
   }, [debouncedSearchTerm, searchProducts, filters.search]);
+
+  // Track product view when modal is opened
+  useEffect(() => {
+    if (selectedProduct) {
+      trackViewItem({
+        id: selectedProduct.id,
+        name: selectedProduct.name,
+        category: selectedProduct.category || 'Uncategorized',
+        price: selectedProduct.discount > 0
+          ? selectedProduct.price * (1 - selectedProduct.discount / 100)
+          : selectedProduct.price,
+      });
+    }
+  }, [selectedProduct]);
 
   const handleCategoryFilter = async (category) => {
     await filterByCategory(category);

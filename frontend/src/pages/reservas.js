@@ -10,6 +10,7 @@ import useReservationStore, { RESERVATION_STATUS } from '../stores/reservationSt
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
 import { toast } from 'react-hot-toast';
+import { trackReservationComplete } from '../lib/analytics';
 
 export default function Reservas() {
   const [activeTab, setActiveTab] = useState('nova');
@@ -66,6 +67,14 @@ export default function Reservas() {
     // Guardar dados da reserva para mostrar na tela de sucesso
     setConfirmedReservation(reservation);
     setCurrentStep(4); // Ir para tela de sucesso
+
+    // Track reservation completion in Google Analytics 4
+    trackReservationComplete({
+      id: reservation.id || reservation.confirmationCode,
+      date: reservation.date,
+      time: reservation.time,
+      people: reservation.partySize || reservation.people,
+    });
 
     if (isLoggedIn) {
       fetchMyReservations();

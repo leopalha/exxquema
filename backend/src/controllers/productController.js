@@ -1,6 +1,7 @@
 const { Product, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const InventoryService = require('../services/inventoryService');
+const { cacheDelPattern } = require('../config/redis');
 
 class ProductController {
   // Listar todos os produtos (com filtros)
@@ -175,6 +176,9 @@ class ProductController {
         position: await Product.count() + 1 // Auto-increment position
       });
 
+      // Invalidate product cache
+      await cacheDelPattern('cache:/api/products*');
+
       res.status(201).json({
         success: true,
         message: 'Produto criado com sucesso',
@@ -207,6 +211,9 @@ class ProductController {
 
       await product.update(updates);
 
+      // Invalidate product cache
+      await cacheDelPattern('cache:/api/products*');
+
       res.status(200).json({
         success: true,
         message: 'Produto atualizado com sucesso',
@@ -237,6 +244,9 @@ class ProductController {
       }
 
       await product.update({ isActive: false });
+
+      // Invalidate product cache
+      await cacheDelPattern('cache:/api/products*');
 
       res.status(200).json({
         success: true,
