@@ -533,6 +533,44 @@ const useProductStore = create((set, get) => ({
     const { pagination } = get();
     await get().fetchProducts(pagination.currentPage);
   },
+
+  // ISR: Set initial data from getStaticProps
+  setInitialData: (products, categories) => {
+    if (!products || !categories) return;
+
+    // Mapear produtos para o formato do store se necessário
+    const mappedProducts = products.map(p => ({
+      id: p.id,
+      name: p.name || p.nome,
+      description: p.description || p.descricao,
+      price: p.price || p.preco,
+      category: p.category || p.categoria,
+      image: p.image || p.imagem,
+      imagem: p.image || p.imagem,
+      nome: p.name || p.nome,
+      descricao: p.description || p.descricao,
+      isActive: p.isActive ?? p.disponivel ?? true,
+      isFeatured: p.isFeatured ?? p.destaque ?? false,
+      stock: p.stock ?? p.estoque,
+      hasStock: p.hasStock ?? (p.estoque !== undefined),
+      ...p, // Manter outros campos
+    }));
+
+    set({
+      products: mappedProducts,
+      categories,
+      pagination: {
+        currentPage: 1,
+        totalPages: Math.ceil(mappedProducts.length / 20),
+        totalProducts: mappedProducts.length,
+        productsPerPage: 20,
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    console.log('[ISR] Store hidratado com', mappedProducts.length, 'produtos e', categories.length, 'categorias');
+  },
 }));
 
 export { useProductStore };

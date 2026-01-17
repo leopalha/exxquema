@@ -16,7 +16,7 @@ import { formatCurrency } from '../utils/format';
 import { toast } from 'react-hot-toast';
 import { trackViewItem, trackSearch } from '../lib/analytics';
 
-export default function Cardapio() {
+export default function Cardapio({ initialProducts = [], initialCategories = [], generatedAt }) {
   const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [narguileProduct, setNarguileProduct] = useState(null);
@@ -35,6 +35,7 @@ export default function Cardapio() {
     clearFilters,
     sortProducts,
     goToPage,
+    setInitialData, // Adicionar método para setar dados do ISR
   } = useProductStore();
   const { setTable, tableNumber } = useCartStore();
 
@@ -45,6 +46,17 @@ export default function Cardapio() {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // ISR: Hidratar store com dados do SSG
+  useEffect(() => {
+    if (initialProducts.length > 0 && products.length === 0) {
+      // Dados do ISR disponíveis e store vazio → hidratar
+      if (setInitialData) {
+        setInitialData(initialProducts, initialCategories);
+      }
+      console.log('[ISR] Dados hidratados do SSG. Gerado em:', generatedAt);
+    }
+  }, [initialProducts, initialCategories, generatedAt, products.length, setInitialData]);
 
   // Capturar mesa do QR Code
   useEffect(() => {
@@ -524,4 +536,65 @@ export default function Cardapio() {
       </Layout>
     </>
   );
+}
+
+/**
+ * ISR (Incremental Static Regeneration)
+ *
+ * Estratégia:
+ * - Build time: Gera página estática inicial (produtos + categorias)
+ * - Runtime: Revalida a cada 5 minutos (300s)
+ * - Benefícios:
+ *   - First Load super rápido (~50-100ms)
+ *   - SEO otimizado (HTML já renderizado)
+ *   - Reduz load no servidor (cache)
+ *   - Sempre fresh data (revalidação automática)
+ */
+export async function getStaticProps() {
+  try {
+    // Fetch inicial de produtos e categorias para SSG
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-4fdc.up.railway.app';
+
+    const [productsRes, categoriesRes] = await Promise.all([
+      fetch(`${apiUrl}/api/products?limit=20`).catch(() => ({ ok: false })),
+      fetch(`${apiUrl}/api/products/categories`).catch(() => ({ ok: false })),
+    ]);
+
+    let initialProducts = [];
+    let initialCategories = [];
+
+    if (productsRes.ok) {
+      const productsData = await productsRes.json();
+      initialProducts = productsData.data?.products || [];
+    }
+
+    if (categoriesRes.ok) {
+      const categoriesData = await categoriesRes.json();
+      initialCategories = categoriesData.data?.categories || [];
+    }
+
+    return {
+      props: {
+        initialProducts,
+        initialCategories,
+        // Timestamp para debug
+        generatedAt: new Date().toISOString(),
+      },
+      // Revalidate a cada 5 minutos (300 segundos)
+      // ISR: Next.js regenera a página em background
+      revalidate: 300,
+    };
+  } catch (error) {
+    console.error('[ISR] Erro ao buscar dados iniciais:', error);
+
+    // Fallback: retorna props vazias e tenta novamente em 60s
+    return {
+      props: {
+        initialProducts: [],
+        initialCategories: [],
+        generatedAt: new Date().toISOString(),
+      },
+      revalidate: 60, // Retry mais rápido em caso de erro
+    };
+  }
 }
