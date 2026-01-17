@@ -8,6 +8,14 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+// Import Sentry and Logger
+const { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } = require('./config/sentry');
+const logger = require('./config/logger');
+const { requestLoggingMiddleware } = require('./middleware/logging');
+
+// Initialize Sentry first
+initSentry();
+
 // Import services
 const { testConnection } = require('./config/database');
 const { createTables } = require('./models');
@@ -94,6 +102,10 @@ const limiter = rateLimit({
   }
 });
 
+// Sentry request handler - MUST be first
+app.use(sentryRequestHandler);
+app.use(sentryTracingHandler);
+
 app.use('/api', limiter);
 
 // Body parsing middleware
@@ -107,7 +119,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Compression
 app.use(compression());
 
-// Logging
+// Winston logging middleware
+app.use(requestLoggingMiddleware);
+
+// Morgan logging (desenvolvimento)
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
@@ -158,9 +173,18 @@ app.use('*', (req, res) => {
   });
 });
 
+// Sentry error handler - MUST be before other error handlers
+app.use(sentryErrorHandler);
+
 // Global error handler
 app.use((error, req, res, next) => {
-  console.error('Erro global:', error);
+  // Log error with Winston
+  logger.error('Global error handler', error, {
+    url: req.originalUrl,
+    method: req.method,
+    ip: req.ip,
+    userId: req.user?.id
+  });
 
   // Mongoose validation error
   if (error.name === 'ValidationError') {

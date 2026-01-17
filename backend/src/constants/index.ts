@@ -9,20 +9,20 @@
 // ============================================
 
 export const BUSINESS_RULES = {
-  // Cashback
+  // Cashback - Taxas oficiais em produção (User.js getTierBenefits)
   CASHBACK_RATES: {
-    bronze: 0.02, // 2%
-    silver: 0.05, // 5%
-    gold: 0.08, // 8%
-    platinum: 0.12, // 12%
+    bronze: 0.015, // 1.5%
+    silver: 0.03, // 3%
+    gold: 0.045, // 4.5%
+    platinum: 0.05, // 5% (máximo)
   },
 
-  // Tier thresholds (valor gasto total)
+  // Tier thresholds (valor gasto total) - Baseado em User.js calculateTier()
   TIER_THRESHOLDS: {
     bronze: 0,
     silver: 1000, // R$ 1.000
     gold: 5000, // R$ 5.000
-    platinum: 15000, // R$ 15.000
+    platinum: 10000, // R$ 10.000 (corrigido de 15000)
   },
 
   // Pedidos

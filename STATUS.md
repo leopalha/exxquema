@@ -59,9 +59,9 @@ D7 - Validação Real:     95% ████████████████�
 ## 🎯 Próximas Ações
 
 ### Esta Semana
-1. **Resolver inconsistência CASHBACK_RATES** ⚠️ CRÍTICO
-   - Verificar valor correto (5% ou 3%)
-   - Atualizar shared/constants.js
+1. ✅ **Resolver inconsistência CASHBACK_RATES** (COMPLETO)
+   - Taxas oficiais confirmadas e atualizadas
+   - Sistema 100% consistente
 
 2. **Configurar Google OAuth** (30 min)
    - Seguir guia: `docs/GOOGLE_OAUTH_SETUP.md`
@@ -70,6 +70,10 @@ D7 - Validação Real:     95% ████████████████�
 3. **Code Review dos Shared Modules**
    - Validar implementação
    - Aprovar para migração
+
+4. **Testes manuais de cashback** (1 hora)
+   - Criar pedido de teste para cada tier
+   - Validar cálculos corretos
 
 ### Próximas 2 Semanas
 4. **P1-6: Implementar Testes E2E** (1 semana)
@@ -115,10 +119,11 @@ D7 - Validação Real:     95% ████████████████�
 ## ⚠️ Itens de Atenção
 
 ### Crítico
-- 🔴 **CASHBACK_RATES inconsistente**
-  - constants: silver = 5%
-  - User.js: silver = 3%
-  - **Ação**: Verificar valor correto URGENTE
+- ✅ **CASHBACK_RATES RESOLVIDO** (2026-01-17)
+  - Inconsistência corrigida
+  - Taxas oficiais: Bronze 1.5%, Silver 3%, Gold 4.5%, Platinum 5%
+  - Todos arquivos sincronizados (constants.js, index.ts, cashbackCalculator.js)
+  - Ver: `CASHBACK_ATUALIZADO.md`
 
 ### Alto
 - 🟠 **Migração para shared pendente**

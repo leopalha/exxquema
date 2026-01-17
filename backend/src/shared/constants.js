@@ -163,22 +163,24 @@ const CONSUMPTION_TYPE_DETAILS = [
 // ========================================
 
 // Taxas de cashback por tier (em decimal)
+// Baseado em User.js getTierBenefits() - valores oficiais em produção
 const CASHBACK_RATES = {
-  bronze: 0.02, // 2%
-  silver: 0.05, // 5%
-  gold: 0.08,   // 8%
-  platinum: 0.12, // 12%
+  bronze: 0.015, // 1.5%
+  silver: 0.03,  // 3%
+  gold: 0.045,   // 4.5%
+  platinum: 0.05, // 5% (máximo)
 };
 
 // Taxas de Instagram Cashback
 const INSTAGRAM_CASHBACK_RATE = 0.05; // 5% extra
 
 // Thresholds para upgrade de tier (em R$)
+// Baseado em User.js calculateTier() - valores oficiais em produção
 const TIER_THRESHOLDS = {
   bronze: 0,
   silver: 1000,
   gold: 5000,
-  platinum: 15000,
+  platinum: 10000, // Corrigido de 15000 para 10000
 };
 
 // ========================================

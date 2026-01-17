@@ -122,13 +122,13 @@ function getTierBenefits(tier) {
     bronze: {
       cashbackRate: ratePercentage,
       description: 'Cashback básico em todas as compras',
-      features: ['2% de cashback', 'Programa de fidelidade', 'Ofertas exclusivas'],
+      features: [`${ratePercentage}% de cashback`, 'Programa de fidelidade', 'Ofertas exclusivas'],
     },
     silver: {
       cashbackRate: ratePercentage,
       description: 'Mais vantagens e cashback ampliado',
       features: [
-        '5% de cashback',
+        `${ratePercentage}% de cashback`,
         'Prioridade no atendimento',
         'Acesso antecipado a promoções',
         'Desconto em eventos',
@@ -138,7 +138,7 @@ function getTierBenefits(tier) {
       cashbackRate: ratePercentage,
       description: 'Benefícios premium e experiência VIP',
       features: [
-        '8% de cashback',
+        `${ratePercentage}% de cashback`,
         'Atendimento VIP',
         'Convites para eventos exclusivos',
         'Brindes especiais',
@@ -149,7 +149,7 @@ function getTierBenefits(tier) {
       cashbackRate: ratePercentage,
       description: 'Máximo de privilégios e benefícios',
       features: [
-        '12% de cashback',
+        `${ratePercentage}% de cashback`,
         'Concierge exclusivo',
         'Mesa reservada permanente',
         'Acesso a menu degustação',

@@ -201,7 +201,7 @@
 
 ### ✅ DONE - P1-5 Código Centralizado (2026-01-17)
 
-- [x] **[P1-5] Centralizar código duplicado** ✅ (PARCIAL - Arquivos criados)
+- [x] **[P1-5] Centralizar código duplicado** ✅ (COMPLETO - Arquivos criados e inconsistências resolvidas)
   - ✅ Criado `backend/src/shared/validators.js`
     - validateCPF() com dígitos verificadores
     - validateEmail(), validatePhone(), validateCEP()
@@ -212,7 +212,8 @@
     - ORDER_STATUS + labels + cores (sincronizado com frontend)
     - PAYMENT_METHODS + detalhes (incluindo pay_later)
     - CONSUMPTION_TYPES + detalhes
-    - CASHBACK_RATES + TIER_THRESHOLDS
+    - **CASHBACK_RATES corrigido**: 1.5%, 3%, 4.5%, 5% (valores oficiais em produção)
+    - **TIER_THRESHOLDS corrigido**: platinum = 10000 (antes 15000)
     - SERVICE_FEE, DELIVERY_FEE
     - REGEX patterns centralizados
     - USER_ROLES + labels
@@ -222,10 +223,16 @@
     - calculateInstagramCashback()
     - calculateTotalCashback()
     - calculateProgressToNextTier()
-    - getTierBenefits()
-  - ⚠️ **Próximo passo**: Refatorar controllers/models para usar os arquivos shared
+    - **getTierBenefits() com taxas dinâmicas** (não mais hardcoded)
+  - ✅ Atualizado `backend/src/constants/index.ts`
+    - Sincronizado CASHBACK_RATES e TIER_THRESHOLDS
+  - ✅ **RESOLVIDA INCONSISTÊNCIA CRÍTICA**: CASHBACK_RATES
+    - Documentado em `CASHBACK_ATUALIZADO.md`
+    - Sistema 100% consistente
+    - Taxas oficiais: Bronze 1.5%, Silver 3%, Gold 4.5%, Platinum 5%
+  - ⚠️ **Próximo passo (P2)**: Refatorar controllers/models para usar os arquivos shared
   - **Impacto:** +3% Código (Score 7D: 92% → 95%)
-  - **Status:** Arquivos base criados, migração pendente
+  - **Status:** Arquivos criados, inconsistências resolvidas, migração pendente
 
 ### TODO - Tasks de Alta Prioridade Restantes
 
