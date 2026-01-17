@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
-cmds = ["npm ci --production"]
+cmds = ["npm ci"]
 
 [phases.build]
-cmds = []
+cmds = ["npx tsc src/config/*.ts --outDir src/config --allowJs --skipLibCheck --esModuleInterop --resolveJsonModule --moduleResolution node || echo 'TypeScript compilation optional'"]
 
 [start]
 cmd = "npm start"
