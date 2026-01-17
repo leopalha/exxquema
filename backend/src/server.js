@@ -193,21 +193,8 @@ app.get('/health', (req, res) => {
 });
 
 // Swagger API Documentation
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'FLAME Lounge Bar API',
-}));
-
-// Swagger JSON endpoint
-app.get('/api-docs.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
-
-logger.info('Swagger UI available at /api-docs');
+const { setupSwagger } = require('./config/swagger');
+setupSwagger(app);
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -215,7 +202,8 @@ app.use('/api/auth', require('./routes/auth'));
 // Cache for products (5 minutes)
 app.use('/api/products', cacheMiddleware(300), require('./routes/products'));
 
-app.use('/api/orders', require('./routes/orders'));
+// Cache for orders (1 minute - pedidos mudam frequentemente)
+app.use('/api/orders', cacheMiddleware(60), require('./routes/orders'));
 
 // Cache for tables (2 minutes)
 app.use('/api/tables', cacheMiddleware(120), require('./routes/tables'));
@@ -225,16 +213,26 @@ app.use('/api/cashier', require('./routes/cashier.routes'));
 app.use('/api/reports', require('./routes/report.routes'));
 app.use('/api/push', require('./routes/push.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
-app.use('/api/hookah', require('./routes/hookah'));
+
+// Cache for hookah (5 minutes - sabores raramente mudam)
+app.use('/api/hookah', cacheMiddleware(300), require('./routes/hookah'));
+
 app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/inventory', require('./routes/inventory'));
-app.use('/api/staff', require('./routes/staff'));
+
+// Cache for staff (2 minutes - lista de funcionários)
+app.use('/api/staff', cacheMiddleware(120), require('./routes/staff'));
+
 app.use('/api/migrate', require('./routes/migrate')); // Temporário - para migração CPF
 app.use('/api/crm', require('./routes/crm'));
 app.use('/api/upload', require('./routes/upload.routes')); // Sprint 30 - Upload de imagens
 app.use('/api/chat', require('./routes/chat')); // Sprint 56 - Chat staff-cliente
-app.use('/api/ingredients', require('./routes/ingredients')); // Insumos e ficha técnica
-app.use('/api/campaigns', require('./routes/campaign.routes')); // Campanhas de marketing
+
+// Cache for ingredients (5 minutes - insumos raramente mudam)
+app.use('/api/ingredients', cacheMiddleware(300), require('./routes/ingredients'));
+
+// Cache for campaigns (10 minutes - campanhas raramente mudam)
+app.use('/api/campaigns', cacheMiddleware(600), require('./routes/campaign.routes'));
 app.use('/api/split-payment', require('./routes/splitPayment')); // Split Payment (divisão de conta)
 app.use('/api/instagram-cashback', require('./routes/instagramCashback')); // Instagram Cashback
 app.use('/api', require('./routes/seed-route'));

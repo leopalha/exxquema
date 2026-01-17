@@ -2,26 +2,26 @@ import { describe, it, expect } from 'vitest';
 import {
   calculateTierFromSpent,
   getCashbackRate,
-  calculateCashbackAmount,
+  calculateCashbackByTier,
 } from '../cashbackCalculator.js';
 
 describe('CashbackCalculator', () => {
   describe('calculateTierFromSpent', () => {
-    it('deve retornar Bronze para gasto < R$ 500', () => {
+    it('deve retornar Bronze para gasto < R$ 1000', () => {
       expect(calculateTierFromSpent(0)).toBe('bronze');
       expect(calculateTierFromSpent(100)).toBe('bronze');
-      expect(calculateTierFromSpent(499)).toBe('bronze');
+      expect(calculateTierFromSpent(999)).toBe('bronze');
     });
 
-    it('deve retornar Silver para gasto entre R$ 500 e R$ 2000', () => {
-      expect(calculateTierFromSpent(500)).toBe('silver');
+    it('deve retornar Silver para gasto entre R$ 1000 e R$ 5000', () => {
       expect(calculateTierFromSpent(1000)).toBe('silver');
-      expect(calculateTierFromSpent(1999)).toBe('silver');
+      expect(calculateTierFromSpent(2000)).toBe('silver');
+      expect(calculateTierFromSpent(4999)).toBe('silver');
     });
 
-    it('deve retornar Gold para gasto >= R$ 2000 e < R$ 10000', () => {
-      expect(calculateTierFromSpent(2000)).toBe('gold');
+    it('deve retornar Gold para gasto >= R$ 5000 e < R$ 10000', () => {
       expect(calculateTierFromSpent(5000)).toBe('gold');
+      expect(calculateTierFromSpent(7500)).toBe('gold');
       expect(calculateTierFromSpent(9999)).toBe('gold');
     });
 
@@ -49,25 +49,25 @@ describe('CashbackCalculator', () => {
     });
   });
 
-  describe('calculateCashbackAmount', () => {
+  describe('calculateCashbackByTier', () => {
     it('deve calcular cashback para Bronze (1.5%)', () => {
-      expect(calculateCashbackAmount(100, 'bronze')).toBe(1.50);
+      expect(calculateCashbackByTier(100, 'bronze')).toBe(1.50);
     });
 
     it('deve calcular cashback para Silver (3%)', () => {
-      expect(calculateCashbackAmount(100, 'silver')).toBe(3.00);
+      expect(calculateCashbackByTier(100, 'silver')).toBe(3.00);
     });
 
     it('deve calcular cashback para Gold (4.5%)', () => {
-      expect(calculateCashbackAmount(100, 'gold')).toBe(4.50);
+      expect(calculateCashbackByTier(100, 'gold')).toBe(4.50);
     });
 
     it('deve calcular cashback para Platinum (5%)', () => {
-      expect(calculateCashbackAmount(100, 'platinum')).toBe(5.00);
+      expect(calculateCashbackByTier(100, 'platinum')).toBe(5.00);
     });
 
     it('deve calcular corretamente para valores decimais', () => {
-      expect(calculateCashbackAmount(123.45, 'silver')).toBeCloseTo(3.70, 2);
+      expect(calculateCashbackByTier(123.45, 'silver')).toBeCloseTo(3.70, 2);
     });
   });
 });
