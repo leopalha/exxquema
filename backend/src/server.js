@@ -1,5 +1,12 @@
 require('dotenv').config();
 
+// DEBUG: Log startup
+console.log('[DEBUG] Starting FLAME API server...');
+console.log('[DEBUG] NODE_ENV:', process.env.NODE_ENV);
+console.log('[DEBUG] PORT:', process.env.PORT);
+console.log('[DEBUG] DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('[DEBUG] REDIS_URL exists:', !!process.env.REDIS_URL);
+
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -8,8 +15,12 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+console.log('[DEBUG] Express and middleware modules loaded');
+
 // Import Logger
+console.log('[DEBUG] Loading logger...');
 const logger = require('./config/logger');
+console.log('[DEBUG] Logger loaded successfully');
 const { requestLoggingMiddleware } = require('./middleware/logging');
 
 // Import Redis
@@ -265,29 +276,43 @@ app.use((error, req, res, next) => {
 // Initialize server
 const startServer = async () => {
   try {
+    console.log('[DEBUG] startServer() called');
+
     // Test database connection
+    console.log('[DEBUG] Testing database connection...');
     const dbConnected = await testConnection();
+    console.log('[DEBUG] Database connection result:', dbConnected);
     if (!dbConnected) {
       console.error('❌ Falha na conexão com banco de dados');
       process.exit(1);
     }
+    console.log('[DEBUG] Database connected successfully');
 
     // Create/update database tables
+    console.log('[DEBUG] Creating/updating database tables...');
     const tablesCreated = await createTables();
+    console.log('[DEBUG] Tables creation result:', tablesCreated);
     if (!tablesCreated) {
       console.error('❌ Falha ao criar/atualizar tabelas');
       process.exit(1);
     }
+    console.log('[DEBUG] Tables created successfully');
 
     // Initialize Redis (optional - won't crash if not configured)
+    console.log('[DEBUG] Initializing Redis...');
     await initRedis();
+    console.log('[DEBUG] Redis initialized');
 
     // Initialize job scheduler
+    console.log('[DEBUG] Initializing job scheduler...');
     const jobCount = jobScheduler.initializeJobs();
+    console.log('[DEBUG] Job scheduler initialized, jobs:', jobCount);
 
     // Start server
     const PORT = process.env.PORT || 7000;
+    console.log('[DEBUG] Starting HTTP server on port:', PORT);
     server.listen(PORT, () => {
+      console.log('[DEBUG] Server listen callback executed');
       console.log(`
 ╔══════════════════════════════════════╗
 ║           🔥 FLAME API 🔥            ║
@@ -328,10 +353,15 @@ const startServer = async () => {
     });
 
   } catch (error) {
-    console.error('❌ Erro ao inicializar servidor:', error);
+    console.error('[DEBUG] ❌ FATAL ERROR during server startup:');
+    console.error('[DEBUG] Error message:', error.message);
+    console.error('[DEBUG] Error stack:', error.stack);
+    console.error('[DEBUG] Error details:', JSON.stringify(error, null, 2));
     process.exit(1);
   }
 };
+
+console.log('[DEBUG] Calling startServer()...');
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
