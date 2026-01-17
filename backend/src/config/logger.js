@@ -193,4 +193,5 @@ const logResponse = (req, res, duration) => {
 };
 exports.logResponse = logResponse;
 module.exports = logger;
+module.exports.logRequest = logRequest;
 module.exports.logResponse = logResponse;
