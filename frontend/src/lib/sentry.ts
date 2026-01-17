@@ -62,7 +62,7 @@ export function initSentry(): void {
     ],
 
     // BeforeSend hook to filter/modify events
-    beforeSend(event, hint) {
+    beforeSend(event, _hint) {
       // Don't send if it's a 4xx error (client errors)
       const status = event.contexts?.response?.status_code;
       if (status && status >= 400 && status < 500) {
