@@ -192,4 +192,5 @@ const logResponse = (req, res, duration) => {
     });
 };
 exports.logResponse = logResponse;
-exports.default = logger;
+module.exports = logger;
+module.exports.logResponse = logResponse;
