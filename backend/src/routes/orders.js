@@ -62,14 +62,54 @@ router.get('/dashboard/metrics',
   orderController.getDashboardMetrics
 );
 
-// Listar pedidos aguardando pagamento (para painel do atendente)
+/**
+ * @swagger
+ * /api/orders/pending-payments:
+ *   get:
+ *     summary: Listar pedidos aguardando pagamento
+ *     description: Retorna pedidos com status pending_payment (para painel do atendente)
+ *     tags: [Orders]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos aguardando pagamento
+ */
 router.get('/pending-payments',
   authenticate,
   orderController.getPendingPayments
 );
 
-// Webhook para confirmação de pagamento - DEVE VIR ANTES DE /:id
-// SEGURANÇA: Requer autenticação de admin/sistema ou Stripe webhook signature
+/**
+ * @swagger
+ * /api/orders/payment/confirm:
+ *   post:
+ *     summary: Confirmar pagamento de pedido
+ *     description: Confirma pagamento e atualiza status do pedido
+ *     tags: [Payments]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - orderId
+ *               - paymentId
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: 123e4567-e89b-12d3-a456-426614174000
+ *               paymentId:
+ *                 type: string
+ *                 example: pi_1234567890
+ *     responses:
+ *       200:
+ *         description: Pagamento confirmado
+ */
 router.post('/payment/confirm',
   authenticate, // Agora requer autenticação
   confirmPaymentValidation,
@@ -77,12 +117,117 @@ router.post('/payment/confirm',
   orderController.confirmPayment
 );
 
+/**
+ * @swagger
+ * /api/orders:
+ *   get:
+ *     summary: Listar todos os pedidos
+ *     description: Retorna lista de pedidos (admin/staff)
+ *     tags: [Orders]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de pedidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     orders:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Order'
+ */
 router.get('/',
   authenticate,
   orderController.getAllOrders
 );
 
-// Criar pedido
+/**
+ * @swagger
+ * /api/orders:
+ *   post:
+ *     summary: Criar novo pedido
+ *     description: Cria um novo pedido no sistema
+ *     tags: [Orders]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - items
+ *             properties:
+ *               tableId:
+ *                 type: string
+ *                 format: uuid
+ *                 nullable: true
+ *                 description: ID da mesa (opcional para pedidos de balcão)
+ *               items:
+ *                 type: array
+ *                 minItems: 1
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - productId
+ *                     - quantity
+ *                   properties:
+ *                     productId:
+ *                       type: string
+ *                       format: uuid
+ *                     quantity:
+ *                       type: integer
+ *                       minimum: 1
+ *                     notes:
+ *                       type: string
+ *                       nullable: true
+ *               paymentMethod:
+ *                 type: string
+ *                 enum: [cash, credit, debit, pix, pay_later]
+ *                 default: pay_later
+ *               notes:
+ *                 type: string
+ *                 nullable: true
+ *               tip:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *               useCashback:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *     responses:
+ *       201:
+ *         description: Pedido criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Pedido criado com sucesso
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     order:
+ *                       $ref: '#/components/schemas/Order'
+ *       400:
+ *         description: Erro de validação
+ */
 router.post('/',
   authenticate,
   requireCompleteProfile, // Requer perfil completo para fazer pedidos

@@ -13,10 +13,68 @@ const {
 const authController = require('../controllers/authController');
 
 /**
- * @route   POST /api/auth/register
- * @desc    Cadastrar novo usuário e enviar SMS de verificação
- * @access  Public
- * @body    { nome, cpf, email, celular, password }
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Cadastrar novo usuário
+ *     description: Cria um novo usuário no sistema e envia código SMS de verificação
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nome
+ *               - cpf
+ *               - email
+ *               - celular
+ *               - password
+ *             properties:
+ *               nome:
+ *                 type: string
+ *                 example: João Silva
+ *               cpf:
+ *                 type: string
+ *                 example: 12345678900
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: joao@email.com
+ *               celular:
+ *                 type: string
+ *                 example: 11999887766
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: senha123
+ *     responses:
+ *       201:
+ *         description: Usuário criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: SMS enviado com sucesso
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     celular:
+ *                       type: string
+ *                       example: 11999887766
+ *       400:
+ *         description: Erro de validação
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/register', validateUserRegistration, authController.register);
 
@@ -60,17 +118,92 @@ router.delete('/delete-unverified/:email', authController.deleteUnverifiedUser);
 router.post('/login-sms', authController.loginSMS);
 
 /**
- * @route   POST /api/auth/login
- * @desc    Login com email e senha
- * @access  Public
- * @body    { email, password }
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login com email e senha
+ *     description: Autentica usuário e retorna token JWT
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: joao@email.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: senha123
+ *     responses:
+ *       200:
+ *         description: Login realizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login realizado com sucesso
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Credenciais inválidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/login', validateUserLogin, authController.loginPassword);
 
 /**
- * @route   GET /api/auth/me
- * @desc    Obter dados do usuário logado
- * @access  Private
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Obter dados do usuário logado
+ *     description: Retorna informações do usuário autenticado
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dados do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Não autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get('/me', authenticate, authController.getMe);
 
