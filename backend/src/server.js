@@ -8,16 +8,29 @@ const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-// Import Sentry and Logger
-const { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } = require('./config/sentry');
+// Import Logger
 const logger = require('./config/logger');
 const { requestLoggingMiddleware } = require('./middleware/logging');
 
 // Import Redis
 const { initRedis, cacheMiddleware } = require('./config/redis');
 
-// Initialize Sentry first
-initSentry();
+// Import Sentry (optional - only if available)
+let sentryRequestHandler, sentryTracingHandler, sentryErrorHandler;
+try {
+  const sentry = require('./config/sentry');
+  sentry.initSentry();
+  sentryRequestHandler = sentry.sentryRequestHandler;
+  sentryTracingHandler = sentry.sentryTracingHandler;
+  sentryErrorHandler = sentry.sentryErrorHandler;
+  logger.info('Sentry initialized successfully');
+} catch (error) {
+  logger.warn('Sentry not available, continuing without error tracking:', error.message);
+  // Create no-op middleware
+  sentryRequestHandler = (req, res, next) => next();
+  sentryTracingHandler = (req, res, next) => next();
+  sentryErrorHandler = (err, req, res, next) => next(err);
+}
 
 // Import services
 const { testConnection } = require('./config/database');
