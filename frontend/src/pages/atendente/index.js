@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../stores/authStore';
 import useStaffStore from '../../stores/staffStore';
@@ -10,9 +11,18 @@ import { formatCurrency } from '../../utils/format';
 import { toast } from 'react-hot-toast';
 import socketService from '../../services/socket';
 import api from '../../services/api';
-import StaffOrderCard from '../../components/StaffOrderCard';
-import HookahSessionCard from '../../components/HookahSessionCard';
 import soundService from '../../services/soundService';
+
+// Dynamic imports para componentes pesados (renderizados condicionalmente)
+const StaffOrderCard = dynamic(() => import('../../components/StaffOrderCard'), {
+  loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-xl h-48" />,
+  ssr: false // Dashboard não precisa SSR
+});
+
+const HookahSessionCard = dynamic(() => import('../../components/HookahSessionCard'), {
+  loading: () => <div className="animate-pulse bg-gray-200 dark:bg-gray-700 rounded-xl h-48" />,
+  ssr: false
+});
 import {
   Bell,
   Clock,

@@ -65,6 +65,7 @@ const CartItem = ({
             src={image}
             alt={name}
             fill
+            loading="lazy"
             className="object-cover"
           />
         </div>

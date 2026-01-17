@@ -110,7 +110,11 @@
       "Bash(npm run e2e:*)",
       "Bash(railway:*)",
       "Bash(vercel --version:*)",
-      "Bash(vercel whoami:*)"
+      "Bash(vercel whoami:*)",
+      "Bash(vercel:*)",
+      "Bash(npx depcheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

@@ -24,7 +24,9 @@ console.log('[DEBUG] Logger loaded successfully');
 const { requestLoggingMiddleware } = require('./middleware/logging');
 
 // Import Redis
+console.log('[DEBUG] Loading Redis...');
 const { initRedis, cacheMiddleware } = require('./config/redis');
+console.log('[DEBUG] Redis loaded');
 
 // Import Sentry (optional - only if available)
 let sentryRequestHandler, sentryTracingHandler, sentryErrorHandler;
@@ -44,25 +46,38 @@ try {
 }
 
 // Import services
+console.log('[DEBUG] Loading services...');
 const { testConnection } = require('./config/database');
+console.log('[DEBUG] Database config loaded');
 const { createTables } = require('./models');
+console.log('[DEBUG] Models loaded');
 const socketService = require('./services/socket.service');
+console.log('[DEBUG] Socket service loaded');
 const jobScheduler = require('./jobs');
+console.log('[DEBUG] Job scheduler loaded');
 
 // Import middlewares
+console.log('[DEBUG] Loading middlewares...');
 const { authenticate, optionalAuth } = require('./middlewares/auth.middleware');
+console.log('[DEBUG] Auth middleware loaded');
 
 // Import controllers
+console.log('[DEBUG] Loading controllers...');
 const authController = require('./controllers/authController');
+console.log('[DEBUG] Auth controller loaded');
 
+console.log('[DEBUG] Creating Express app...');
 const app = express();
 const server = http.createServer(app);
+console.log('[DEBUG] Express app and HTTP server created');
 
 // Trust proxy for Railway/Heroku/etc
 app.set('trust proxy', 1);
 
 // Initialize Socket.IO
+console.log('[DEBUG] Initializing Socket.IO...');
 const io = socketService.init(server);
+console.log('[DEBUG] Socket.IO initialized');
 
 // Security middleware
 app.use(helmet({

@@ -72,6 +72,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
                 src={product.image}
                 alt={product.name}
                 fill
+                loading="lazy"
                 className="object-cover rounded-lg"
                 onError={() => setImageError(true)}
               />
@@ -138,6 +139,7 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
               src={product.image}
               alt={product.name}
               fill
+              loading="lazy"
               className="object-cover transition-transform duration-300 group-hover:scale-110"
               onError={() => setImageError(true)}
             />
