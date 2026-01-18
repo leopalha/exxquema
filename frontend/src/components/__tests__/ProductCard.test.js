@@ -66,7 +66,7 @@ describe('ProductCard Component', () => {
 
       expect(screen.getByText('Hambúrguer Artesanal')).toBeInTheDocument()
       expect(screen.getByText('Delicioso hambúrguer com queijo e bacon')).toBeInTheDocument()
-      expect(screen.getByText('R$ 35,90')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
     })
 
     test('renders product image with correct alt text', () => {
@@ -93,9 +93,9 @@ describe('ProductCard Component', () => {
       render(<ProductCard product={productWithDiscount} />)
 
       // Original price should be crossed out
-      expect(screen.getByText('R$ 35,90')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
       // Discounted price (35.90 * 0.8 = 28.72)
-      expect(screen.getByText('R$ 28,72')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+28,72/)).toBeInTheDocument()
     })
 
     test('shows fallback image when image fails to load', () => {

@@ -34,7 +34,7 @@ describe('CartItem Component', () => {
       render(<CartItem item={mockItem} {...mockHandlers} />)
 
       // Total: 35.90 * 2 = 71.80
-      expect(screen.getByText('R$ 71.80')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71,80/)).toBeInTheDocument()
     })
 
     test('renders item quantity', () => {
@@ -75,7 +75,7 @@ describe('CartItem Component', () => {
 
       expect(screen.getByText('2x')).toBeInTheDocument()
       expect(screen.getByText('Hambúrguer Artesanal')).toBeInTheDocument()
-      expect(screen.getByText('R$ 71.80')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71,80/)).toBeInTheDocument()
     })
 
     test('does not render image in compact mode', () => {
@@ -182,7 +182,7 @@ describe('CartItem Component', () => {
       const singleItem = { ...mockItem, quantity: 1 }
       render(<CartItem item={singleItem} {...mockHandlers} />)
 
-      expect(screen.getByText('R$ 35.90')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
     })
 
     test('calculates total correctly for quantity > 1', () => {
@@ -190,7 +190,7 @@ describe('CartItem Component', () => {
       render(<CartItem item={multipleItems} {...mockHandlers} />)
 
       // 35.90 * 3 = 107.70
-      expect(screen.getByText('R$ 107.70')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+107,70/)).toBeInTheDocument()
     })
 
     test('handles decimal prices correctly', () => {
@@ -198,14 +198,14 @@ describe('CartItem Component', () => {
       render(<CartItem item={itemWithDecimal} {...mockHandlers} />)
 
       // 12.99 * 2 = 25.98
-      expect(screen.getByText('R$ 25.98')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+25,98/)).toBeInTheDocument()
     })
 
     test('formats price with 2 decimal places', () => {
-      const itemWithWholePr ice = { ...mockItem, price: 50, quantity: 1 }
-      render(<CartItem item={itemWithWholePr ice} {...mockHandlers} />)
+      const itemWithWholePrice = { ...mockItem, price: 50, quantity: 1 }
+      render(<CartItem item={itemWithWholePrice} {...mockHandlers} />)
 
-      expect(screen.getByText('R$ 50.00')).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+50,00/)).toBeInTheDocument()
     })
   })
 

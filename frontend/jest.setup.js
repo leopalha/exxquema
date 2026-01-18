@@ -1,6 +1,52 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 
+// Import centralized store mocks
+import {
+  mockAuthStore,
+  mockCartStore,
+  mockThemeStore,
+  mockProductStore,
+  mockOrderStore,
+  mockNotificationStore,
+  mockCashbackStore,
+} from './__mocks__/stores'
+
+// Mock Zustand Stores
+jest.mock('./src/stores/authStore', () => ({
+  useAuthStore: jest.fn(() => mockAuthStore),
+}))
+
+jest.mock('./src/stores/cartStore', () => ({
+  useCartStore: jest.fn(() => mockCartStore),
+  PAYMENT_METHODS: [
+    { id: 'pix', nome: 'PIX', icon: 'qr-code', descricao: 'Pagamento instantâneo' },
+    { id: 'credit', nome: 'Cartão de Crédito', icon: 'credit-card', descricao: 'Até 12x sem juros' },
+    { id: 'debit', nome: 'Cartão de Débito', icon: 'credit-card', descricao: 'Débito na hora' },
+    { id: 'cash', nome: 'Dinheiro', icon: 'banknotes', descricao: 'Pagamento na entrega' },
+  ],
+}))
+
+jest.mock('./src/stores/themeStore', () => ({
+  useThemeStore: jest.fn(() => mockThemeStore),
+}))
+
+jest.mock('./src/stores/productStore', () => ({
+  useProductStore: jest.fn(() => mockProductStore),
+}))
+
+jest.mock('./src/stores/orderStore', () => ({
+  useOrderStore: jest.fn(() => mockOrderStore),
+}))
+
+jest.mock('./src/stores/notificationStore', () => ({
+  useNotificationStore: jest.fn(() => mockNotificationStore),
+}))
+
+jest.mock('./src/stores/cashbackStore', () => ({
+  useCashbackStore: jest.fn(() => mockCashbackStore),
+}))
+
 // Mock Next.js router
 jest.mock('next/router', () => ({
   useRouter: jest.fn(() => ({
@@ -35,16 +81,54 @@ jest.mock('next/image', () => ({
   },
 }))
 
-// Mock Framer Motion
-jest.mock('framer-motion', () => ({
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }) => <button {...props}>{children}</button>,
-    span: ({ children, ...props }) => <span {...props}>{children}</span>,
-    a: ({ children, ...props }) => <a {...props}>{children}</a>,
-  },
-  AnimatePresence: ({ children }) => children,
-}))
+// Mock Framer Motion with Proxy for all HTML elements
+jest.mock('framer-motion', () => {
+  const React = require('react');
+
+  // Create a proxy that returns a component for any HTML element
+  const motionProxy = new Proxy({}, {
+    get: (target, prop) => {
+      if (typeof prop === 'string') {
+        return ({ children, ...props }) => {
+          // Remove framer-motion specific props to avoid warnings
+          const { initial, animate, exit, transition, variants, whileHover, whileTap, whileFocus, whileDrag, ...restProps } = props;
+          return React.createElement(prop, restProps, children);
+        };
+      }
+      return undefined;
+    }
+  });
+
+  return {
+    motion: motionProxy,
+    AnimatePresence: ({ children }) => children,
+    useAnimation: () => ({
+      start: jest.fn(),
+      stop: jest.fn(),
+      set: jest.fn(),
+    }),
+    useMotionValue: (initialValue) => ({
+      get: () => initialValue,
+      set: jest.fn(),
+      onChange: jest.fn(),
+    }),
+    useTransform: () => ({
+      get: () => 0,
+      set: jest.fn(),
+    }),
+    useSpring: (value) => value,
+    useScroll: () => ({
+      scrollX: { get: () => 0 },
+      scrollY: { get: () => 0 },
+      scrollXProgress: { get: () => 0 },
+      scrollYProgress: { get: () => 0 },
+    }),
+    useInView: () => true,
+    useDragControls: () => ({
+      start: jest.fn(),
+    }),
+  };
+});
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
