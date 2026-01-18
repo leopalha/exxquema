@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import landscape mode optimizations */
+@import './landscape.css';
+
 /* ============================================
    FLAME - DESIGN SYSTEM
    Gradiente Magenta (#FF006E) -> Cyan (#00D4FF)

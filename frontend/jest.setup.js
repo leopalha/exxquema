@@ -10,7 +10,7 @@ import {
   mockOrderStore,
   mockNotificationStore,
   mockCashbackStore,
-} from './__mocks__/stores'
+} from './src/__mocks__/stores'
 
 // Mock Zustand Stores
 jest.mock('./src/stores/authStore', () => ({
@@ -91,7 +91,14 @@ jest.mock('framer-motion', () => {
       if (typeof prop === 'string') {
         return ({ children, ...props }) => {
           // Remove framer-motion specific props to avoid warnings
-          const { initial, animate, exit, transition, variants, whileHover, whileTap, whileFocus, whileDrag, ...restProps } = props;
+          const {
+            initial, animate, exit, transition, variants,
+            whileHover, whileTap, whileFocus, whileDrag, whileInView,
+            viewport, layout, layoutId, layoutDependency,
+            // Remove Next.js Image props that shouldn't be on motion elements
+            priority, fill, quality, placeholder, blurDataURL,
+            ...restProps
+          } = props;
           return React.createElement(prop, restProps, children);
         };
       }
@@ -163,7 +170,11 @@ beforeAll(() => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render') ||
-        args[0].includes('Not implemented: HTMLFormElement.prototype.submit'))
+        args[0].includes('Not implemented: HTMLFormElement.prototype.submit') ||
+        args[0].includes('Warning: Received `true` for a non-boolean attribute') ||
+        args[0].includes('non-boolean attribute `priority`') ||
+        args[0].includes('non-boolean attribute `fill`') ||
+        args[0].includes('non-boolean attribute `layout`'))
     ) {
       return
     }

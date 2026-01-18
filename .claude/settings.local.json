@@ -119,7 +119,12 @@
       "Bash(pkill -f \"npm run dev\")",
       "Bash(npm run migrate:*)",
       "Bash(timeout 5 npm start)",
-      "Bash(timeout 5 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 1; done && echo \"\"Server ready\"\"')"
+      "Bash(timeout 5 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 1; done && echo \"\"Server ready\"\"')",
+      "Bash(chmod:*)",
+      "Bash(.prettierrc)",
+      "Bash(.env)",
+      "Bash(sentry \")",
+      "Bash(xargs -I {} sh -c 'echo \"\"===== {} =====\"\" && grep -A 50 \"\"\\\\\"\"scripts\\\\\"\"\"\" {} | head -30')"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,415 @@
+import { renderHook, act } from '@testing-library/react';
+
+// Mock dependencies BEFORE importing store
+jest.mock('react-hot-toast', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    loading: jest.fn(),
+    dismiss: jest.fn()
+  }
+}));
+
+jest.mock('../../utils/storage', () => ({
+  safeLocalStorage: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn()
+  }
+}));
+
+jest.mock('../../lib/analytics', () => ({
+  trackAddToCart: jest.fn(),
+  trackRemoveFromCart: jest.fn()
+}));
+
+// Mock zustand persist middleware
+jest.mock('zustand/middleware', () => ({
+  persist: (config) => config
+}));
+
+// Import after mocks
+import { useCartStore } from '../cartStore';
+import { toast } from 'react-hot-toast';
+
+describe('CartStore', () => {
+  beforeEach(() => {
+    // Reset store state using the store's getState/setState
+    useCartStore.setState({
+      items: [],
+      tableId: null,
+      tableNumber: null,
+      notes: '',
+      isLoading: false,
+      error: null,
+      includeServiceFee: true
+    }, true);
+
+    // Clear mocks
+    jest.clearAllMocks();
+  });
+
+  describe('Initial State', () => {
+    test('has correct initial state', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      expect(result.current.items).toEqual([]);
+      expect(result.current.tableId).toBeNull();
+      expect(result.current.tableNumber).toBeNull();
+      expect(result.current.notes).toBe('');
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.includeServiceFee).toBe(true);
+    });
+  });
+
+  describe('getTotalItems', () => {
+    test('returns 0 for empty cart', () => {
+      const { result } = renderHook(() => useCartStore());
+      expect(result.current.getTotalItems()).toBe(0);
+    });
+
+    test('calculates total items correctly', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 10, isActive: true }, quantity: 2 },
+            { product: { id: 2, price: 20, isActive: true }, quantity: 3 }
+          ]
+        });
+      });
+
+      expect(result.current.getTotalItems()).toBe(5);
+    });
+  });
+
+  describe('getSubtotal', () => {
+    test('returns 0 for empty cart', () => {
+      const { result } = renderHook(() => useCartStore());
+      expect(result.current.getSubtotal()).toBe(0);
+    });
+
+    test('calculates subtotal without discount', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 10, discount: 0, isActive: true }, quantity: 2 },
+            { product: { id: 2, price: 20, discount: 0, isActive: true }, quantity: 1 }
+          ]
+        });
+      });
+
+      expect(result.current.getSubtotal()).toBe(40); // (10*2) + (20*1)
+    });
+
+    test('calculates subtotal with discount', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 100, discount: 20, isActive: true }, quantity: 1 }, // 80
+            { product: { id: 2, price: 50, discount: 10, isActive: true }, quantity: 2 } // 45*2 = 90
+          ]
+        });
+      });
+
+      expect(result.current.getSubtotal()).toBe(170); // 80 + 90
+    });
+  });
+
+  describe('getServiceFee', () => {
+    test('returns 10% of subtotal when includeServiceFee is true', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 100, discount: 0, isActive: true }, quantity: 1 }
+          ],
+          includeServiceFee: true
+        });
+      });
+
+      expect(result.current.getServiceFee()).toBe(10); // 10% of 100
+    });
+
+    test('returns 0 when includeServiceFee is false', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 100, discount: 0, isActive: true }, quantity: 1 }
+          ],
+          includeServiceFee: false
+        });
+      });
+
+      expect(result.current.getServiceFee()).toBe(0);
+    });
+  });
+
+  describe('getTotal', () => {
+    test('returns subtotal + service fee', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 100, discount: 0, isActive: true }, quantity: 1 }
+          ],
+          includeServiceFee: true
+        });
+      });
+
+      expect(result.current.getTotal()).toBe(110); // 100 + 10
+    });
+
+    test('returns only subtotal when service fee disabled', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({
+          items: [
+            { product: { id: 1, price: 100, discount: 0, isActive: true }, quantity: 1 }
+          ],
+          includeServiceFee: false
+        });
+      });
+
+      expect(result.current.getTotal()).toBe(100);
+    });
+  });
+
+  describe('toggleServiceFee', () => {
+    test('toggles service fee flag', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      expect(result.current.includeServiceFee).toBe(true);
+
+      act(() => {
+        result.current.toggleServiceFee();
+      });
+
+      expect(result.current.includeServiceFee).toBe(false);
+
+      act(() => {
+        result.current.toggleServiceFee();
+      });
+
+      expect(result.current.includeServiceFee).toBe(true);
+    });
+  });
+
+  describe('setIncludeServiceFee', () => {
+    test('sets service fee flag to specific value', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        result.current.setIncludeServiceFee(false);
+      });
+
+      expect(result.current.includeServiceFee).toBe(false);
+
+      act(() => {
+        result.current.setIncludeServiceFee(true);
+      });
+
+      expect(result.current.includeServiceFee).toBe(true);
+    });
+  });
+
+  describe('clearError', () => {
+    test('clears error', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        useCartStore.setState({ error: 'Test error' });
+      });
+
+      expect(result.current.error).toBe('Test error');
+
+      act(() => {
+        result.current.clearError();
+      });
+
+      expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe('addItem', () => {
+    const mockProduct = {
+      id: 1,
+      name: 'Test Product',
+      price: 50,
+      discount: 0,
+      isActive: true,
+      hasStock: false
+    };
+
+    test('adds new item to cart', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        result.current.addItem(mockProduct, 2);
+      });
+
+      expect(result.current.items.length).toBe(1);
+      expect(result.current.items[0].product.id).toBe(1);
+      expect(result.current.items[0].quantity).toBe(2);
+    });
+
+    test('increments quantity for existing item', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        result.current.addItem(mockProduct, 2);
+      });
+
+      expect(result.current.items[0].quantity).toBe(2);
+
+      act(() => {
+        result.current.addItem(mockProduct, 1);
+      });
+
+      expect(result.current.items.length).toBe(1);
+      expect(result.current.items[0].quantity).toBe(3);
+    });
+
+    test('throws error for invalid product', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        try {
+          result.current.addItem(null, 1);
+        } catch (error) {
+          expect(error.message).toBe('Produto inválido');
+        }
+      });
+    });
+
+    test('throws error for zero or negative quantity', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        try {
+          result.current.addItem(mockProduct, 0);
+        } catch (error) {
+          expect(error.message).toBe('Quantidade deve ser maior que zero');
+        }
+      });
+
+      act(() => {
+        try {
+          result.current.addItem(mockProduct, -1);
+        } catch (error) {
+          expect(error.message).toBe('Quantidade deve ser maior que zero');
+        }
+      });
+    });
+
+    test('throws error when exceeding stock', () => {
+      const stockProduct = { ...mockProduct, hasStock: true, stock: 5 };
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        try {
+          result.current.addItem(stockProduct, 10);
+        } catch (error) {
+          expect(error.message).toContain('Estoque insuficiente');
+        }
+      });
+    });
+
+    test('throws error for inactive product', () => {
+      const inactiveProduct = { ...mockProduct, isActive: false };
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        try {
+          result.current.addItem(inactiveProduct, 1);
+        } catch (error) {
+          expect(error.message).toBe('Produto não está disponível');
+        }
+      });
+    });
+
+    test('stores item notes', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      act(() => {
+        result.current.addItem(mockProduct, 1, 'Sem cebola');
+      });
+
+      expect(result.current.items[0].notes).toBe('Sem cebola');
+    });
+  });
+
+  describe('real-world scenarios', () => {
+    test('customer adds multiple different items', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      const product1 = { id: 1, name: 'Burger', price: 25, discount: 0, isActive: true, hasStock: false };
+      const product2 = { id: 2, name: 'Fries', price: 10, discount: 0, isActive: true, hasStock: false };
+      const product3 = { id: 3, name: 'Soda', price: 5, discount: 0, isActive: true, hasStock: false };
+
+      act(() => {
+        result.current.addItem(product1, 2);
+        result.current.addItem(product2, 1);
+        result.current.addItem(product3, 3);
+      });
+
+      expect(result.current.items.length).toBe(3);
+      expect(result.current.getTotalItems()).toBe(6); // 2+1+3
+      expect(result.current.getSubtotal()).toBe(75); // 50+10+15
+      expect(result.current.getTotal()).toBe(82.5); // 75 + 7.5 (10%)
+    });
+
+    test('customer adds same item twice', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      const product = { id: 1, name: 'Beer', price: 8, discount: 0, isActive: true, hasStock: false };
+
+      act(() => {
+        result.current.addItem(product, 2);
+        result.current.addItem(product, 1);
+      });
+
+      expect(result.current.items.length).toBe(1);
+      expect(result.current.items[0].quantity).toBe(3);
+      expect(result.current.getSubtotal()).toBe(24); // 8*3
+    });
+
+    test('customer with discounted items', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      const product = { id: 1, name: 'Hookah', price: 100, discount: 20, isActive: true, hasStock: false };
+
+      act(() => {
+        result.current.addItem(product, 2);
+      });
+
+      expect(result.current.getSubtotal()).toBe(160); // 80*2 (20% off)
+      expect(result.current.getTotal()).toBe(176); // 160 + 16 (10% service)
+    });
+
+    test('customer opts out of service fee', () => {
+      const { result } = renderHook(() => useCartStore());
+
+      const product = { id: 1, name: 'Food', price: 50, discount: 0, isActive: true, hasStock: false };
+
+      act(() => {
+        result.current.addItem(product, 1);
+        result.current.setIncludeServiceFee(false);
+      });
+
+      expect(result.current.getServiceFee()).toBe(0);
+      expect(result.current.getTotal()).toBe(50);
+    });
+  });
+});

@@ -1,0 +1,36 @@
+# Artillery Spike Test
+# Tests system behavior under sudden traffic spike
+
+config:
+  target: 'https://backend-production-28c3.up.railway.app'
+  phases:
+    # Normal load
+    - duration: 60
+      arrivalRate: 10
+      name: "Normal Load"
+    # SUDDEN SPIKE
+    - duration: 60
+      arrivalRate: 200
+      name: "SPIKE!"
+    # Recovery
+    - duration: 120
+      arrivalRate: 10
+      name: "Recovery"
+
+  ensure:
+    maxErrorRate: 5 # Allow 5% errors during spike
+    p95: 3000
+    p99: 5000
+
+scenarios:
+  - name: "Critical Endpoints"
+    flow:
+      - get:
+          url: "/api/products"
+      - get:
+          url: "/api/categories"
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com"
+            password: "senha123"

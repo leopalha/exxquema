@@ -1,0 +1,66 @@
+# Artillery Soak Test (Endurance Test)
+# Tests system stability over extended period (memory leaks, degradation)
+
+config:
+  target: 'https://backend-production-28c3.up.railway.app'
+  phases:
+    # Run at moderate load for 1 hour
+    - duration: 3600 # 1 hour
+      arrivalRate: 30
+      name: "Soak Test - 1 hour at 30 req/s"
+
+  ensure:
+    maxErrorRate: 1
+    p95: 2000
+    p99: 4000
+
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+
+scenarios:
+  - name: "Realistic User Journey"
+    flow:
+      # Browse menu
+      - get:
+          url: "/api/products"
+          expect:
+            - statusCode: 200
+      - think: 5
+
+      # View category
+      - get:
+          url: "/api/categories"
+      - think: 3
+
+      # Search
+      - get:
+          url: "/api/products/search?q=cerveja"
+      - think: 4
+
+      # Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com"
+            password: "senha123"
+          capture:
+            - json: "$.token"
+              as: "token"
+      - think: 2
+
+      # View orders
+      - get:
+          url: "/api/orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - think: 3
+
+      # Check cashback
+      - get:
+          url: "/api/cashback/balance"
+          headers:
+            Authorization: "Bearer {{ token }}"
+      - think: 5
+
+      # Logout (repeat cycle)

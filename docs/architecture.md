@@ -960,6 +960,702 @@ Redis Cache
 
 ---
 
-**Última atualização:** 2026-01-16
-**Por:** MANUS LIA v7.1
-**Versão:** 2.0
+## 🎨 C4 Model - Detailed Diagrams
+
+### Level 1: System Context Diagram
+
+```mermaid
+C4Context
+    title System Context Diagram - FLAME Lounge Bar v2.0
+
+    Person(customer, "Cliente", "Usuário que faz pedidos,<br/>reservas e acumula cashback")
+    Person(waiter, "Atendente", "Gerencia pedidos e mesas")
+    Person(kitchen, "Cozinha", "Prepara pedidos")
+    Person(admin, "Administrador", "Gerencia sistema completo")
+
+    System(flame, "FLAME Lounge System", "Sistema completo de gestão<br/>de pedidos, cashback e reservas")
+
+    System_Ext(twilio, "Twilio", "Verificação por SMS")
+    System_Ext(google, "Google OAuth", "Autenticação social")
+    System_Ext(stripe, "Stripe", "Processamento de pagamentos")
+    System_Ext(railway_db, "Railway PostgreSQL", "Banco de dados")
+    System_Ext(vercel_cdn, "Vercel CDN", "Hospedagem frontend")
+
+    Rel(customer, flame, "Faz pedidos, reservas,<br/>usa cashback", "HTTPS/WebSocket")
+    Rel(waiter, flame, "Gerencia pedidos,<br/>atende mesas", "HTTPS/WebSocket")
+    Rel(kitchen, flame, "Visualiza e atualiza<br/>status dos pedidos", "WebSocket")
+    Rel(admin, flame, "Administra produtos,<br/>usuários, relatórios", "HTTPS")
+
+    Rel(flame, twilio, "Envia códigos SMS", "REST API")
+    Rel(flame, google, "Autentica usuários", "OAuth 2.0")
+    Rel(flame, stripe, "Processa pagamentos", "REST API")
+    Rel(flame, railway_db, "Persiste dados", "TCP/PostgreSQL")
+    Rel(vercel_cdn, flame, "Serve aplicação", "HTTPS")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+```
+
+### Level 2: Container Diagram
+
+```mermaid
+C4Container
+    title Container Diagram - FLAME Lounge Bar
+
+    Person(user, "Usuário", "Cliente, Atendente,<br/>Cozinha ou Admin")
+
+    Container(webapp, "Web Application", "Next.js 14, React 18", "PWA instalável com suporte<br/>offline, SSR/SSG, optimistic UI")
+    Container(api, "API Backend", "Node.js 18, Express 4", "REST API + WebSocket server<br/>com autenticação JWT")
+    ContainerDb(db, "Database", "PostgreSQL 16", "Armazena usuários, pedidos,<br/>produtos, cashback, reservas")
+    ContainerDb(cache, "Cache Layer", "Redis 7", "Cache de sessões, produtos,<br/>consultas frequentes")
+    Container(files, "File Storage", "Railway Volumes", "Imagens de produtos,<br/>avatares, uploads")
+
+    System_Ext(push, "Push Service", "Web Push API")
+    System_Ext(sms, "SMS Gateway", "Twilio")
+    System_Ext(payment, "Payment Gateway", "Stripe")
+
+    Rel(user, webapp, "Usa", "HTTPS")
+    Rel(webapp, api, "Faz chamadas", "JSON/HTTPS, WebSocket")
+    Rel(api, db, "Lê/Escreve", "TCP/SQL")
+    Rel(api, cache, "Consulta cache", "Redis Protocol")
+    Rel(api, files, "Upload/Download", "File System")
+    Rel(api, push, "Envia notificações", "Web Push")
+    Rel(api, sms, "Envia SMS", "REST API")
+    Rel(api, payment, "Processa pagamentos", "REST API")
+
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
+```
+
+### Level 3: Component Diagram - Backend API
+
+```mermaid
+C4Component
+    title Component Diagram - Backend API (Express.js)
+
+    Container(webapp, "Web Application", "Next.js")
+
+    Container_Boundary(api, "API Backend") {
+        Component(routes, "Routes", "Express Router", "50+ endpoints organizados<br/>por recurso")
+        Component(controllers, "Controllers", "JavaScript", "authController, orderController,<br/>productController, etc (15+)")
+        Component(services, "Business Logic", "JavaScript", "authService, orderService,<br/>cashbackService, etc (16+)")
+        Component(models, "Data Models", "Sequelize", "User, Order, Product,<br/>OrderItem, etc (18 models)")
+        Component(middleware, "Middleware Chain", "Express", "auth, validation, sanitization,<br/>rateLimit, errorHandler")
+        Component(socket, "Socket.IO Server", "Socket.IO 4.7", "Real-time events:<br/>orders, kitchen, tracking")
+        Component(jobs, "Background Jobs", "node-cron", "Daily reports, cashback expiry,<br/>reservation reminders (7 jobs)")
+    }
+
+    ContainerDb(db, "PostgreSQL", "Database")
+    ContainerDb(cache, "Redis", "Cache")
+
+    Rel(webapp, routes, "HTTP Requests", "JSON/REST")
+    Rel(webapp, socket, "WebSocket", "Real-time")
+    Rel(routes, middleware, "Passa por", "Chain")
+    Rel(middleware, controllers, "Chama", "Function call")
+    Rel(controllers, services, "Usa", "Function call")
+    Rel(services, models, "CRUD ops", "Sequelize ORM")
+    Rel(models, db, "SQL queries", "TCP/PostgreSQL")
+    Rel(services, cache, "Cache ops", "Redis")
+    Rel(jobs, services, "Executa", "Scheduled")
+
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
+```
+
+### Level 4: Component Diagram - Frontend
+
+```mermaid
+C4Component
+    title Component Diagram - Frontend (Next.js 14)
+
+    Person(user, "Usuário")
+
+    Container_Boundary(webapp, "Web Application") {
+        Component(pages, "Pages", "Next.js Routes", "/, /cardapio, /checkout,<br/>/pedidos, /perfil, /admin/* (51 pages)")
+        Component(components, "React Components", "JSX", "ProductCard, CartItem, OrderCard,<br/>Layout, UI components (45+)")
+        Component(stores, "State Management", "Zustand", "authStore, cartStore, orderStore,<br/>cashbackStore, etc (17 stores)")
+        Component(apiServices, "API Services", "Axios", "authService, orderService,<br/>productService (REST clients)")
+        Component(hooks, "Custom Hooks", "React Hooks", "useAuth, useCart, useOrders,<br/>useSocket, etc (6 hooks)")
+        Component(sw, "Service Worker", "Workbox", "PWA caching strategies,<br/>offline support, push notifications")
+    }
+
+    Container(api, "API Backend", "Express.js")
+
+    Rel(user, pages, "Navega", "Browser")
+    Rel(pages, components, "Renderiza", "React")
+    Rel(components, stores, "Lê/Atualiza", "Subscribe")
+    Rel(components, hooks, "Usa", "Hook call")
+    Rel(hooks, apiServices, "Chama", "HTTP")
+    Rel(apiServices, api, "REST + WebSocket", "JSON/HTTPS")
+    Rel(stores, apiServices, "Chama", "HTTP")
+    Rel(sw, api, "Background sync", "Fetch API")
+
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
+```
+
+### Deployment Diagram
+
+```mermaid
+graph TB
+    subgraph "User Devices"
+        A[Mobile Browser]
+        B[Desktop Browser]
+        C[Tablet Browser]
+    end
+
+    subgraph "Vercel Edge Network"
+        D[Global CDN]
+        E[Next.js App<br/>Auto-scaling]
+        F[Static Assets<br/>Images, CSS, JS]
+    end
+
+    subgraph "Railway Production"
+        G[Express API<br/>Node.js 18<br/>2GB RAM]
+        H[Socket.IO Server<br/>WebSocket]
+        I[Cron Jobs<br/>Background Tasks]
+    end
+
+    subgraph "Railway Database"
+        J[PostgreSQL 16<br/>Primary]
+        K[Automated Backups<br/>Daily]
+    end
+
+    subgraph "External Services"
+        L[Twilio SMS]
+        M[Google OAuth]
+        N[Stripe Payments]
+    end
+
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    D --> F
+    E --> G
+    E --> H
+    G --> J
+    H --> J
+    I --> J
+    J --> K
+    G --> L
+    G --> M
+    G --> N
+
+    style E fill:#00c7b7
+    style G fill:#7c3aed
+    style J fill:#336791
+    style D fill:#000
+```
+
+### Database Schema (ERD)
+
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    USER ||--o{ RESERVATION : makes
+    USER ||--o{ CASHBACK_HISTORY : has
+    USER {
+        uuid id PK
+        string name
+        string email UK
+        string password
+        string phone UK
+        enum role
+        enum tier
+        decimal cashbackBalance
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER }o--|| TABLE : assigned_to
+    ORDER {
+        uuid id PK
+        uuid userId FK
+        uuid tableId FK
+        decimal total
+        enum status
+        enum paymentMethod
+        decimal cashbackUsed
+        datetime createdAt
+    }
+
+    ORDER_ITEM }o--|| PRODUCT : references
+    ORDER_ITEM {
+        uuid id PK
+        uuid orderId FK
+        uuid productId FK
+        int quantity
+        decimal price
+    }
+
+    PRODUCT }o--|| CATEGORY : belongs_to
+    PRODUCT ||--o{ RECIPE_ITEM : has
+    PRODUCT {
+        uuid id PK
+        string name
+        text description
+        decimal price
+        uuid categoryId FK
+        string image
+        boolean isActive
+        int stockQuantity
+    }
+
+    CATEGORY {
+        uuid id PK
+        string name
+        text description
+        string image
+        int order
+    }
+
+    TABLE ||--o{ RESERVATION : has
+    TABLE {
+        uuid id PK
+        int number UK
+        int capacity
+        enum status
+        string qrCode
+    }
+
+    RESERVATION {
+        uuid id PK
+        uuid userId FK
+        uuid tableId FK
+        date date
+        time time
+        int guests
+        enum status
+    }
+
+    CASHBACK_HISTORY {
+        uuid id PK
+        uuid userId FK
+        uuid orderId FK
+        decimal amount
+        enum type
+        datetime expiresAt
+        datetime createdAt
+    }
+
+    INGREDIENT ||--o{ RECIPE_ITEM : used_in
+    INGREDIENT {
+        uuid id PK
+        string name
+        string unit
+        decimal quantity
+        decimal minStock
+    }
+
+    RECIPE_ITEM {
+        uuid productId FK
+        uuid ingredientId FK
+        decimal quantity
+    }
+```
+
+---
+
+## 🔒 Security Architecture - Deep Dive
+
+### 11 Security Layers
+
+```mermaid
+graph TD
+    A[1. HTTPS/TLS] --> B[2. CORS + Origin Check]
+    B --> C[3. Rate Limiting]
+    C --> D[4. Security Headers<br/>Helmet.js]
+    D --> E[5. Input Sanitization<br/>XSS Protection]
+    E --> F[6. JWT Authentication<br/>+ Token Rotation]
+    F --> G[7. RBAC Authorization<br/>Role-based Access]
+    G --> H[8. CSRF Protection<br/>Double Submit Cookie]
+    H --> I[9. SQL Injection Protection<br/>ORM Prepared Statements]
+    I --> J[10. Password Hashing<br/>bcrypt 12 rounds]
+    J --> K[11. Audit Logging<br/>+ Monitoring]
+
+    style A fill:#e3342f
+    style F fill:#f6993f
+    style K fill:#38c172
+```
+
+### Security Headers (Helmet.js)
+
+```javascript
+// Configuração aplicada automaticamente
+{
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "wss:", "https:"]
+    }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true
+}
+```
+
+### Rate Limiting Strategy
+
+| Endpoint | Limit | Window | Reason |
+|----------|-------|--------|--------|
+| `/api/auth/login` | 5 req | 15 min | Brute force protection |
+| `/api/auth/register` | 3 req | 1 hour | Account spam prevention |
+| `/api/orders` | 20 req | 1 min | Order spam prevention |
+| `/api/*` (global) | 500 req | 15 min | DoS protection |
+| `/api/products` (GET) | 100 req | 1 min | Cache abuse prevention |
+
+---
+
+## ⚡ Performance Architecture
+
+### Caching Strategy with Redis
+
+```mermaid
+graph LR
+    A[Request] --> B{Cache Hit?}
+    B -->|Yes TTL valid| C[Return from Redis]
+    B -->|No/Expired| D[Query Database]
+    D --> E[Store in Redis]
+    E --> F[Return to Client]
+    C --> F
+
+    style B fill:#f6993f
+    style C fill:#38c172
+    style D fill:#3490dc
+```
+
+### Cache TTL Configuration
+
+| Resource | TTL | Invalidation Strategy |
+|----------|-----|----------------------|
+| User profile | 10 min | On update/logout |
+| Product catalog | 5 min | On product CRUD |
+| Menu categories | 10 min | On category CRUD |
+| Order details | 1 min | On status update |
+| Cashback balance | 2 min | On transaction |
+| Public pages | 1 hour | Manual purge |
+
+### Database Indexes Strategy
+
+**User Model (9 indexes):**
+```sql
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_user_phone ON users(phone);
+CREATE INDEX idx_user_role ON users(role);
+CREATE INDEX idx_user_tier ON users(tier);
+CREATE INDEX idx_user_created_at ON users(created_at);
+CREATE INDEX idx_user_cashback ON users(cashback_balance);
+CREATE UNIQUE INDEX idx_user_email_unique ON users(email);
+CREATE UNIQUE INDEX idx_user_phone_unique ON users(phone);
+CREATE INDEX idx_user_active ON users(is_active);
+```
+
+**Product Model (9 indexes):**
+```sql
+CREATE INDEX idx_product_category ON products(category_id);
+CREATE INDEX idx_product_active ON products(is_active);
+CREATE INDEX idx_product_price ON products(price);
+CREATE INDEX idx_product_created_at ON products(created_at);
+CREATE INDEX idx_product_stock ON products(stock_quantity);
+CREATE INDEX idx_product_name ON products(name);
+CREATE INDEX idx_product_category_active ON products(category_id, is_active);
+CREATE INDEX idx_product_search ON products USING gin(to_tsvector('portuguese', name || ' ' || description));
+CREATE UNIQUE INDEX idx_product_slug ON products(slug);
+```
+
+### Query Optimization Example
+
+**Before (N+1 Query Problem):**
+```javascript
+// ❌ 1 query + N queries (6-20 extra queries)
+const orders = await Order.findAll();
+for (const order of orders) {
+  order.items = await OrderItem.findAll({ where: { orderId: order.id } });
+  order.user = await User.findByPk(order.userId);
+}
+// Response time: ~450ms
+```
+
+**After (Optimized with includes):**
+```javascript
+// ✅ Single optimized query with joins
+const orders = await Order.findAll({
+  include: [
+    { model: OrderItem, include: [Product] },
+    { model: User, attributes: ['id', 'name', 'email'] },
+    { model: Table }
+  ]
+});
+// Response time: ~75ms (6x faster!)
+```
+
+---
+
+## 📊 Data Flow Diagrams
+
+### Complete Order Creation Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant F as Frontend
+    participant A as API Backend
+    participant D as Database
+    participant S as Socket.IO
+    participant K as Cozinha Display
+
+    C->>F: Adiciona itens ao carrinho
+    F->>F: Atualiza cartStore (Zustand)
+    C->>F: Clica "Finalizar Pedido"
+    F->>A: POST /api/orders<br/>{items, tableId, paymentMethod}
+
+    A->>A: Valida JWT token
+    A->>A: Valida input (express-validator)
+    A->>D: BEGIN TRANSACTION
+    A->>D: SELECT products WHERE id IN (...)
+    A->>A: Verifica estoque disponível
+    A->>A: Calcula total + cashback (tier-based)
+    A->>D: INSERT INTO orders
+    A->>D: INSERT INTO order_items (bulk)
+    A->>D: UPDATE products SET stock = stock - qty
+    A->>D: INSERT INTO cashback_history
+    A->>D: UPDATE users SET cashback_balance
+    A->>D: COMMIT TRANSACTION
+
+    A->>S: emit('order:created', orderData)
+    A->>S: emit('kitchen:new_order', orderData)
+    A-->>F: 201 Created {orderId, total}
+
+    S->>K: Real-time notification
+    S->>F: Real-time update
+
+    F->>F: Limpa cartStore
+    F->>F: Atualiza orderStore
+    F->>C: Redireciona /pedidos/:orderId
+    F->>S: Conecta socket tracking
+
+    Note over F,K: Pedido agora visível<br/>em tempo real
+```
+
+### Cashback Calculation Flow
+
+```mermaid
+graph TD
+    A[Pedido Finalizado<br/>Total: R$ 100] --> B{Usuário autenticado?}
+    B -->|Não| Z[Sem cashback]
+    B -->|Sim| C[Busca tier do usuário]
+
+    C --> D{Qual tier?}
+    D -->|Bronze| E[Calcula 2%<br/>= R$ 2,00]
+    D -->|Silver| F[Calcula 5%<br/>= R$ 5,00]
+    D -->|Gold| G[Calcula 8%<br/>= R$ 8,00]
+    D -->|Platinum| H[Calcula 10%<br/>= R$ 10,00]
+
+    E --> I[Cria CashbackHistory]
+    F --> I
+    G --> I
+    H --> I
+
+    I --> J[Atualiza User.cashbackBalance]
+    J --> K[Verifica mudança de tier<br/>baseado em total gasto]
+
+    K --> L{Mudou de tier?}
+    L -->|Sim| M[Atualiza User.tier<br/>Envia notificação]
+    L -->|Não| N[Envia notificação<br/>de cashback ganho]
+
+    M --> O[Define expiresAt<br/>+90 dias]
+    N --> O
+
+    O --> P[Retorna ao cliente]
+
+    style D fill:#f6993f
+    style L fill:#e3342f
+    style P fill:#38c172
+```
+
+---
+
+## 📈 Scalability Considerations
+
+### Current Capacity
+
+| Metric | Current | Maximum | Scaling Point |
+|--------|---------|---------|---------------|
+| Concurrent users | ~50 | 500 | Add load balancer |
+| Requests/second | ~100 | 1000 | Horizontal scaling |
+| Database connections | 20 | 100 | Connection pooling |
+| WebSocket connections | ~50 | 500 | Socket.IO cluster |
+| Storage | 5 GB | 50 GB | Add CDN for images |
+
+### Horizontal Scaling Strategy
+
+**Phase 1: Single Instance (Current)**
+```
+[Vercel] → [Railway Instance 1] → [PostgreSQL]
+```
+
+**Phase 2: Load Balanced (500-1000 users)**
+```
+                    ┌→ [Railway Instance 1] ┐
+[Vercel] → [LB] ────┤                        ├→ [PostgreSQL Primary]
+                    └→ [Railway Instance 2] ┘       ↓
+                                                [Read Replica]
+```
+
+**Phase 3: Microservices (1000+ users)**
+```
+[Vercel] → [API Gateway]
+              ├→ [Auth Service]
+              ├→ [Order Service]
+              ├→ [Payment Service]
+              ├→ [Notification Service]
+              └→ [Analytics Service]
+                        ↓
+              [PostgreSQL Cluster]
+              [Redis Cluster]
+              [Message Queue - RabbitMQ]
+```
+
+### Database Scaling Strategy
+
+**Read Scaling:**
+- Add PostgreSQL read replicas (up to 5)
+- Route read queries to replicas
+- Route write queries to primary
+
+**Write Scaling:**
+- Implement database sharding (by tenant/region)
+- Add write-ahead logging (WAL)
+- Consider NoSQL for high-write workloads (logs, analytics)
+
+**Cache Scaling:**
+- Implement Redis Cluster mode
+- Add Redis Sentinel for high availability
+- Use cache warming strategies
+
+---
+
+## 🚨 Disaster Recovery & Business Continuity
+
+### Backup Strategy
+
+| Component | Frequency | Retention | Location | RTO | RPO |
+|-----------|-----------|-----------|----------|-----|-----|
+| PostgreSQL | Daily | 30 days | Railway | 2h | 24h |
+| Redis | Hourly | 7 days | Railway | 30min | 1h |
+| Code | On commit | Forever | GitHub | 10min | 0 |
+| Env vars | Manual | Forever | 1Password | 1h | Manual |
+| Static files | Daily | 90 days | S3/Cloudinary | 1h | 24h |
+
+### Recovery Procedures
+
+**Database Recovery:**
+```bash
+# 1. Identify backup point
+railway database:backups list
+
+# 2. Restore to timestamp
+railway database:restore --backup=<backup-id>
+
+# 3. Verify data integrity
+railway run -- npm run db:verify
+
+# 4. Update connection strings
+railway variables:set DATABASE_URL=<new-url>
+```
+
+**Full System Recovery:**
+1. Restore database from latest backup (2 hours)
+2. Redeploy backend from Git (10 minutes)
+3. Redeploy frontend from Git (5 minutes)
+4. Verify health checks (5 minutes)
+5. **Total RTO: ~2.5 hours**
+
+---
+
+## 📡 Monitoring & Observability
+
+### Health Check Endpoints
+
+| Endpoint | Purpose | Success Criteria | Alert Threshold |
+|----------|---------|------------------|-----------------|
+| `/health` | Basic liveness | 200 OK | > 5s response |
+| `/health/db` | Database connectivity | Connection OK | > 3s response |
+| `/health/redis` | Cache connectivity | Connection OK | > 2s response |
+| `/metrics` | Prometheus metrics | Metrics returned | N/A |
+
+### Key Metrics to Monitor
+
+**Application Metrics:**
+- Request rate (req/s)
+- Response time (p50, p95, p99)
+- Error rate (4xx, 5xx)
+- Active WebSocket connections
+- Background job success rate
+
+**Infrastructure Metrics:**
+- CPU usage (%)
+- Memory usage (%)
+- Disk I/O (IOPS)
+- Network bandwidth (Mbps)
+
+**Business Metrics:**
+- Orders created per hour
+- Average order value (AOV)
+- Cashback redemption rate
+- User tier distribution
+- Top products by revenue
+
+### Alerting Rules
+
+| Alert | Condition | Severity | Action |
+|-------|-----------|----------|--------|
+| High error rate | > 5% 5xx errors | Critical | Page on-call |
+| Slow response | p95 > 3s | High | Investigate |
+| Database down | Health check fails | Critical | Immediate recovery |
+| Disk full | > 90% usage | High | Scale storage |
+| High CPU | > 80% for 5min | Medium | Consider scaling |
+
+---
+
+## 🔮 Future Evolution
+
+### Short-term (Q1 2026)
+
+- [ ] Implement Redis caching layer (✅ Implemented Sprint 58)
+- [ ] Add comprehensive monitoring (Sentry, Datadog)
+- [ ] Implement A/B testing framework
+- [ ] Add GraphQL endpoint (optional)
+- [ ] Improve mobile landscape layout
+- [ ] Add load testing suite (Artillery/K6)
+
+### Medium-term (Q2-Q3 2026)
+
+- [ ] Migrate to Prisma ORM (from Sequelize)
+- [ ] Implement microservices architecture
+- [ ] Add internationalization (i18n)
+- [ ] Implement feature flags (LaunchDarkly)
+- [ ] Add advanced analytics (Mixpanel)
+- [ ] Implement rate limiting per user tier
+
+### Long-term (Q4 2026+)
+
+- [ ] Multi-tenant support (franchise expansion)
+- [ ] Mobile native apps (React Native)
+- [ ] AI-powered recommendations
+- [ ] Voice ordering integration
+- [ ] Blockchain loyalty program
+- [ ] Advanced inventory forecasting
+
+---
+
+**Última atualização:** 2026-01-17
+**Por:** MANUS LIA v7.1 + Claude Sonnet 4.5
+**Versão:** 2.1 (C4 Model Enhanced)

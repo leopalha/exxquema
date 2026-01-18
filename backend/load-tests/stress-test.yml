@@ -1,0 +1,61 @@
+# Artillery Stress Test
+# Finds the breaking point of the system
+
+config:
+  target: 'https://backend-production-28c3.up.railway.app'
+  phases:
+    # Gradual increase until system breaks
+    - duration: 300 # 5 minutes
+      arrivalRate: 10
+      rampTo: 500
+      name: "Ramp to Breaking Point"
+    # Sustain max load
+    - duration: 120
+      arrivalRate: 500
+      name: "Sustain Maximum Load"
+
+  ensure:
+    maxErrorRate: 10 # Expect failures
+
+  plugins:
+    expect: {}
+
+scenarios:
+  - name: "Mixed Traffic"
+    weight: 50
+    flow:
+      - get:
+          url: "/api/products"
+      - think: 0.5
+      - get:
+          url: "/api/categories"
+
+  - name: "Heavy Writes"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com"
+            password: "senha123"
+          capture:
+            - json: "$.token"
+              as: "token"
+      - post:
+          url: "/api/orders"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            items:
+              - productId: 1
+                quantity: 1
+            tableId: 1
+            paymentMethod: "cash"
+
+  - name: "Read Heavy"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/products?limit=50"
+      - get:
+          url: "/api/orders"

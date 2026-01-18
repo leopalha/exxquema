@@ -10,19 +10,19 @@ describe('CartSummary', () => {
   it('renders subtotal correctly', () => {
     render(<CartSummary {...defaultProps} />);
     expect(screen.getByText('Subtotal')).toBeInTheDocument();
-    expect(screen.getByText('R$100,00/)).toBeInTheDocument();
+    expect(screen.getAllByText(/R\$\s+100\.00/)).toHaveLength(2); // Subtotal and Total
   });
 
   it('displays total correctly', () => {
     render(<CartSummary {...defaultProps} />);
     expect(screen.getByText('Total')).toBeInTheDocument();
-    expect(screen.getAllByText(/R\$ 100\.00/)).toHaveLength(2); // Subtotal and Total
+    expect(screen.getAllByText(/R\$\s+100.00/)).toHaveLength(2); // Subtotal and Total
   });
 
   it('shows discount when provided', () => {
     render(<CartSummary {...defaultProps} discount={10.00} />);
     expect(screen.getByText('Desconto')).toBeInTheDocument();
-    expect(screen.getByText('- R$ 10.00')).toBeInTheDocument();
+    expect(screen.getByText(/- R\$\s+10.00/)).toBeInTheDocument();
   });
 
   it('does not show discount when zero', () => {
@@ -33,7 +33,7 @@ describe('CartSummary', () => {
   it('shows cashback used when provided', () => {
     render(<CartSummary {...defaultProps} cashbackUsed={5.00} />);
     expect(screen.getByText('Cashback usado')).toBeInTheDocument();
-    expect(screen.getByText('- R$ 5.00')).toBeInTheDocument();
+    expect(screen.getByText(/- R\$\s+5.00/)).toBeInTheDocument();
   });
 
   it('does not show cashback when zero', () => {
@@ -44,7 +44,7 @@ describe('CartSummary', () => {
   it('shows delivery fee when provided', () => {
     render(<CartSummary {...defaultProps} deliveryFee={8.00} />);
     expect(screen.getByText('Taxa de entrega')).toBeInTheDocument();
-    expect(screen.getByText('R$8,00/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s+8.00/)).toBeInTheDocument();
   });
 
   it('does not show delivery fee when zero', () => {
@@ -61,7 +61,7 @@ describe('CartSummary', () => {
       />
     );
 
-    expect(screen.getByText('R$90,00/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s+90.00/)).toBeInTheDocument();
   });
 
   it('calculates total with all fees', () => {
@@ -75,7 +75,7 @@ describe('CartSummary', () => {
       />
     );
 
-    expect(screen.getByText('R$93,00/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s+93.00/)).toBeInTheDocument();
   });
 
   it('formats decimal values correctly', () => {
@@ -86,7 +86,7 @@ describe('CartSummary', () => {
       />
     );
 
-    expect(screen.getByText('R$99,99/)).toBeInTheDocument();
+    expect(screen.getAllByText(/R\$\s+99\.99/)).toHaveLength(2); // Subtotal and Total
   });
 
   it('applies custom className', () => {

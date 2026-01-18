@@ -1,0 +1,249 @@
+# Artillery Load Test Configuration
+# FLAME Lounge Bar - Backend API Performance Tests
+#
+# Usage:
+#   npm install -g artillery
+#   artillery run load-tests/config.yml
+#   artillery run load-tests/config.yml --output report.json
+#   artillery report report.json
+
+config:
+  target: 'https://backend-production-28c3.up.railway.app'
+  # target: 'http://localhost:3001' # For local testing
+  phases:
+    # Phase 1: Warm-up (gradual load increase)
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm-up"
+    # Phase 2: Ramp-up (load increase)
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "Ramp-up"
+    # Phase 3: Sustained load (high traffic)
+    - duration: 180
+      arrivalRate: 50
+      name: "Sustained Load"
+    # Phase 4: Spike test (stress test)
+    - duration: 60
+      arrivalRate: 100
+      name: "Spike Test"
+    # Phase 5: Cool-down
+    - duration: 60
+      arrivalRate: 10
+      name: "Cool-down"
+
+  # Performance thresholds
+  ensure:
+    maxErrorRate: 1 # Max 1% error rate
+    p95: 1500 # 95th percentile < 1.5s
+    p99: 3000 # 99th percentile < 3s
+
+  # HTTP defaults
+  http:
+    timeout: 10
+
+  # Variables
+  variables:
+    testEmail: "loadtest+{{ $randomString() }}@flame.com"
+    testPassword: "TestPassword123!"
+
+  # Plugins
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+
+scenarios:
+  # Scenario 1: Anonymous user browsing menu
+  - name: "Browse Menu (Unauthenticated)"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/products"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: data
+      - think: 2
+      - get:
+          url: "/api/categories"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - get:
+          url: "/api/products?category={{ $randomNumber(1, 5) }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 2: User registration and login
+  - name: "User Registration & Login"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "Load Test User"
+            email: "{{ testEmail }}"
+            password: "{{ testPassword }}"
+            phone: "+5511{{ $randomNumber(900000000, 999999999) }}"
+          expect:
+            - statusCode: 201
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 2
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ testEmail }}"
+            password: "{{ testPassword }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.token"
+              as: "authToken"
+
+  # Scenario 3: Authenticated user creates order
+  - name: "Create Order (Authenticated)"
+    weight: 25
+    flow:
+      # Login first
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com" # Use existing test user
+            password: "senha123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1
+      # Browse products
+      - get:
+          url: "/api/products"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      # Create order
+      - post:
+          url: "/api/orders"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            items:
+              - productId: "{{ $randomNumber(1, 20) }}"
+                quantity: "{{ $randomNumber(1, 3) }}"
+              - productId: "{{ $randomNumber(1, 20) }}"
+                quantity: 1
+            tableId: "{{ $randomNumber(1, 10) }}"
+            paymentMethod: "credit_card"
+            useCashback: false
+          expect:
+            - statusCode: [200, 201]
+          capture:
+            - json: "$.orderId"
+              as: "orderId"
+      - think: 2
+      # Check order status
+      - get:
+          url: "/api/orders/{{ orderId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 4: View orders history
+  - name: "View Orders History"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com"
+            password: "senha123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1
+      - get:
+          url: "/api/orders"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/orders?status=completed&limit=10"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 5: Check cashback balance
+  - name: "Cashback Operations"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "cliente@flame.com"
+            password: "senha123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1
+      - get:
+          url: "/api/cashback/balance"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/cashback/history?limit=20"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 6: Admin operations
+  - name: "Admin Dashboard"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "admin@flame.com"
+            password: "admin123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1
+      - get:
+          url: "/api/admin/dashboard"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/admin/orders?status=pending"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Scenario 7: Search products
+  - name: "Product Search"
+    weight: 5
+    flow:
+      - get:
+          url: "/api/products/search?q=cerveja"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - get:
+          url: "/api/products/search?q=drink"
+          expect:
+            - statusCode: 200
