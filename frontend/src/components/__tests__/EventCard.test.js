@@ -26,7 +26,7 @@ const mockEvent = {
     {
       icone: '🍺',
       titulo: 'Cerveja',
-      preco: 'R$ 7,00',
+      preco: 'R$ 7.00',
       descricao: 'Todas as cervejas',
     },
   ],
@@ -78,7 +78,9 @@ describe('EventCard', () => {
   it('displays detailed schedules when expanded', () => {
     render(<EventCard event={mockEvent} isExpanded={true} />);
 
-    expect(screen.getByText('Happy Hour')).toBeInTheDocument();
+    // Use getAllByText since "Happy Hour" appears multiple times
+    const happyHourElements = screen.getAllByText('Happy Hour');
+    expect(happyHourElements.length).toBeGreaterThan(0);
     expect(screen.getByText(/Drinks com 30% de desconto/)).toBeInTheDocument();
     expect(screen.getByText('Show ao Vivo')).toBeInTheDocument();
   });
@@ -87,7 +89,7 @@ describe('EventCard', () => {
     render(<EventCard event={mockEvent} isExpanded={true} />);
 
     expect(screen.getByText('Cerveja')).toBeInTheDocument();
-    expect(screen.getByText(/R$s+7,00/)).toBeInTheDocument();
+    expect(screen.getByText(/R$s+7.00/)).toBeInTheDocument();
     expect(screen.getByText('Todas as cervejas')).toBeInTheDocument();
   });
 

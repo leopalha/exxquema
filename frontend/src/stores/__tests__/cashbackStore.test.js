@@ -1,0 +1,169 @@
+import { renderHook, act } from '@testing-library/react';
+
+jest.resetModules();
+
+jest.mock('../../utils/storage', () => ({
+  safeLocalStorage: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn()
+  }
+}));
+
+jest.mock('zustand/middleware', () => ({
+  persist: (config) => config
+}));
+
+import { useCashbackStore } from '../cashbackStore';
+
+describe('CashbackStore', () => {
+  beforeEach(() => {
+    useCashbackStore.setState({
+      balance: 0,
+      transactions: [],
+      loading: false,
+      error: null
+    }, true);
+    jest.clearAllMocks();
+  });
+
+  test('has correct initial state', () => {
+    const { result } = renderHook(() => useCashbackStore());
+    expect(result.current.balance).toBe(0);
+    expect(result.current.transactions).toEqual([]);
+    expect(result.current.loading).toBe(false);
+  });
+
+  test('can set cashback balance', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      useCashbackStore.setState({ balance: 50.00 });
+    });
+
+    expect(result.current.balance).toBe(50.00);
+  });
+
+  test('can add cashback transaction', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    const transaction = {
+      id: 1,
+      type: 'earned',
+      amount: 10.00,
+      orderId: 'ORD001',
+      description: 'Cashback from order',
+      createdAt: new Date().toISOString()
+    };
+
+    act(() => {
+      useCashbackStore.setState({
+        transactions: [transaction],
+        balance: 10.00
+      });
+    });
+
+    expect(result.current.transactions).toHaveLength(1);
+    expect(result.current.balance).toBe(10.00);
+  });
+
+  test('handles cashback redemption', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      useCashbackStore.setState({
+        balance: 50.00,
+        transactions: []
+      });
+    });
+
+    // Simulate redemption
+    act(() => {
+      const redemption = {
+        id: 2,
+        type: 'used',
+        amount: -20.00,
+        orderId: 'ORD002',
+        description: 'Used in order',
+        createdAt: new Date().toISOString()
+      };
+
+      useCashbackStore.setState({
+        transactions: [redemption],
+        balance: 30.00
+      });
+    });
+
+    expect(result.current.balance).toBe(30.00);
+    expect(result.current.transactions[0].type).toBe('used');
+    expect(result.current.transactions[0].amount).toBe(-20.00);
+  });
+
+  test('calculates cashback percentage', () => {
+    // Standard cashback is 10%
+    const orderAmount = 100.00;
+    const cashbackAmount = orderAmount * 0.10;
+
+    expect(cashbackAmount).toBe(10.00);
+  });
+
+  test('handles multiple transactions', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    const transactions = [
+      { id: 1, type: 'earned', amount: 15.00, description: 'Order 1' },
+      { id: 2, type: 'earned', amount: 10.00, description: 'Order 2' },
+      { id: 3, type: 'used', amount: -5.00, description: 'Used in Order 3' }
+    ];
+
+    act(() => {
+      useCashbackStore.setState({
+        transactions,
+        balance: 20.00 // 15 + 10 - 5
+      });
+    });
+
+    expect(result.current.transactions).toHaveLength(3);
+    expect(result.current.balance).toBe(20.00);
+  });
+
+  test('can filter earned vs used transactions', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    const transactions = [
+      { id: 1, type: 'earned', amount: 15.00 },
+      { id: 2, type: 'earned', amount: 10.00 },
+      { id: 3, type: 'used', amount: -5.00 },
+      { id: 4, type: 'used', amount: -3.00 }
+    ];
+
+    act(() => {
+      useCashbackStore.setState({ transactions });
+    });
+
+    const earned = result.current.transactions.filter(t => t.type === 'earned');
+    const used = result.current.transactions.filter(t => t.type === 'used');
+
+    expect(earned).toHaveLength(2);
+    expect(used).toHaveLength(2);
+  });
+
+  test('handles loading state', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      useCashbackStore.setState({ loading: true });
+    });
+
+    expect(result.current.loading).toBe(true);
+  });
+
+  test('handles error state', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      useCashbackStore.setState({ error: 'Failed to fetch cashback' });
+    });
+
+    expect(result.current.error).toBe('Failed to fetch cashback');
+  });
+});

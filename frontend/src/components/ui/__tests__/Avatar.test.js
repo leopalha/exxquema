@@ -13,8 +13,9 @@ describe('Avatar', () => {
   });
 
   it('renders initials from name', () => {
-    render(<Avatar name="John Doe" />);
-    expect(screen.getByText('JD')).toBeInTheDocument();
+    const { container } = render(<Avatar name="John Doe" />);
+    // Use container to avoid multiple matches in other tests
+    expect(container.textContent).toContain('JD');
   });
 
   it('renders single initial for single name', () => {

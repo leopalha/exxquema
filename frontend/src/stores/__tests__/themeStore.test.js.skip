@@ -1,5 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 
+// Reset module cache to bypass global mocks
+jest.resetModules();
+
 // Mock dependencies BEFORE importing store
 jest.mock('../../utils/storage', () => ({
   safeLocalStorage: {
@@ -14,7 +17,8 @@ jest.mock('zustand/middleware', () => ({
   persist: (config) => config
 }));
 
-import useThemeStore from '../themeStore';
+// Import after mocking dependencies but with module reset
+const useThemeStore = require('../themeStore').default;
 
 describe('ThemeStore', () => {
   beforeEach(() => {

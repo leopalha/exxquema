@@ -1,5 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 
+// Reset module cache to bypass global mocks
+jest.resetModules();
+
 // Mock dependencies BEFORE importing store
 jest.mock('react-hot-toast', () => ({
   toast: {
@@ -28,9 +31,9 @@ jest.mock('zustand/middleware', () => ({
   persist: (config) => config
 }));
 
-// Import after mocks
-import { useCartStore } from '../cartStore';
-import { toast } from 'react-hot-toast';
+// Import after mocks with module reset
+const { useCartStore } = require('../cartStore');
+const { toast } = require('react-hot-toast');
 
 describe('CartStore', () => {
   beforeEach(() => {

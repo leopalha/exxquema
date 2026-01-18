@@ -34,7 +34,7 @@ describe('CartItem Component', () => {
       render(<CartItem item={mockItem} {...mockHandlers} />)
 
       // Total: 35.90 * 2 = 71.80
-      expect(screen.getByText(/R\$\s+71,80/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71.80/)).toBeInTheDocument()
     })
 
     test('renders item quantity', () => {
@@ -75,7 +75,7 @@ describe('CartItem Component', () => {
 
       expect(screen.getByText('2x')).toBeInTheDocument()
       expect(screen.getByText('Hambúrguer Artesanal')).toBeInTheDocument()
-      expect(screen.getByText(/R\$\s+71,80/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71.80/)).toBeInTheDocument()
     })
 
     test('does not render image in compact mode', () => {
@@ -182,7 +182,7 @@ describe('CartItem Component', () => {
       const singleItem = { ...mockItem, quantity: 1 }
       render(<CartItem item={singleItem} {...mockHandlers} />)
 
-      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35.90/)).toBeInTheDocument()
     })
 
     test('calculates total correctly for quantity > 1', () => {

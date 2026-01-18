@@ -49,11 +49,11 @@ describe('Input', () => {
   });
 
   it('supports different input types', () => {
-    const { rerender } = render(<Input type="email" />);
+    const { rerender, container } = render(<Input type="email" />);
     expect(screen.getByRole('textbox')).toHaveAttribute('type', 'email');
 
     rerender(<Input type="password" />);
-    const input = screen.getByPlaceholderText('') || document.querySelector('input[type="password"]');
+    const input = container.querySelector('input[type="password"]');
     expect(input).toHaveAttribute('type', 'password');
   });
 
