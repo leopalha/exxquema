@@ -1,169 +1,226 @@
 import { renderHook, act } from '@testing-library/react';
+import axios from 'axios';
 
 jest.resetModules();
 
-jest.mock('../../utils/storage', () => ({
-  safeLocalStorage: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn()
-  }
-}));
+// Unmock cashbackStore to get actual implementation
+jest.unmock('../cashbackStore');
 
-jest.mock('zustand/middleware', () => ({
-  persist: (config) => config
-}));
+// Mock axios
+jest.mock('axios');
 
-import { useCashbackStore } from '../cashbackStore';
+// Mock localStorage for getAuthToken
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn()
+};
+global.localStorage = localStorageMock;
+
+// Import after mocks - must use require to bypass Jest's import hoisting
+const useCashbackStore = require('../cashbackStore').default;
 
 describe('CashbackStore', () => {
   beforeEach(() => {
-    useCashbackStore.setState({
-      balance: 0,
-      transactions: [],
-      loading: false,
-      error: null
-    }, true);
     jest.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
   });
 
-  test('has correct initial state', () => {
+  test('fetchBalance updates balance and tier successfully', async () => {
     const { result } = renderHook(() => useCashbackStore());
-    expect(result.current.balance).toBe(0);
-    expect(result.current.transactions).toEqual([]);
+
+    // First reset the store
+    act(() => {
+      result.current.reset();
+    });
+
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
+
+    axios.get.mockResolvedValueOnce({
+      data: {
+        data: {
+          balance: 50.50,
+          tier: 'gold',
+          tierBenefits: { cashbackRate: 0.15 },
+          nextTierInfo: { tier: 'platinum', requiredPoints: 1000 }
+        }
+      }
+    });
+
+    await act(async () => {
+      await result.current.fetchBalance();
+    });
+
+    expect(result.current.balance).toBe(50.50);
+    expect(result.current.tier).toBe('gold');
+    expect(result.current.tierBenefits).toEqual({ cashbackRate: 0.15 });
     expect(result.current.loading).toBe(false);
   });
 
-  test('can set cashback balance', () => {
+  test('fetchBalance handles errors gracefully', async () => {
     const { result } = renderHook(() => useCashbackStore());
 
     act(() => {
-      useCashbackStore.setState({ balance: 50.00 });
+      result.current.reset();
     });
 
-    expect(result.current.balance).toBe(50.00);
-  });
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
 
-  test('can add cashback transaction', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    const transaction = {
-      id: 1,
-      type: 'earned',
-      amount: 10.00,
-      orderId: 'ORD001',
-      description: 'Cashback from order',
-      createdAt: new Date().toISOString()
-    };
-
-    act(() => {
-      useCashbackStore.setState({
-        transactions: [transaction],
-        balance: 10.00
-      });
+    axios.get.mockRejectedValueOnce({
+      response: { data: { message: 'Failed to fetch cashback' } }
     });
 
-    expect(result.current.transactions).toHaveLength(1);
-    expect(result.current.balance).toBe(10.00);
-  });
-
-  test('handles cashback redemption', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    act(() => {
-      useCashbackStore.setState({
-        balance: 50.00,
-        transactions: []
-      });
-    });
-
-    // Simulate redemption
-    act(() => {
-      const redemption = {
-        id: 2,
-        type: 'used',
-        amount: -20.00,
-        orderId: 'ORD002',
-        description: 'Used in order',
-        createdAt: new Date().toISOString()
-      };
-
-      useCashbackStore.setState({
-        transactions: [redemption],
-        balance: 30.00
-      });
-    });
-
-    expect(result.current.balance).toBe(30.00);
-    expect(result.current.transactions[0].type).toBe('used');
-    expect(result.current.transactions[0].amount).toBe(-20.00);
-  });
-
-  test('calculates cashback percentage', () => {
-    // Standard cashback is 10%
-    const orderAmount = 100.00;
-    const cashbackAmount = orderAmount * 0.10;
-
-    expect(cashbackAmount).toBe(10.00);
-  });
-
-  test('handles multiple transactions', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    const transactions = [
-      { id: 1, type: 'earned', amount: 15.00, description: 'Order 1' },
-      { id: 2, type: 'earned', amount: 10.00, description: 'Order 2' },
-      { id: 3, type: 'used', amount: -5.00, description: 'Used in Order 3' }
-    ];
-
-    act(() => {
-      useCashbackStore.setState({
-        transactions,
-        balance: 20.00 // 15 + 10 - 5
-      });
-    });
-
-    expect(result.current.transactions).toHaveLength(3);
-    expect(result.current.balance).toBe(20.00);
-  });
-
-  test('can filter earned vs used transactions', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    const transactions = [
-      { id: 1, type: 'earned', amount: 15.00 },
-      { id: 2, type: 'earned', amount: 10.00 },
-      { id: 3, type: 'used', amount: -5.00 },
-      { id: 4, type: 'used', amount: -3.00 }
-    ];
-
-    act(() => {
-      useCashbackStore.setState({ transactions });
-    });
-
-    const earned = result.current.transactions.filter(t => t.type === 'earned');
-    const used = result.current.transactions.filter(t => t.type === 'used');
-
-    expect(earned).toHaveLength(2);
-    expect(used).toHaveLength(2);
-  });
-
-  test('handles loading state', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    act(() => {
-      useCashbackStore.setState({ loading: true });
-    });
-
-    expect(result.current.loading).toBe(true);
-  });
-
-  test('handles error state', () => {
-    const { result } = renderHook(() => useCashbackStore());
-
-    act(() => {
-      useCashbackStore.setState({ error: 'Failed to fetch cashback' });
+    await act(async () => {
+      await result.current.fetchBalance();
     });
 
     expect(result.current.error).toBe('Failed to fetch cashback');
+    expect(result.current.loading).toBe(false);
+  });
+
+  test('fetchHistory retrieves transaction history', async () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
+
+    const mockHistory = [
+      { id: 1, type: 'earned', amount: 10, description: 'Order #123' },
+      { id: 2, type: 'used', amount: -5, description: 'Used in Order #124' }
+    ];
+
+    axios.get.mockResolvedValueOnce({
+      data: {
+        data: {
+          history: mockHistory,
+          pagination: { page: 1, totalPages: 1 }
+        }
+      }
+    });
+
+    await act(async () => {
+      await result.current.fetchHistory(1, 20);
+    });
+
+    expect(result.current.history).toEqual(mockHistory);
+    expect(result.current.historyPagination).toEqual({ page: 1, totalPages: 1 });
+    expect(result.current.loading).toBe(false);
+  });
+
+  test('calculateMaxCashbackUsable limits to 50% of order total', async () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
+
+    axios.get.mockResolvedValueOnce({
+      data: {
+        data: {
+          balance: 100,
+          tier: 'bronze',
+          tierBenefits: null,
+          nextTierInfo: null
+        }
+      }
+    });
+
+    await act(async () => {
+      await result.current.fetchBalance();
+    });
+
+    // Order total: 100, max cashback: 50 (50%)
+    const maxUsable = result.current.calculateMaxCashbackUsable(100);
+    expect(maxUsable).toBe(50);
+  });
+
+  test('calculateMaxCashbackUsable respects balance limit', async () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
+
+    axios.get.mockResolvedValueOnce({
+      data: {
+        data: {
+          balance: 20,
+          tier: 'bronze',
+          tierBenefits: null,
+          nextTierInfo: null
+        }
+      }
+    });
+
+    await act(async () => {
+      await result.current.fetchBalance();
+    });
+
+    // Order total: 100, max allowed: 50, but balance: 20
+    const maxUsable = result.current.calculateMaxCashbackUsable(100);
+    expect(maxUsable).toBe(20); // Limited by balance
+  });
+
+  test('clearError resets error state', async () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    act(() => {
+      result.current.reset();
+    });
+
+    // Trigger an error first
+    localStorageMock.getItem.mockReturnValue(JSON.stringify({
+      state: { token: 'test-token' }
+    }));
+
+    axios.get.mockRejectedValueOnce({
+      response: { data: { message: 'Test error' } }
+    });
+
+    await act(async () => {
+      await result.current.fetchBalance();
+    });
+
+    expect(result.current.error).toBe('Test error');
+
+    act(() => {
+      result.current.clearError();
+    });
+
+    expect(result.current.error).toBeNull();
+  });
+
+  test('reset clears all state to initial values', () => {
+    const { result } = renderHook(() => useCashbackStore());
+
+    // Call reset and verify all initial values
+    act(() => {
+      result.current.reset();
+    });
+
+    expect(result.current.balance).toBe(0);
+    expect(result.current.tier).toBe('bronze');
+    expect(result.current.history).toEqual([]);
+    expect(result.current.tierBenefits).toBeNull();
+    expect(result.current.nextTierInfo).toBeNull();
+    expect(result.current.historyPagination).toBeNull();
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
   });
 });

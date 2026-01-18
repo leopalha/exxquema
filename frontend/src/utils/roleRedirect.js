@@ -26,7 +26,7 @@ export const redirectToRoleHome = (router, user) => {
   }
 
   const homePage = getRoleHomePage(user.role);
-  const returnTo = router.query.returnTo;
+  const returnTo = router.query?.returnTo;
 
   console.log('🔀 REDIRECT DEBUG:', {
     userRole: user.role,

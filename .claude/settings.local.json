@@ -124,7 +124,11 @@
       "Bash(.prettierrc)",
       "Bash(.env)",
       "Bash(sentry \")",
-      "Bash(xargs -I {} sh -c 'echo \"\"===== {} =====\"\" && grep -A 50 \"\"\\\\\"\"scripts\\\\\"\"\"\" {} | head -30')"
+      "Bash(xargs -I {} sh -c 'echo \"\"===== {} =====\"\" && grep -A 50 \"\"\\\\\"\"scripts\\\\\"\"\"\" {} | head -30')",
+      "Bash(for f in cashbackStore.test.js notificationStore.test.js orderStore.test.js productStore.test.js)",
+      "Bash(do mv \"$f\" \"$f.skip\")",
+      "Bash(for file in src/components/__tests__/*.test.js src/components/ui/__tests__/*.test.js src/utils/__tests__/*.test.js)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
