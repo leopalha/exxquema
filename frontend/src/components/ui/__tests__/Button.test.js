@@ -71,8 +71,11 @@ describe('Button', () => {
 
   it('disables button when loading', () => {
     render(<Button loading>Loading</Button>);
-    const button = screen.getByText('Carregando...');
+    // Find button by role, not by loading text which is in a child span
+    const button = screen.getByRole('button');
     expect(button).toBeDisabled();
+    // Loading text should be visible
+    expect(screen.getByText('Carregando...')).toBeInTheDocument();
   });
 
   it('renders with full width', () => {

@@ -1,6 +1,17 @@
 import { render, screen, act, waitFor } from '@testing-library/react';
 import CountdownTimer from '../CountdownTimer';
 
+// Mock themeStore to avoid import issues
+jest.mock('../../stores/themeStore', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    getPalette: jest.fn(() => ({
+      primary: '#FF6B35',
+      secondary: '#004E89',
+    })),
+  })),
+}));
+
 jest.useFakeTimers();
 
 describe('CountdownTimer', () => {

@@ -89,7 +89,7 @@ describe('EventCard', () => {
     render(<EventCard event={mockEvent} isExpanded={true} />);
 
     expect(screen.getByText('Cerveja')).toBeInTheDocument();
-    expect(screen.getByText(/R$s+7.00/)).toBeInTheDocument();
+    expect(screen.getByText(/R\$\s+7\.00/)).toBeInTheDocument();
     expect(screen.getByText('Todas as cervejas')).toBeInTheDocument();
   });
 

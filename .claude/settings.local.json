@@ -130,7 +130,9 @@
       "Bash(for file in src/components/__tests__/*.test.js src/components/ui/__tests__/*.test.js src/utils/__tests__/*.test.js)",
       "Bash(echo:*)",
       "Bash(for f in CashbackDisplay CountdownTimer DemoModeBanner PWAInstallBanner)",
-      "Bash(do echo \"=== $f ===\")"
+      "Bash(do echo \"=== $f ===\")",
+      "Bash(for f in GoogleLoginButton CountdownTimer CashbackDisplay PhoneInput)",
+      "Bash(for f in Header Footer OrderCard EventCard Avatar Button Input)"
     ],
     "deny": [],
     "ask": []
