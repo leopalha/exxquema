@@ -128,7 +128,9 @@
       "Bash(for f in cashbackStore.test.js notificationStore.test.js orderStore.test.js productStore.test.js)",
       "Bash(do mv \"$f\" \"$f.skip\")",
       "Bash(for file in src/components/__tests__/*.test.js src/components/ui/__tests__/*.test.js src/utils/__tests__/*.test.js)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(for f in CashbackDisplay CountdownTimer DemoModeBanner PWAInstallBanner)",
+      "Bash(do echo \"=== $f ===\")"
     ],
     "deny": [],
     "ask": []

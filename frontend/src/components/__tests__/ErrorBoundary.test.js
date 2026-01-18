@@ -52,7 +52,8 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    const reloadButton = screen.getByRole('button');
-    expect(reloadButton).toBeInTheDocument();
+    // May have multiple buttons, just verify at least one reload button exists
+    const reloadButtons = screen.getAllByRole('button', { name: /recarregar/i });
+    expect(reloadButtons.length).toBeGreaterThan(0);
   });
 });

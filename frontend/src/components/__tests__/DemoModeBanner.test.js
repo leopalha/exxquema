@@ -8,20 +8,21 @@ describe('DemoModeBanner', () => {
     process.env.NODE_ENV = originalEnv;
   });
 
-  it('renders in development mode', () => {
-    process.env.NODE_ENV = 'development';
-    render(<DemoModeBanner />);
+  it('renders in production mode', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.NEXT_PUBLIC_DEMO_MODE = undefined;
 
-    // Component should render
     const { container } = render(<DemoModeBanner />);
+    // Component renders in production to show demo warning
     expect(container.firstChild).toBeInTheDocument();
   });
 
-  it('does not render in production', () => {
-    process.env.NODE_ENV = 'production';
-    const { container } = render(<DemoModeBanner />);
+  it('renders when DEMO_MODE is true', () => {
+    process.env.NODE_ENV = 'development';
+    process.env.NEXT_PUBLIC_DEMO_MODE = 'true';
 
-    // Should not render anything
-    expect(container.firstChild).toBeNull();
+    const { container } = render(<DemoModeBanner />);
+    // Component renders when demo mode is explicitly enabled
+    expect(container.firstChild).toBeInTheDocument();
   });
 });

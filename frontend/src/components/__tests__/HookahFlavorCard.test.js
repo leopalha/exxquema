@@ -61,7 +61,7 @@ describe('HookahFlavorCard', () => {
   });
 
   it('renders in compact mode', () => {
-    render(<HookahFlavorCard flavor={mockFlavor} compact={true} />);
+    render(<HookahFlavorCard flavor={mockFlavor} compact={true} onSelect={jest.fn()} />);
     expect(screen.getByText('Menta')).toBeInTheDocument();
   });
 });
