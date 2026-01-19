@@ -132,7 +132,12 @@
       "Bash(for f in CashbackDisplay CountdownTimer DemoModeBanner PWAInstallBanner)",
       "Bash(do echo \"=== $f ===\")",
       "Bash(for f in GoogleLoginButton CountdownTimer CashbackDisplay PhoneInput)",
-      "Bash(for f in Header Footer OrderCard EventCard Avatar Button Input)"
+      "Bash(for f in Header Footer OrderCard EventCard Avatar Button Input)",
+      "Bash(docker:*)",
+      "Bash(bash:*)",
+      "Bash(powershell -Command \"Start-Process ''C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe''\")",
+      "Bash(timeout /t 15 /nobreak)",
+      "Bash(artillery:*)"
     ],
     "deny": [],
     "ask": []

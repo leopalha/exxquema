@@ -120,7 +120,7 @@ describe('Avatar', () => {
 
 describe('AvatarGroup', () => {
   it('renders multiple avatars', () => {
-    render(
+    const { container } = render(
       <AvatarGroup>
         <Avatar name="User 1" />
         <Avatar name="User 2" />
@@ -128,13 +128,13 @@ describe('AvatarGroup', () => {
       </AvatarGroup>
     );
 
-    expect(screen.getByText('U1')).toBeInTheDocument();
-    expect(screen.getByText('U2')).toBeInTheDocument();
-    expect(screen.getByText('U3')).toBeInTheDocument();
+    expect(container.textContent).toContain('U1');
+    expect(container.textContent).toContain('U2');
+    expect(container.textContent).toContain('U3');
   });
 
   it('limits displayed avatars based on max prop', () => {
-    render(
+    const { container } = render(
       <AvatarGroup max={2}>
         <Avatar name="User 1" />
         <Avatar name="User 2" />
@@ -144,9 +144,9 @@ describe('AvatarGroup', () => {
     );
 
     // Should show first 2 avatars and "+2" badge
-    expect(screen.getByText('U1')).toBeInTheDocument();
-    expect(screen.getByText('U2')).toBeInTheDocument();
-    expect(screen.getByText('+2')).toBeInTheDocument();
+    expect(container.textContent).toContain('U1');
+    expect(container.textContent).toContain('U2');
+    expect(container.textContent).toContain('+2');
   });
 
   it('shows remaining count when exceeding max', () => {

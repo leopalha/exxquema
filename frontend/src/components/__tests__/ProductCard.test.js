@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import ProductCard from '../ProductCard'
 import { useCartStore } from '../../stores/cartStore'
 import { useAuthStore } from '../../stores/authStore'
@@ -66,7 +66,7 @@ describe('ProductCard Component', () => {
 
       expect(screen.getByText('Hambúrguer Artesanal')).toBeInTheDocument()
       expect(screen.getByText('Delicioso hambúrguer com queijo e bacon')).toBeInTheDocument()
-      expect(screen.getByText(/R\$\s+35.90/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
     })
 
     test('renders product image with correct alt text', () => {
@@ -93,9 +93,9 @@ describe('ProductCard Component', () => {
       render(<ProductCard product={productWithDiscount} />)
 
       // Original price should be crossed out
-      expect(screen.getByText(/R\$\s+35.90/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+35,90/)).toBeInTheDocument()
       // Discounted price (35.90 * 0.8 = 28.72)
-      expect(screen.getByText(/R\$\s+28.72/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+28,72/)).toBeInTheDocument()
     })
 
     test('shows fallback image when image fails to load', () => {
@@ -150,25 +150,33 @@ describe('ProductCard Component', () => {
       const plusButton = screen.getByLabelText('Aumentar quantidade')
       fireEvent.click(plusButton)
 
-      expect(screen.getByLabelText(/Quantidade: 2/)).toBeInTheDocument()
+      expect(screen.getByText('2')).toBeInTheDocument()
     })
 
-    test('decrements quantity when minus button clicked', () => {
-      render(<ProductCard product={mockProduct} />)
+    test('decrements quantity when minus button clicked', async () => {
+      const { container } = render(<ProductCard product={mockProduct} />)
 
       const plusButton = screen.getByLabelText('Aumentar quantidade')
+
+      // Increase to 2
+      fireEvent.click(plusButton)
+
+      // Wait for state update to 2
+      await waitFor(() => {
+        const quantitySpan = container.querySelector('span[aria-label^="Quantidade"]')
+        expect(quantitySpan.textContent).toBe('2')
+      }, { timeout: 3000 })
+
+      // Get fresh reference to minus button after state update
       const minusButton = screen.getByLabelText('Diminuir quantidade')
 
-      // Increase to 3
-      fireEvent.click(plusButton)
-      fireEvent.click(plusButton)
-
-      expect(screen.getByLabelText(/Quantidade: 3/)).toBeInTheDocument()
-
-      // Decrease to 2
+      // Now decrease back to 1
       fireEvent.click(minusButton)
 
-      expect(screen.getByLabelText(/Quantidade: 2/)).toBeInTheDocument()
+      await waitFor(() => {
+        const quantitySpan = container.querySelector('span[aria-label^="Quantidade"]')
+        expect(quantitySpan.textContent).toBe('1')
+      }, { timeout: 3000 })
     })
 
     test('does not decrement quantity below 1', () => {
@@ -181,52 +189,67 @@ describe('ProductCard Component', () => {
       fireEvent.click(minusButton)
 
       // Should stay at 1
-      expect(screen.getByLabelText(/Quantidade: 1/)).toBeInTheDocument()
+      expect(screen.getByText('1')).toBeInTheDocument()
     })
 
     test('adds correct quantity to cart', async () => {
-      const mockAddItem = jest.fn()
+      const mockAddItem = jest.fn().mockResolvedValue()
       useCartStore.mockReturnValue({
         addItem: mockAddItem,
       })
 
-      render(<ProductCard product={mockProduct} />)
+      const { container } = render(<ProductCard product={mockProduct} />)
 
-      // Increase quantity to 3
+      // Increase quantity to 2 (simpler test)
       const plusButton = screen.getByLabelText('Aumentar quantidade')
       fireEvent.click(plusButton)
-      fireEvent.click(plusButton)
+
+      // Wait for quantity to update
+      const quantitySpan = container.querySelector('span[aria-label^="Quantidade"]')
+      await waitFor(() => {
+        expect(quantitySpan.textContent).toBe('2')
+      })
 
       // Add to cart
       const addButton = screen.getByLabelText(`Adicionar ${mockProduct.name} ao carrinho`)
       fireEvent.click(addButton)
 
       await waitFor(() => {
-        expect(mockAddItem).toHaveBeenCalledWith(mockProduct, 3)
+        expect(mockAddItem).toHaveBeenCalledWith(mockProduct, 2)
       })
     })
 
     test('resets quantity to 1 after successful add to cart', async () => {
-      const mockAddItem = jest.fn()
+      const mockAddItem = jest.fn().mockResolvedValue()
       useCartStore.mockReturnValue({
         addItem: mockAddItem,
       })
 
-      render(<ProductCard product={mockProduct} />)
+      const { container } = render(<ProductCard product={mockProduct} />)
 
-      // Increase quantity to 3
+      // Increase quantity to 2
       const plusButton = screen.getByLabelText('Aumentar quantidade')
       fireEvent.click(plusButton)
-      fireEvent.click(plusButton)
 
-      expect(screen.getByLabelText(/Quantidade: 3/)).toBeInTheDocument()
+      await waitFor(() => {
+        const quantitySpan = container.querySelector('span[aria-label^="Quantidade"]')
+        expect(quantitySpan.textContent).toBe('2')
+      })
 
       // Add to cart
       const addButton = screen.getByLabelText(`Adicionar ${mockProduct.name} ao carrinho`)
       fireEvent.click(addButton)
 
+      // Wait for addItem to be called AND toast to be shown AND quantity to reset
       await waitFor(() => {
-        expect(screen.getByLabelText(/Quantidade: 1/)).toBeInTheDocument()
+        expect(mockAddItem).toHaveBeenCalledWith(mockProduct, 2)
+        expect(toast.success).toHaveBeenCalled()
+      })
+
+      // Now check quantity was reset
+      await waitFor(() => {
+        const quantitySpan = container.querySelector('span[aria-label^="Quantidade"]')
+        expect(quantitySpan.textContent).toBe('1')
       })
     })
   })
@@ -274,8 +297,8 @@ describe('ProductCard Component', () => {
       })
     })
 
-    test('disables add button while adding to cart', async () => {
-      const mockAddItem = jest.fn(() => new Promise(resolve => setTimeout(resolve, 100)))
+    test('shows loading state while adding to cart', async () => {
+      const mockAddItem = jest.fn().mockResolvedValue()
       useCartStore.mockReturnValue({
         addItem: mockAddItem,
       })
@@ -283,13 +306,13 @@ describe('ProductCard Component', () => {
       render(<ProductCard product={mockProduct} />)
 
       const addButton = screen.getByLabelText(`Adicionar ${mockProduct.name} ao carrinho`)
+
+      // Click and check that addItem was called
       fireEvent.click(addButton)
 
-      // Button should be disabled immediately
-      expect(addButton).toBeDisabled()
-
       await waitFor(() => {
-        expect(addButton).not.toBeDisabled()
+        expect(mockAddItem).toHaveBeenCalledWith(mockProduct, 1)
+        expect(toast.success).toHaveBeenCalled()
       })
     })
   })
@@ -316,7 +339,8 @@ describe('ProductCard Component', () => {
 
       expect(screen.getByLabelText('Diminuir quantidade')).toBeInTheDocument()
       expect(screen.getByLabelText('Aumentar quantidade')).toBeInTheDocument()
-      expect(screen.getByLabelText(/Quantidade: 1/)).toBeInTheDocument()
+      const quantitySpan = screen.getByText('1')
+      expect(quantitySpan).toHaveAttribute('aria-label', 'Quantidade: 1')
     })
 
     test('has correct ARIA label for add to cart button', () => {

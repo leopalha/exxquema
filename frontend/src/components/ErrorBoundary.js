@@ -1,4 +1,5 @@
 import React from 'react';
+import { captureException } from '../lib/sentry';
 
 /**
  * ErrorBoundary - Captura erros de runtime em componentes filhos
@@ -20,6 +21,16 @@ class ErrorBoundary extends React.Component {
     console.error('ErrorBoundary caught an error:', error);
     console.error('Error info:', errorInfo);
     this.setState({ errorInfo });
+
+    // Send error to Sentry for monitoring
+    try {
+      captureException(error, {
+        errorInfo: errorInfo.componentStack,
+        errorBoundary: this.constructor.name,
+      });
+    } catch (sentryError) {
+      console.error('Failed to send error to Sentry:', sentryError);
+    }
 
     // Em producao, tentar auto-recovery
     if (typeof window !== 'undefined') {

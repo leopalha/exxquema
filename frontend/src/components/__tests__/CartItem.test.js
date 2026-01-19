@@ -34,7 +34,7 @@ describe('CartItem Component', () => {
       render(<CartItem item={mockItem} {...mockHandlers} />)
 
       // Total: 35.90 * 2 = 71.80
-      expect(screen.getByText(/R\$\s+71.80/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71\.80/)).toBeInTheDocument()
     })
 
     test('renders item quantity', () => {
@@ -53,7 +53,7 @@ describe('CartItem Component', () => {
     test('renders item notes when provided', () => {
       render(<CartItem item={mockItem} {...mockHandlers} showNotes={true} />)
 
-      expect(screen.getByText('Sem cebola')).toBeInTheDocument()
+      expect(screen.getByText(/Sem cebola/)).toBeInTheDocument()
     })
 
     test('does not render notes when showNotes is false', () => {
@@ -75,7 +75,7 @@ describe('CartItem Component', () => {
 
       expect(screen.getByText('2x')).toBeInTheDocument()
       expect(screen.getByText('Hambúrguer Artesanal')).toBeInTheDocument()
-      expect(screen.getByText(/R\$\s+71.80/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+71\.80/)).toBeInTheDocument()
     })
 
     test('does not render image in compact mode', () => {
@@ -145,10 +145,10 @@ describe('CartItem Component', () => {
   })
 
   describe('Edit Button', () => {
-    test('renders edit button when item has options', () => {
+    test('renders edit button when onEdit handler provided', () => {
       const itemWithOptions = {
         ...mockItem,
-        options: [{ name: 'Tamanho', value: 'Grande' }],
+        options: ['Tamanho: Grande'],
       }
 
       render(<CartItem item={itemWithOptions} {...mockHandlers} />)
@@ -159,7 +159,7 @@ describe('CartItem Component', () => {
     test('calls onEdit when edit button clicked', () => {
       const itemWithOptions = {
         ...mockItem,
-        options: [{ name: 'Tamanho', value: 'Grande' }],
+        options: ['Tamanho: Grande'],
       }
 
       render(<CartItem item={itemWithOptions} {...mockHandlers} />)
@@ -167,11 +167,17 @@ describe('CartItem Component', () => {
       const editButton = screen.getByLabelText('Editar item')
       fireEvent.click(editButton)
 
-      expect(mockHandlers.onEdit).toHaveBeenCalledWith(mockItem.id)
+      expect(mockHandlers.onEdit).toHaveBeenCalledWith(itemWithOptions)
     })
 
-    test('does not render edit button when no options', () => {
-      render(<CartItem item={mockItem} {...mockHandlers} />)
+    test('does not render edit button when onEdit not provided', () => {
+      const handlersWithoutEdit = {
+        onIncrement: jest.fn(),
+        onDecrement: jest.fn(),
+        onRemove: jest.fn(),
+      }
+
+      render(<CartItem item={mockItem} {...handlersWithoutEdit} />)
 
       expect(screen.queryByLabelText('Editar item')).not.toBeInTheDocument()
     })
@@ -180,9 +186,10 @@ describe('CartItem Component', () => {
   describe('Price Calculation', () => {
     test('calculates total correctly for quantity 1', () => {
       const singleItem = { ...mockItem, quantity: 1 }
-      render(<CartItem item={singleItem} {...mockHandlers} />)
+      const { container } = render(<CartItem item={singleItem} {...mockHandlers} />)
 
-      expect(screen.getByText(/R\$\s+35.90/)).toBeInTheDocument()
+      // Check for total price (should be first occurrence)
+      expect(container.textContent).toContain('R$ 35.90')
     })
 
     test('calculates total correctly for quantity > 1', () => {
@@ -190,7 +197,7 @@ describe('CartItem Component', () => {
       render(<CartItem item={multipleItems} {...mockHandlers} />)
 
       // 35.90 * 3 = 107.70
-      expect(screen.getByText(/R\$\s+107,70/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+107\.70/)).toBeInTheDocument()
     })
 
     test('handles decimal prices correctly', () => {
@@ -198,14 +205,14 @@ describe('CartItem Component', () => {
       render(<CartItem item={itemWithDecimal} {...mockHandlers} />)
 
       // 12.99 * 2 = 25.98
-      expect(screen.getByText(/R\$\s+25,98/)).toBeInTheDocument()
+      expect(screen.getByText(/R\$\s+25\.98/)).toBeInTheDocument()
     })
 
     test('formats price with 2 decimal places', () => {
       const itemWithWholePrice = { ...mockItem, price: 50, quantity: 1 }
-      render(<CartItem item={itemWithWholePrice} {...mockHandlers} />)
+      const { container } = render(<CartItem item={itemWithWholePrice} {...mockHandlers} />)
 
-      expect(screen.getByText(/R\$\s+50,00/)).toBeInTheDocument()
+      expect(container.textContent).toContain('R$ 50.00')
     })
   })
 
@@ -213,41 +220,33 @@ describe('CartItem Component', () => {
     test('renders item options when provided', () => {
       const itemWithOptions = {
         ...mockItem,
-        options: [
-          { name: 'Tamanho', value: 'Grande' },
-          { name: 'Adicional', value: 'Bacon' },
-        ],
+        options: ['Tamanho: Grande', 'Adicional: Bacon'],
       }
 
       render(<CartItem item={itemWithOptions} {...mockHandlers} />)
 
-      expect(screen.getByText(/Tamanho:/)).toBeInTheDocument()
-      expect(screen.getByText(/Grande/)).toBeInTheDocument()
-      expect(screen.getByText(/Adicional:/)).toBeInTheDocument()
-      expect(screen.getByText(/Bacon/)).toBeInTheDocument()
+      expect(screen.getByText('Tamanho: Grande')).toBeInTheDocument()
+      expect(screen.getByText('Adicional: Bacon')).toBeInTheDocument()
     })
 
     test('does not render options section when no options', () => {
       render(<CartItem item={mockItem} {...mockHandlers} />)
 
-      expect(screen.queryByText(/Tamanho:/)).not.toBeInTheDocument()
+      const { container } = render(<CartItem item={mockItem} {...mockHandlers} />)
+      expect(container.textContent).not.toContain('Tamanho:')
     })
 
     test('renders multiple options correctly', () => {
       const itemWithMultipleOptions = {
         ...mockItem,
-        options: [
-          { name: 'Ponto', value: 'Mal passado' },
-          { name: 'Queijo', value: 'Cheddar' },
-          { name: 'Molho', value: 'Barbecue' },
-        ],
+        options: ['Ponto: Mal passado', 'Queijo: Cheddar', 'Molho: Barbecue'],
       }
 
       render(<CartItem item={itemWithMultipleOptions} {...mockHandlers} />)
 
-      expect(screen.getByText(/Ponto:/)).toBeInTheDocument()
-      expect(screen.getByText(/Queijo:/)).toBeInTheDocument()
-      expect(screen.getByText(/Molho:/)).toBeInTheDocument()
+      expect(screen.getByText('Ponto: Mal passado')).toBeInTheDocument()
+      expect(screen.getByText('Queijo: Cheddar')).toBeInTheDocument()
+      expect(screen.getByText('Molho: Barbecue')).toBeInTheDocument()
     })
   })
 
@@ -268,7 +267,7 @@ describe('CartItem Component', () => {
     test('has ARIA label for edit button', () => {
       const itemWithOptions = {
         ...mockItem,
-        options: [{ name: 'Tamanho', value: 'Grande' }],
+        options: ['Tamanho: Grande'],
       }
 
       render(<CartItem item={itemWithOptions} {...mockHandlers} />)

@@ -1,6 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import ErrorBoundary from '../ErrorBoundary';
 
+// Mock Sentry module entirely to avoid initialization issues in tests
+jest.mock('../../lib/sentry', () => ({
+  __esModule: true,
+  default: {
+    captureException: jest.fn(),
+  },
+}));
+
 const ThrowError = () => {
   throw new Error('Test error');
 };
