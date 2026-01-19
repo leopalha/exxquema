@@ -1,10 +1,10 @@
-const { describe, it, expect, beforeEach, vi } = require('vitest');
-const Order = require('../../models/Order');
-const OrderItem = require('../../models/OrderItem');
-const Product = require('../../models/Product');
-const User = require('../../models/User');
-const Table = require('../../models/Table');
-const { sequelize } = require('../../config/database');
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import Order from '../../models/Order.js';
+import OrderItem from '../../models/OrderItem.js';
+import Product from '../../models/Product.js';
+import User from '../../models/User.js';
+import Table from '../../models/Table.js';
+import { sequelize } from '../../config/database.js';
 
 // Mock dos models
 vi.mock('../../models/Order');

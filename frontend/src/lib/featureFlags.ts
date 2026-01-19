@@ -188,7 +188,14 @@ export function useFeatureFlag(
 
 /**
  * HOC to conditionally render based on feature flag
+ * @param flag - Feature flag to check
+ * @param Component - Component to render if flag is enabled
+ * @param Fallback - Optional fallback component if flag is disabled
+ *
+ * NOTE: Currently unused in the codebase. Commented out to avoid TypeScript build errors.
+ * Uncomment when needed and add proper type handling for JSX component parameters.
  */
+/*
 export function withFeatureFlag<P extends object>(
   flag: FeatureFlag,
   Component: React.ComponentType<P>,
@@ -204,6 +211,7 @@ export function withFeatureFlag<P extends object>(
     return <Component {...props} />;
   };
 }
+*/
 
 /**
  * Override feature flag for testing (use in development only)
