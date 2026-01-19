@@ -64,9 +64,10 @@ const CartItem = ({
           <Image
             src={image}
             alt={name}
-            fill
+            width={80}
+            height={80}
             loading="lazy"
-            className="object-cover"
+            className="object-cover w-full h-full"
           />
         </div>
       )}

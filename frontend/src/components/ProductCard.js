@@ -71,9 +71,10 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
               <Image
                 src={product.image}
                 alt={product.name}
-                fill
+                width={64}
+                height={64}
                 loading="lazy"
-                className="object-cover rounded-lg"
+                className="object-cover rounded-lg w-full h-full"
                 onError={() => setImageError(true)}
               />
             ) : (
@@ -139,9 +140,11 @@ const ProductCard = ({ product, showActions = true, variant = 'default', onImage
             <Image
               src={product.image}
               alt={product.name}
-              fill
+              width={384}
+              height={192}
               loading="lazy"
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              className="object-cover transition-transform duration-300 group-hover:scale-110 w-full h-full"
+              style={{ aspectRatio: '2/1' }}
               onError={() => setImageError(true)}
             />
             {onImageClick && (

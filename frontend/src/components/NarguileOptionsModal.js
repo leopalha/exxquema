@@ -147,8 +147,10 @@ export default function NarguileOptionsModal({ isOpen, onClose, product }) {
                 <Image
                   src={product.imagem}
                   alt={product.nome}
-                  fill
-                  className="object-cover"
+                  width={512}
+                  height={192}
+                  className="object-cover w-full h-full"
+                  style={{ aspectRatio: '2.67/1' }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-magenta-600 to-cyan-600 flex items-center justify-center">
