@@ -189,6 +189,8 @@ error: '#EF4444'
 ├── 03_PRD.md                 # Requisitos do produto
 ├── 04_USER_FLOWS.md          # Fluxos detalhados
 ├── 05_TECHNICAL_ARCHITECTURE.md  # Arquitetura técnica
+├── 06_ACTIVATION_PROMPT.md   # Este arquivo - contexto do agente
+├── MANUS_AUTOPILOT_WORKFLOW.md  # ⭐ WORKFLOW PILOTO AUTOMÁTICO
 
 /frontend/
 ├── tailwind.config.js        # Design tokens
