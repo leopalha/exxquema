@@ -45,9 +45,17 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://backend-production-28c3.up.railway.app" />
         <link rel="preconnect" href="https://backend-production-28c3.up.railway.app" crossOrigin="anonymous" />
 
+        {/* Google Fonts - Preconnect (Next.js já faz o download otimizado) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
         {/* Google Identity Services - Preconnect */}
         <link rel="preconnect" href="https://accounts.google.com" />
         <link rel="dns-prefetch" href="https://accounts.google.com" />
+
+        {/* Google Analytics - DNS Prefetch */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
         {/* Preload critical assets */}
         <link rel="preload" href="/logo-flame.png" as="image" />

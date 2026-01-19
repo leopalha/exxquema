@@ -68,10 +68,10 @@ function MyApp({ Component, pageProps }) {
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
 
-        {/* Google Identity Services SDK */}
+        {/* Google Identity Services SDK - Lazy load */}
         <Script
           src="https://accounts.google.com/gsi/client"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           async
           defer
         />

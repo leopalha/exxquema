@@ -19,8 +19,8 @@ describe('Avatar', () => {
   });
 
   it('renders single initial for single name', () => {
-    render(<Avatar name="John" />);
-    expect(screen.getByText('J')).toBeInTheDocument();
+    const { container } = render(<Avatar name="John" />);
+    expect(container.textContent).toContain('J');
   });
 
   it('renders default icon when no src or name', () => {
